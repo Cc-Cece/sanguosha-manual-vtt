@@ -13,4 +13,8 @@ it('includes all classified faces with traceable sources and VTT asset hashes', 
     expect(asset.asset).toMatch(/^\/assets\/-?\d+_\d+$/);
     expect(asset.bytes).toBeLessThan(10 * 1024 * 1024);
   }
+  expect(catalog.backs).toBeDefined();
+  expect(catalog.backs.generals).toMatch(/^\/assets\/-?\d+_\d+$/);
+  expect(catalog.backs.identities).toMatch(/^\/assets\/-?\d+_\d+$/);
+  expect(catalog.backs.main).toMatch(/^\/assets\/-?\d+_\d+$/);
 });

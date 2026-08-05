@@ -58,6 +58,38 @@ for (const item of selected) {
   assets.push({ id: `asset-${item.sequence}`, sequence: item.sequence, cardId: item.cardId, category: item.classification,
     source: item.cleanedFile.replaceAll('\\', '/'), optimizedFile, asset: `/assets/${crc32(data)}_${data.length}`, bytes: data.length, width, height, label });
 }
-const catalog: AssetCatalog = { sourceRoot: sourceRoot.replaceAll('\\', '/'), generatedAt: new Date().toISOString(), assets };
+const backDefinitions = [
+  { key: 'generals' as const, file: '014_i.imgur.com_v4N5Crs.jpg', optimizedFile: 'back-generals.webp' },
+  { key: 'identities' as const, file: '009_i.imgur.com_ONX2QEr.jpg', optimizedFile: 'back-identities.webp' },
+  { key: 'main' as const, file: '008_i.imgur.com_Gej0gnH.jpg', optimizedFile: 'back-main.webp' },
+];
+
+const otherRoot = resolve('temp', 'other');
+
+const backAssets: { key: 'generals' | 'identities' | 'main'; file: string; optimizedFile: string; asset: string; bytes: number }[] = [];
+for (const back of backDefinitions) {
+  const sourcePath = resolve(otherRoot, back.file);
+  const targetPath = resolve(outputRoot, back.optimizedFile);
+  try { await stat(targetPath); } catch {
+    await runFfmpeg(sourcePath, targetPath);
+  }
+  const data = await readFile(targetPath);
+  const asset = `/assets/${crc32(data)}_${data.length}`;
+  backAssets.push({ key: back.key, file: back.file, optimizedFile: back.optimizedFile, asset, bytes: data.length });
+}
+
+const backs = {
+  generals: backAssets.find(b => b.key === 'generals')!.asset,
+  identities: backAssets.find(b => b.key === 'identities')!.asset,
+  main: backAssets.find(b => b.key === 'main')!.asset,
+};
+
+const catalog: AssetCatalog = {
+  sourceRoot: sourceRoot.replaceAll('\\', '/'),
+  generatedAt: new Date().toISOString(),
+  assets,
+  backs,
+  backAssets,
+};
 await writeFile(catalogPath, JSON.stringify(catalog, null, 2));
-console.log(`Prepared ${assets.length} card faces (${Math.round(assets.reduce((sum, item) => sum + item.bytes, 0) / 1024 / 1024)} MiB).`);
+console.log(`Prepared ${assets.length} card faces and 3 custom card backs (${Math.round(assets.reduce((sum, item) => sum + item.bytes, 0) / 1024 / 1024)} MiB).`);

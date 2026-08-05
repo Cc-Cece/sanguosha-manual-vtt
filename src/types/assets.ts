@@ -18,4 +18,15 @@ export interface AssetCatalog {
   sourceRoot: string;
   generatedAt: string;
   assets: CardAsset[];
+  backs: {
+    generals: string;
+    identities: string;
+    main: string;
+  };
+  backAssets: {
+    file: string;
+    optimizedFile: string;
+    asset: string;
+    bytes: number;
+  }[];
 }

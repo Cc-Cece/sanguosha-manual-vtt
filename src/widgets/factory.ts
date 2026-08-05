@@ -33,5 +33,8 @@ export const cardBack = (labelText: string) => ({ objects: [{ type: 'text', x: 5
   value: labelText, color: '#edd394', fontSize: 17, textAlign: 'center' }],
   css: { background: 'radial-gradient(circle,#81312a,#3a1010)', border: '3px double #cba75e', borderRadius: '7px' } });
 
+export const imageCardBack = (assetUri: string) => ({ border: false, radius: 6, objects: [{ type: 'image', x: 0, y: 0, width: 90, height: 126,
+  value: assetUri, color: 'transparent', css: { backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' } }] });
+
 export const assetCardFace = () => ({ border: false, radius: 6, objects: [{ type: 'image', x: 0, y: 0, width: 90, height: 126,
   color: 'transparent', dynamicProperties: { value: 'asset' }, css: { backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' } }] });

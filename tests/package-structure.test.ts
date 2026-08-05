@@ -14,19 +14,30 @@ it('has unique references and contains no imported game-specific rules', () => {
     expect(text).not.toContain(forbidden);
 });
 
-it('build output contains one variant and all optimized card faces', async () => {
+it('build output contains one variant and all optimized card faces and backs', async () => {
   const path = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
   try {
     const zip = await JSZip.loadAsync(await readFile(path));
     expect(zip.file('0.json')).not.toBeNull();
-    const uniqueAssets = new Set(loadTestCatalog().assets.filter(asset => asset.category !== 'markers-and-reference').map(asset => asset.asset));
-    expect(Object.keys(zip.files).filter(name => name.startsWith('assets/') && !name.endsWith('/'))).toHaveLength(uniqueAssets.size);
+    const catalog = loadTestCatalog();
+    const uniqueFaceAssets = new Set(catalog.assets.filter(asset => asset.category !== 'markers-and-reference').map(asset => asset.asset));
+    const uniqueBackAssets = new Set(catalog.backAssets.map(back => back.asset));
+    const allPackagedAssets = new Set([...uniqueFaceAssets, ...uniqueBackAssets]);
+
+    expect(Object.keys(zip.files).filter(name => name.startsWith('assets/') && !name.endsWith('/'))).toHaveLength(allPackagedAssets.size);
     const game = JSON.parse(await zip.file('0.json')!.async('string')) as Record<string, any>;
     const assetReferences = new Set<string>();
-    for (const value of Object.values(game))
-      if (value?.type === 'deck') for (const cardType of Object.values(value.cardTypes ?? {}) as any[])
-        if (cardType.asset) assetReferences.add(cardType.asset);
-    expect(assetReferences).toEqual(uniqueAssets);
+    for (const value of Object.values(game)) {
+      if (value?.type === 'deck') {
+        for (const cardType of Object.values(value.cardTypes ?? {}) as any[])
+          if (cardType.asset) assetReferences.add(cardType.asset);
+        if (value.faceTemplates)
+          for (const tmpl of value.faceTemplates)
+            for (const obj of tmpl.objects ?? [])
+              if (obj.value?.startsWith('/assets/')) assetReferences.add(obj.value);
+      }
+    }
+    expect(assetReferences).toEqual(allPackagedAssets);
     for (const file of Object.values(zip.files).filter(file => file.name.startsWith('assets/') && !file.dir)) {
       const internal = (file as any)._data;
       expect(assetReferences.has(`/assets/${internal.crc32}_${internal.uncompressedSize}`)).toBe(true);

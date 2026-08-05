@@ -18,7 +18,14 @@ for (const asset of usedAssets) {
   packagedAssets.add(asset.asset);
   zip.file(`assets/${asset.optimizedFile}`, await readFile(resolve('temp', 'optimized-assets', asset.optimizedFile)));
 }
+if (catalog.backAssets) {
+  for (const back of catalog.backAssets) {
+    if (packagedAssets.has(back.asset)) continue;
+    packagedAssets.add(back.asset);
+    zip.file(`assets/${back.optimizedFile}`, await readFile(resolve('temp', 'optimized-assets', back.optimizedFile)));
+  }
+}
 const output = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
 await mkdir(resolve('dist'), { recursive: true });
 await writeFile(output, await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
-console.log(`Built ${output} with 0.json, ${usedAssets.length} asset cards and ${packagedAssets.size} unique face assets.`);
+console.log(`Built ${output} with 0.json, ${usedAssets.length} asset cards and ${packagedAssets.size} unique assets (including custom card backs).`);

@@ -1,28 +1,32 @@
 import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js';
 import type { Widget } from '../types/vtt.js';
-import { assetCardFace, cardBack, widget } from '../widgets/factory.js';
+import { assetCardFace, cardBack, imageCardBack, widget } from '../widgets/factory.js';
 
-const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; back: string; enlarge: number }> = {
-  'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', back: '三国杀', enlarge: 2.35 },
-  'gameplay-extra': { deck: 'extra-deck', holder: 'extra-reserve', back: '扩展牌', enlarge: 2.35 },
-  generals: { deck: 'general-deck', holder: 'general-reserve', back: '武将牌', enlarge: 2.5 },
-  identities: { deck: 'identity-deck', holder: 'identity-reserve', back: '身份牌', enlarge: 2.5 },
+const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; backKey: 'generals' | 'identities' | 'main'; fallback: string; enlarge: number }> = {
+  'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', backKey: 'main', fallback: '三国杀', enlarge: 2.35 },
+  'gameplay-extra': { deck: 'extra-deck', holder: 'extra-reserve', backKey: 'main', fallback: '扩展牌', enlarge: 2.35 },
+  generals: { deck: 'general-deck', holder: 'general-reserve', backKey: 'generals', fallback: '武将牌', enlarge: 2.5 },
+  identities: { deck: 'identity-deck', holder: 'identity-reserve', backKey: 'identities', fallback: '身份牌', enlarge: 2.5 },
 };
 
 type DeckCategory = keyof typeof definitions;
 
-function buildDeck(category: DeckCategory, assets: CardAsset[]): Widget[] {
+function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCatalog): Widget[] {
   const definition = definitions[category];
   const cardTypes = Object.fromEntries(assets.map(asset => [`type-${asset.sequence}`, { asset: asset.asset, label: asset.label,
     sourceSequence: asset.sequence, sourceCardId: asset.cardId }]));
+
+  const backAssetUri = catalog.backs?.[definition.backKey];
+  const backTemplate = backAssetUri ? imageCardBack(backAssetUri) : cardBack(definition.fallback);
+
   const deck = widget(definition.deck, 'deck', { parent: definition.holder,
     cardDefaults: { width: 90, height: 126, enlarge: definition.enlarge },
-    faceTemplates: [cardBack(definition.back), assetCardFace()], cardTypes });
+    faceTemplates: [backTemplate, assetCardFace()], cardTypes });
   const cards = assets.map(asset => widget(`card-${asset.sequence}`, 'card', { deck: definition.deck,
     cardType: `type-${asset.sequence}`, parent: definition.holder, activeFace: 0 }));
   return [deck, ...cards];
 }
 
 export function createAssetDecks(catalog: AssetCatalog): Widget[] {
-  return (Object.keys(definitions) as DeckCategory[]).flatMap(category => buildDeck(category, catalog.assets.filter(asset => asset.category === category)));
+  return (Object.keys(definitions) as DeckCategory[]).flatMap(category => buildDeck(category, catalog.assets.filter(asset => asset.category === category), catalog));
 }
