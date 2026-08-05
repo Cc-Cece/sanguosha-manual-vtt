@@ -63,13 +63,13 @@ export const toggleHostToolbarRoutine = [
 ] as const;
 
 const DECKBUILDING_WIDGET_IDS = [
-  'library-table-background',
+  'library-tray',
   'library-toolbar',
+  'library-toolbar-title',
+  'reset-library-table-btn',
+  'close-library-tray-btn',
   'general-library-title',
   'general-library-view',
-  'transition-area',
-  'transition-hint-1',
-  'transition-hint-2',
   'candidate-title',
   'general-candidate-zone',
   'assemble-generals-btn',
@@ -86,10 +86,10 @@ const DECKBUILDING_WIDGET_IDS = [
   'send-identities-btn',
 ];
 
-export const toggleLibraryTableRoutine = [
+export const toggleLibraryTrayRoutine = [
   {
     func: 'IF',
-    operand1: '${PROPERTY display OF library-table-background}',
+    operand1: '${PROPERTY display OF library-tray}',
     relation: '==',
     operand2: true,
     thenRoutine: [
@@ -98,7 +98,7 @@ export const toggleLibraryTableRoutine = [
     ],
     elseRoutine: [
       { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: true },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起牌库' },
+      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起抽屉' },
     ],
   },
 ] as const;

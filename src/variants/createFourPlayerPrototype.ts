@@ -3,7 +3,7 @@ import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
-import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTableRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
+import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
 import { createCandidateWidgets } from '../widgets/candidateZone.js';
@@ -27,7 +27,7 @@ function tableWidgets(): Widget[] {
     widget('unlock-layout', 'button', { parent: 'host-toolbar-panel', x: 126, y: 9, width: 116, height: 36, text: '🔓 解锁布局', clickRoutine: unlockLayoutRoutine }),
     widget('arrange-layout', 'button', { parent: 'host-toolbar-panel', x: 248, y: 9, width: 116, height: 36, text: '🧹 自动整理', clickRoutine: arrangeLayoutRoutine }),
     widget('toggle-tray', 'button', { parent: 'host-toolbar-panel', x: 370, y: 9, width: 116, height: 36, text: '📦 备牌托盘', clickRoutine: toggleReserveTrayRoutine }),
-    widget('toggle-library-table', 'button', { parent: 'host-toolbar-panel', x: 492, y: 9, width: 116, height: 36, text: '📚 牌库编组', color: '#254448', clickRoutine: toggleLibraryTableRoutine }),
+    widget('toggle-library-table', 'button', { parent: 'host-toolbar-panel', x: 492, y: 9, width: 116, height: 36, text: '📚 牌库编组', color: '#254448', clickRoutine: toggleLibraryTrayRoutine }),
     widget('collect-shuffle', 'button', { parent: 'host-toolbar-panel', x: 614, y: 9, width: 116, height: 36, text: '🔀 收拢洗牌', clickRoutine: collectAndShuffleRoutine }),
     widget('clear-seats', 'button', { parent: 'host-toolbar-panel', x: 736, y: 9, width: 116, height: 36, text: '👤 重置座位', clickRoutine: clearAllSeatsRoutine }),
     widget('reset-table', 'button', { parent: 'host-toolbar-panel', x: 858, y: 9, width: 116, height: 36, text: '🔄 整桌重置', color: '#74322b', clickRoutine: resetTableRoutine }),
