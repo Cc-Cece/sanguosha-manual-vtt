@@ -357,8 +357,13 @@ preventPiles: false
 - [x] 摸牌堆 (🎴)、手牌区 (🖐️)、标题栏 (👑) 与勋章卡槽完成高对比度图标与古朴暗绿漆木主题视觉美化
 - [x] 集成用户提供的 3 张真实牌背 WebP 资源（`014` 武将牌背、`009` 身份牌背、`008` 游戏主牌背与扩展牌背），替代原线条矢量牌背并完美打入 `.vtt` 安装包
 - [x] 新增 `host-control.test.ts` 及 `table-aesthetics.test.ts` 自动化测试套件，并通过上游 validator 校验
+- [x] 构建 `3600 × 1400` 双桌并排连续桌布（主游戏桌 `x:80–1760` + 过渡通道 `x:1760–1900` + 牌库编组桌 `x:1900–3520`）
+- [x] 实现受控离散组件缩放系统 (`MODULE_SCALES`: 75%, 90%, 100%, 115%)，提供带权限控制的缩放 Routine (`createSecureModuleScaleRoutine`) 与缩放物理边界计算 (`getScaledBounds`)
+- [x] 搭建武将扩展包分类网格与分页浏览区 (`general-library-view`)，提供候选区、排除区与暂存区
+- [x] 实现武将与身份牌堆合成 Routine (`assembleGeneralDeckRoutine`, `assembleIdentityDeckRoutine`)，支持盖回、收拢为原生 Pile、随机洗牌及「🚀 送入主游戏桌」跨桌平移
+- [x] 提供清空候选区 (`clearCandidatesRoutine`) 与重置编组桌 (`resetDeckbuildingTableRoutine`) 防遗失机制
+- [x] 新增 `continuous-board-size.test.ts`, `scalable-module.test.ts`, `deckbuilding-assembly.test.ts` 与 `library-reset.test.ts` 自动化测试套件，并通过上游 validator 校验
 - [x] 遵守规则：每次优化与修改后均自动编译并重新生成 `.vtt` 构建包
-- [ ] 按桌面空间切换宽松、紧凑和高密度布局
 - [ ] 人工确认后再规划 5–10 人布局
 
 后续仍不包含技能、距离、伤害、回合、胜负、计分、反作弊或复杂账号系统。

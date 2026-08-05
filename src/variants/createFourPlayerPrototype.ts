@@ -1,11 +1,15 @@
 import { createAssetDecks } from '../data/assetDecks.js';
 import { createHealthDeck } from '../data/healthCards.js';
+import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
+import { createCandidateWidgets } from '../widgets/candidateZone.js';
 import { freeZone, handZone, label, pileZone, widget } from '../widgets/factory.js';
+import { createIdentityComposerWidgets } from '../widgets/identityComposer.js';
+import { createLibraryTableWidgets } from '../widgets/libraryBrowser.js';
 import { createPlayerModule } from '../widgets/playerModule.js';
 
 function tableWidgets(): Widget[] {
@@ -49,14 +53,39 @@ function reserveWidgets(): Widget[] {
 }
 
 export function createFourPlayerPrototype(catalog: AssetCatalog): GameFile {
-  const widgets = [...tableWidgets(), ...reserveWidgets(), ...Array.from({ length: 4 }, (_, i) => createPlayerModule(i)).flat(), ...createAssetDecks(catalog), ...createHealthDeck()];
-  const game: GameFile = { _meta: { version: 17, info: {
-    name: '三国杀人工桌面', description: '4 人真实牌面适配版：弱规则、私密手牌、安全 Seat 与自由公共区。', players: '4', mode: 'vs', language: 'zh-CN',
-    attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
-    ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
-    helpText: '玩家 1 管理布局；牌只在待回收区点击收拢并洗牌。PC 悬停、触屏长按使用原生放大。', variant: '4 人 Phase 1.1',
-    bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms', image: '/i/game-icons.net/delapouite/round-table.svg',
-  } } };
+  const widgets = [
+    ...tableWidgets(),
+    ...reserveWidgets(),
+    ...Array.from({ length: 4 }, (_, i) => createPlayerModule(i)).flat(),
+    ...createAssetDecks(catalog),
+    ...createHealthDeck(),
+    ...createLibraryTableWidgets(),
+    ...createCandidateWidgets(),
+    ...createIdentityComposerWidgets(),
+  ];
+
+  const game: GameFile = {
+    _meta: {
+      version: 18,
+      gameSettings: {
+        boardSize: { width: BOARD.width, height: BOARD.height },
+      },
+      info: {
+        name: '三国杀人工桌面',
+        description: '4 人真实牌面适配版 + 双桌连续超大牌库编组系统：支持弱规则、独立视角、受控缩放与全流程编组。',
+        players: '4',
+        mode: 'vs',
+        language: 'zh-CN',
+        attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
+        ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
+        helpText: '左侧为主游戏桌，右侧为牌库编组桌。玩家 1 管理布局；拖动或选择卡牌完成编组后合成送入主桌。',
+        variant: '4 人 Phase L1',
+        bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms',
+        image: '/i/game-icons.net/delapouite/round-table.svg',
+      },
+    },
+  };
+
   for (const item of widgets) game[item.id] = item;
   return game;
 }

@@ -28,9 +28,16 @@ export interface GameInfo {
   image: string;
 }
 
+export interface GameSettings {
+  boardSize?: { width: number; height: number };
+  [key: string]: unknown;
+}
+
+export type RoutineStep = Record<string, unknown>;
+
 export interface GameFile {
-  _meta: { version: number; info: GameInfo };
-  [id: string]: Widget | { version: number; info: GameInfo };
+  _meta: { version: number; info: GameInfo; gameSettings?: GameSettings };
+  [id: string]: Widget | { version: number; info: GameInfo; gameSettings?: GameSettings };
 }
 
 export interface Bounds { x: number; y: number; width: number; height: number }
