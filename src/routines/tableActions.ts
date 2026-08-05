@@ -54,16 +54,51 @@ export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
 export const createTogglePerspectiveRoutine = (number: number) => [
   {
     func: 'IF',
-    operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
+    operand1: `\${PROPERTY player OF seat-${number}}`,
     relation: '==',
-    operand2: true,
+    operand2: '\${playerName}',
     thenRoutine: [
-      { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
-      { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【非己方视角】预览（私密区已隐藏）` }], block: false },
+      {
+        func: 'IF',
+        operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
+        relation: '==',
+        operand2: true,
+        thenRoutine: [
+          { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
+          { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【非己方视角】预览（私密区已隐藏）` }], block: false },
+        ],
+        elseRoutine: [
+          { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
+          { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【己方视角】（完整显示私密展示区）` }], block: false },
+        ],
+      },
     ],
     elseRoutine: [
-      { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
-      { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【己方视角】（完整显示私密展示区）` }], block: false },
+      {
+        func: 'IF',
+        operand1: '${PROPERTY player OF seat-1}',
+        relation: '==',
+        operand2: '\${playerName}',
+        thenRoutine: [
+          {
+            func: 'IF',
+            operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
+            relation: '==',
+            operand2: true,
+            thenRoutine: [
+              { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
+              { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：房主已切换为【非己方视角】预览` }], block: false },
+            ],
+            elseRoutine: [
+              { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
+              { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：房主已切换为【己方视角】` }], block: false },
+            ],
+          },
+        ],
+        elseRoutine: [
+          { func: 'INPUT', header: '无法切换视角', fields: [{ type: 'text', label: '提示', value: `只有本座玩家或玩家 1 (房主) 可以切换玩家 ${number} 的视角` }], block: false },
+        ],
+      },
     ],
   },
 ] as const;

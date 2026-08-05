@@ -13,8 +13,6 @@ function tableWidgets(): Widget[] {
   return [
     widget('table-background', 'basic', { x: 0, y: 0, width: 1800, height: 1200, movable: false, layer: -10, color: '#173c31',
       css: { background: 'radial-gradient(circle,#285746,#102c25)', border: '18px solid #4b2d1c' } }),
-    label('table-title', '三国杀 · 4 人人工桌面', 650, 326, 500),
-    label('public-table-hint', '公共桌面｜自由放置・重叠・翻面・旋转', 665, 720, 470),
     widget('table-controller', 'basic', { x: 0, y: 0, width: 1, height: 1, display: false, movable: false, updateHandCountsRoutine }),
     widget('host-toolbar', 'basic', { x: 450, y: 18, width: 900, height: 54, movable: false, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'],
       color: '#20252be8', css: { border: '2px double #b5965b', borderRadius: '10px', boxShadow: '0 4px 14px #000a' } }),

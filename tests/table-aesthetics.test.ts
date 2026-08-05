@@ -27,7 +27,7 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(serialized).toContain('无法释放座位');
   });
 
-  it('verifies icon enhancement on toolbar and zones', () => {
+  it('verifies icon enhancement on toolbar and removes redundant desktop labels', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
@@ -39,6 +39,9 @@ describe('table aesthetics and player module leave-seat buttons', () => {
 
     const handZone = widgets.find(w => w.id === 'personal-hand');
     expect(handZone?.text).toContain('🖐️');
+
+    expect(widgets.find(w => w.id === 'table-title')).toBeUndefined();
+    expect(widgets.find(w => w.id === 'public-table-hint')).toBeUndefined();
   });
 
   it('contains quick-shuffle-zone as a pileZone and generates real health cards', () => {
@@ -75,7 +78,7 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(healthCards.length).toBeGreaterThanOrEqual(16);
   });
 
-  it('provides toggle-perspective buttons for each player module', () => {
+  it('provides toggle-perspective buttons with seat & host permission checks', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
@@ -84,6 +87,10 @@ describe('table aesthetics and player module leave-seat buttons', () => {
       expect(btn).toBeDefined();
       expect(btn?.parent).toBe(`player-module-${i}`);
       expect(btn?.text).toContain('视角');
+
+      const serialized = JSON.stringify(btn?.clickRoutine);
+      expect(serialized).toContain(`\${PROPERTY player OF seat-${i}}`);
+      expect(serialized).toContain('无法切换视角');
     }
   });
 });
