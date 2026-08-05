@@ -1,4 +1,4 @@
-const moduleIds = ['player-module-1', 'player-module-2', 'player-module-3', 'player-module-4', 'reserve-tray'];
+const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
 
 export const collectAndShuffleRoutine = [
   { func: 'MOVE', from: ['recycle-zone'], to: ['draw-pile'], count: 'all', face: 0 },
@@ -10,7 +10,6 @@ export const quickShuffleRoutine = [
   { func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' },
   { func: 'INPUT', header: '洗牌完成', fields: [{ type: 'text', label: '提示', value: '快捷洗牌区已完成随机洗牌，牌叠已自动背置。' }], block: false },
 ] as const;
-
 
 export const lockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: false }] as const;
 export const unlockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: true }] as const;
@@ -126,7 +125,7 @@ export const toggleLibraryTrayRoutine = [
   },
 ] as const;
 
-export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
+export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 1).flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },

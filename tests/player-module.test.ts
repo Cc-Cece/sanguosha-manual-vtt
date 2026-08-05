@@ -4,7 +4,7 @@ import { loadTestCatalog } from './helpers.js';
 
 it('keeps only public and private play regions in each movable module', () => {
   const game = createFourPlayerPrototype(loadTestCatalog());
-  for (let n = 1; n <= 4; n++) {
+  for (let n = 1; n <= 12; n++) {
     expect(game[`player-module-${n}`]).toMatchObject({ movable: true });
     for (const prefix of ['seat', 'public-zone', 'private-backdrop', 'private-zone'])
       expect(game[`${prefix}-${n}`]).toMatchObject({ parent: `player-module-${n}` });

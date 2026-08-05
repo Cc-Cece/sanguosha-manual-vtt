@@ -25,7 +25,10 @@ if (catalog.backAssets) {
     zip.file(`assets/${back.optimizedFile}`, await readFile(resolve('temp', 'optimized-assets', back.optimizedFile)));
   }
 }
-const output = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
+const output = resolve('dist', 'Sanguosha-Manual-4-12P.vtt');
+const outputLegacy = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
 await mkdir(resolve('dist'), { recursive: true });
-await writeFile(output, await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
+const buffer = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
+await writeFile(output, buffer);
+await writeFile(outputLegacy, buffer);
 console.log(`Built ${output} with 0.json, ${usedAssets.length} asset cards and ${packagedAssets.size} unique assets (including custom card backs).`);

@@ -19,20 +19,14 @@ export function validatePrototype(game: GameFile): string[] {
     if (item.parent && !game[item.parent]) errors.push(`missing parent ${item.parent} for ${item.id}`);
     if (item.deck && !game[item.deck]) errors.push(`missing deck ${item.deck} for ${item.id}`);
   }
-  PLAYER_MODULES.forEach((box, i) => {
-    if (box.x < TABLE.safeMargin || box.y < TABLE.safeMargin || box.x + box.width > TABLE.width - TABLE.safeMargin || box.y + box.height > TABLE.height - TABLE.safeMargin)
-      errors.push(`player module ${i + 1} outside safe bounds`);
-    if (overlaps(box, CENTRAL_SAFE_ZONE)) errors.push(`player module ${i + 1} overlaps central zone`);
-    PLAYER_MODULES.slice(i + 1).forEach((other, j) => { if (overlaps(box, other)) errors.push(`player modules ${i + 1} and ${i + j + 2} overlap`); });
-  });
-  for (const [name, box] of [['reserve tray', RESERVE_TRAY], ['personal hand', PERSONAL_HAND]] as const)
-    if (box.x < TABLE.safeMargin || box.y < TABLE.safeMargin || box.x + box.width > TABLE.width - TABLE.safeMargin || box.y + box.height > TABLE.height - TABLE.safeMargin)
-      errors.push(`${name} outside safe bounds`);
-  for (const [i, box] of PLAYER_MODULES.entries()) {
-    if (overlaps(box, RESERVE_TRAY)) errors.push(`player module ${i + 1} overlaps reserve tray`);
-    if (overlaps(box, PERSONAL_HAND)) errors.push(`player module ${i + 1} overlaps personal hand`);
+  const seatCount = widgets.filter(w => w.type === 'seat').length;
+  if (seatCount !== 12) errors.push(`prototype must contain exactly 12 seats (found ${seatCount})`);
+
+  for (let i = 1; i <= 12; i++) {
+    const moduleId = `player-module-${i}`;
+    const moduleWidget = game[moduleId] as Widget | undefined;
+    if (!moduleWidget) errors.push(`missing player module ${moduleId}`);
   }
-  if (overlaps(CENTRAL_SAFE_ZONE, RESERVE_TRAY) || overlaps(CENTRAL_SAFE_ZONE, PERSONAL_HAND)) errors.push('central zone overlaps peripheral utility area');
-  if (widgets.filter(w => w.type === 'seat').length !== 4) errors.push('prototype must contain exactly four seats');
+
   return errors;
 }

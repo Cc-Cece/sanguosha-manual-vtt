@@ -7,7 +7,7 @@ import { loadTestCatalog } from './helpers.js';
 describe('seat safety', () => {
   it('gives every seat the guarded routine while host-clear remains a source-level extension point', () => {
     const seats = widgetsOf(createFourPlayerPrototype(loadTestCatalog())).filter(w => w.type === 'seat');
-    expect(seats).toHaveLength(4);
+    expect(seats).toHaveLength(12);
     for (const seat of seats) {
       expect(seat.clickRoutine).toEqual(safeSeatClickRoutine);
     }

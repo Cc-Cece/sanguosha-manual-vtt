@@ -49,8 +49,8 @@ export const leaveSeat3Routine = createLeaveSeatRoutine('seat-3');
 export const leaveSeat4Routine = createLeaveSeatRoutine('seat-4');
 
 export const clearAllSeatsRoutine = [
-  { func: 'INPUT', header: '重置所有玩家座位？', fields: [{ type: 'text', text: '将清理全部 4 个座位的占用玩家，需要玩家重新入座。' }], block: true },
-  { func: 'SET', collection: ['seat-1', 'seat-2', 'seat-3', 'seat-4'], property: 'player', value: '' },
+  { func: 'INPUT', header: '重置所有玩家座位？', fields: [{ type: 'text', text: '将清理全部 12 个座位的占用玩家，需要玩家重新入座。' }], block: true },
+  { func: 'SET', collection: ['seat-1', 'seat-2', 'seat-3', 'seat-4', 'seat-5', 'seat-6', 'seat-7', 'seat-8', 'seat-9', 'seat-10', 'seat-11', 'seat-12'], property: 'player', value: '' },
 ] as const;
 
 
