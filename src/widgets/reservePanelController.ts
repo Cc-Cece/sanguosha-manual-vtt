@@ -4,9 +4,14 @@ import { createUpdateReserveSummaryRoutine } from '../routines/reserveCardRoutin
 import {
   createCleanupReturnedPendingCardsRoutine,
   createFullTableReserveResetRoutine,
+  createImportToReserveTrayRoutine,
   createRestoreReservedCardsRoutine,
 } from '../routines/reserveImportRoutines.js';
-import { createCloseReservePanelRoutine, createOpenReservePanelRoutine } from '../routines/reserveNavigation.js';
+import {
+  createCloseReservePanelRoutine,
+  createOpenReservePanelRoutine,
+  createSafeCloseReservePanelRoutine,
+} from '../routines/reserveNavigation.js';
 import { widget } from './factory.js';
 
 export function createReservePanelController(model: ReserveModel): Widget {
@@ -28,6 +33,8 @@ export function createReservePanelController(model: ReserveModel): Widget {
     updateSummaryRoutine: createUpdateReserveSummaryRoutine(model),
     openPanelRoutine: createOpenReservePanelRoutine(model),
     closePanelRoutine: createCloseReservePanelRoutine(model),
+    safeClosePanelRoutine: createSafeCloseReservePanelRoutine(model),
+    syncAndCloseRoutine: createImportToReserveTrayRoutine(model),
     restoreReservedCardsRoutine: createRestoreReservedCardsRoutine(model),
     cleanupReturnedPendingCardsRoutine: createCleanupReturnedPendingCardsRoutine(model),
     fullTableResetRoutine: createFullTableReserveResetRoutine(model),
