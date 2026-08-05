@@ -1,6 +1,8 @@
 import type { ReserveLibraryType, ReserveModel } from '../types/reserveLibrary.js';
 import type { RoutineStep } from '../types/vtt.js';
 
+const routineSteps = (...steps: RoutineStep[]): RoutineStep[] => steps;
+
 export const GENERAL_SELECTED_CSS = {
   filter: 'none',
   opacity: '1',
@@ -42,44 +44,44 @@ export function unselectedCss(libraryType: ReserveLibraryType): Record<string, s
 }
 
 export function hostOnlyRoutine(thenRoutine: RoutineStep[], readOnlyMessage = true): RoutineStep[] {
-  return [{
+  const elseRoutine = readOnlyMessage
+    ? routineSteps({
+      func: 'INPUT',
+      header: '备牌面板为只读',
+      fields: [{ type: 'text', label: '提示', value: '只有玩家 1（房主）可以修改备牌草稿。' }],
+      block: false,
+    })
+    : undefined;
+  return routineSteps({
     func: 'IF',
     operand1: '${PROPERTY player OF seat-1}',
     relation: '==',
     operand2: '${playerName}',
     thenRoutine,
-    ...(readOnlyMessage ? {
-      elseRoutine: [{
-        func: 'INPUT',
-        header: '备牌面板为只读',
-        fields: [{ type: 'text', label: '提示', value: '只有玩家 1（房主）可以修改备牌草稿。' }],
-        block: false,
-      }],
-    } : {}),
-  }];
+    ...(elseRoutine ? { elseRoutine } : {}),
+  });
 }
 
 export function createToggleReserveCardRoutine(libraryType: ReserveLibraryType): RoutineStep[] {
-  const toggle: RoutineStep[] = [{
-    func: 'IF',
-    operand1: '${PROPERTY reserveSelected}',
-    relation: '==',
-    operand2: true,
-    thenRoutine: [
-      { func: 'SET', collection: 'thisButton', property: 'reserveSelected', value: false },
-      { func: 'SET', collection: 'thisButton', property: 'reserveVisualState', value: 'unselected' },
-      { func: 'SET', collection: 'thisButton', property: 'css', value: unselectedCss(libraryType) },
-    ],
-    elseRoutine: [
-      { func: 'SET', collection: 'thisButton', property: 'reserveSelected', value: true },
-      { func: 'SET', collection: 'thisButton', property: 'reserveVisualState', value: 'selected' },
-      { func: 'SET', collection: 'thisButton', property: 'css', value: selectedCss(libraryType) },
-    ],
-  }, {
-    func: 'CALL',
-    widget: 'reserve-panel-controller',
-    routine: 'updateSummaryRoutine',
-  }];
+  const toggle = routineSteps(
+    {
+      func: 'IF',
+      operand1: '${PROPERTY reserveSelected}',
+      relation: '==',
+      operand2: true,
+      thenRoutine: routineSteps(
+        { func: 'SET', collection: 'thisButton', property: 'reserveSelected', value: false },
+        { func: 'SET', collection: 'thisButton', property: 'reserveVisualState', value: 'unselected' },
+        { func: 'SET', collection: 'thisButton', property: 'css', value: unselectedCss(libraryType) },
+      ),
+      elseRoutine: routineSteps(
+        { func: 'SET', collection: 'thisButton', property: 'reserveSelected', value: true },
+        { func: 'SET', collection: 'thisButton', property: 'reserveVisualState', value: 'selected' },
+        { func: 'SET', collection: 'thisButton', property: 'css', value: selectedCss(libraryType) },
+      ),
+    },
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
+  );
   return hostOnlyRoutine(toggle);
 }
 
@@ -96,16 +98,14 @@ function categorySummaryBranch(
   const scopeCollection = `${prefix}Scope`;
   const selectedWord = libraryType === 'general' ? '允许' : '已选';
   const unselectedWord = libraryType === 'general' ? 'Ban' : '未选';
-
-  const steps: RoutineStep[] = [];
-  if (allCategory) {
-    steps.push({ func: 'SELECT', source: baseCollection, type: 'card', collection: scopeCollection });
-  } else {
-    steps.push({
+  const selectScope: RoutineStep = allCategory
+    ? { func: 'SELECT', source: baseCollection, type: 'card', collection: scopeCollection }
+    : {
       func: 'SELECT', source: baseCollection, type: 'card', property: 'reserveCategoryId', relation: '==', value: categoryId, collection: scopeCollection,
-    });
-  }
-  steps.push(
+    };
+
+  return routineSteps(
+    selectScope,
     { func: 'COUNT', collection: scopeCollection, variable: `${prefix}Total` },
     { func: 'SELECT', source: scopeCollection, type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: selectedCollection },
     { func: 'COUNT', collection: selectedCollection, variable: `${prefix}SelectedCount` },
@@ -117,7 +117,6 @@ function categorySummaryBranch(
       value: `当前分类：${label}\n总数：\${${prefix}Total}\n${selectedWord}：\${${prefix}SelectedCount}　${unselectedWord}：\${${prefix}UnselectedCount}`,
     },
   );
-  return steps;
 }
 
 function nestedCategoryIf(
@@ -126,21 +125,26 @@ function nestedCategoryIf(
   index = 0,
 ): RoutineStep {
   const category = categories[index];
+  if (!category) throw new Error(`Missing ${libraryType} category at index ${index}`);
   const isAll = category.id === 'gen-all' || category.id === 'extra-all';
+  const elseRoutine = index + 1 < categories.length
+    ? routineSteps(nestedCategoryIf(categories, libraryType, index + 1))
+    : undefined;
   return {
     func: 'IF',
     operand1: '${PROPERTY activeCategoryId OF reserve-panel-controller}',
     relation: '==',
     operand2: category.id,
     thenRoutine: categorySummaryBranch(libraryType, category.id, category.label, isAll),
-    ...(index + 1 < categories.length ? { elseRoutine: [nestedCategoryIf(categories, libraryType, index + 1)] } : {}),
+    ...(elseRoutine ? { elseRoutine } : {}),
   };
 }
 
 export function createUpdateReserveSummaryRoutine(model: ReserveModel): RoutineStep[] {
   const generalCategories = model.categories.filter(category => category.libraryType === 'general');
   const extraCategories = model.categories.filter(category => category.libraryType === 'extra');
-  return [
+  if (!generalCategories.length || !extraCategories.length) throw new Error('Reserve summary requires both library types');
+  return routineSteps(
     { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'general', collection: 'reserveGeneralCards' },
     { func: 'COUNT', collection: 'reserveGeneralCards', variable: 'reserveGeneralTotal' },
     { func: 'SELECT', source: 'reserveGeneralCards', type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: 'reserveGeneralSelected' },
@@ -166,33 +170,31 @@ export function createUpdateReserveSummaryRoutine(model: ReserveModel): RoutineS
       operand1: '${PROPERTY activeTab OF reserve-panel-controller}',
       relation: '==',
       operand2: 'general',
-      thenRoutine: [nestedCategoryIf(generalCategories, 'general')],
-      elseRoutine: [nestedCategoryIf(extraCategories, 'extra')],
+      thenRoutine: routineSteps(nestedCategoryIf(generalCategories, 'general')),
+      elseRoutine: routineSteps(nestedCategoryIf(extraCategories, 'extra')),
     },
-  ];
+  );
 }
 
 function scopeSteps(libraryType: ReserveLibraryType, categoryId: string, scopeName: string): RoutineStep[] {
   const allId = libraryType === 'general' ? 'gen-all' : 'extra-all';
   const baseName = `${scopeName}Base`;
-  const steps: RoutineStep[] = [{
-    func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: libraryType, collection: baseName,
-  }];
-  if (categoryId === allId) {
-    steps.push({ func: 'SELECT', source: baseName, type: 'card', collection: scopeName });
-  } else {
-    steps.push({ func: 'SELECT', source: baseName, type: 'card', property: 'reserveCategoryId', relation: '==', value: categoryId, collection: scopeName });
-  }
-  return steps;
+  const selectScope: RoutineStep = categoryId === allId
+    ? { func: 'SELECT', source: baseName, type: 'card', collection: scopeName }
+    : { func: 'SELECT', source: baseName, type: 'card', property: 'reserveCategoryId', relation: '==', value: categoryId, collection: scopeName };
+  return routineSteps(
+    { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: libraryType, collection: baseName },
+    selectScope,
+  );
 }
 
 type BatchMode = 'select' | 'unselect' | 'invert';
 
 function batchBranch(libraryType: ReserveLibraryType, categoryId: string, mode: BatchMode): RoutineStep[] {
   const scopeName = 'reserveCurrentScope';
-  const steps = scopeSteps(libraryType, categoryId, scopeName);
-  if (mode === 'invert') {
-    steps.push(
+  const prefix = scopeSteps(libraryType, categoryId, scopeName);
+  const operation = mode === 'invert'
+    ? routineSteps(
       { func: 'SELECT', source: scopeName, type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: 'reserveCurrentSelected' },
       { func: 'SELECT', source: scopeName, type: 'card', property: 'reserveSelected', relation: '==', value: false, collection: 'reserveCurrentUnselected' },
       { func: 'SET', collection: 'reserveCurrentSelected', property: 'reserveSelected', value: false },
@@ -201,17 +203,16 @@ function batchBranch(libraryType: ReserveLibraryType, categoryId: string, mode: 
       { func: 'SET', collection: 'reserveCurrentUnselected', property: 'reserveSelected', value: true },
       { func: 'SET', collection: 'reserveCurrentUnselected', property: 'reserveVisualState', value: 'selected' },
       { func: 'SET', collection: 'reserveCurrentUnselected', property: 'css', value: selectedCss(libraryType) },
-    );
-  } else {
-    const value = mode === 'select';
-    steps.push(
-      { func: 'SET', collection: scopeName, property: 'reserveSelected', value },
-      { func: 'SET', collection: scopeName, property: 'reserveVisualState', value: value ? 'selected' : 'unselected' },
-      { func: 'SET', collection: scopeName, property: 'css', value: value ? selectedCss(libraryType) : unselectedCss(libraryType) },
-    );
-  }
-  steps.push({ func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' });
-  return steps;
+    )
+    : (() => {
+      const value = mode === 'select';
+      return routineSteps(
+        { func: 'SET', collection: scopeName, property: 'reserveSelected', value },
+        { func: 'SET', collection: scopeName, property: 'reserveVisualState', value: value ? 'selected' : 'unselected' },
+        { func: 'SET', collection: scopeName, property: 'css', value: value ? selectedCss(libraryType) : unselectedCss(libraryType) },
+      );
+    })();
+  return [...prefix, ...operation, ...routineSteps({ func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' })];
 }
 
 function nestedBatchIf(
@@ -221,13 +222,17 @@ function nestedBatchIf(
   index = 0,
 ): RoutineStep {
   const category = categories[index];
+  if (!category) throw new Error(`Missing ${libraryType} batch category at index ${index}`);
+  const elseRoutine = index + 1 < categories.length
+    ? routineSteps(nestedBatchIf(categories, libraryType, mode, index + 1))
+    : undefined;
   return {
     func: 'IF',
     operand1: '${PROPERTY activeCategoryId OF reserve-panel-controller}',
     relation: '==',
     operand2: category.id,
     thenRoutine: batchBranch(libraryType, category.id, mode),
-    ...(index + 1 < categories.length ? { elseRoutine: [nestedBatchIf(categories, libraryType, mode, index + 1)] } : {}),
+    ...(elseRoutine ? { elseRoutine } : {}),
   };
 }
 
@@ -237,5 +242,6 @@ export function createCurrentScopeBatchRoutine(
   mode: BatchMode,
 ): RoutineStep[] {
   const categories = model.categories.filter(category => category.libraryType === libraryType);
-  return hostOnlyRoutine([nestedBatchIf(categories, libraryType, mode)]);
+  if (!categories.length) throw new Error(`No reserve categories for ${libraryType}`);
+  return hostOnlyRoutine(routineSteps(nestedBatchIf(categories, libraryType, mode)));
 }
