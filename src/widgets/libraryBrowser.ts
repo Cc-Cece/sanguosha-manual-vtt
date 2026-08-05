@@ -1,6 +1,6 @@
 import type { Widget } from '../types/vtt.js';
 import { importToReserveTrayRoutine } from '../routines/deckAssembly.js';
-import { allowAllGeneralsRoutine, banAllGeneralsRoutine, resetReserveDraftRoutine, selectAllExtrasRoutine, unselectAllExtrasRoutine } from '../routines/reserveRoutines.js';
+import { allowAllGeneralsRoutine, banAllGeneralsRoutine, nextPageRoutine, prevPageRoutine, resetReserveDraftRoutine, selectAllExtrasRoutine, selectExtrasTabRoutine, selectGeneralsTabRoutine, switchGenAllRoutine, switchGenExpRoutine, switchGenStdRoutine, unselectAllExtrasRoutine } from '../routines/reserveRoutines.js';
 import { toggleLibraryTrayRoutine } from '../routines/tableActions.js';
 import { label, widget } from './factory.js';
 import { spreadRowZone } from './reserveSpreadRow.js';
@@ -18,9 +18,9 @@ export function createLibraryTableWidgets(): Widget[] {
     label('library-toolbar-title', '📦 全套备牌工作台 ｜ 315位武将与附加扩展牌编组管理', 20, 18, 420, parent, { display: false, layer: 101 }),
 
     widget('main-tab-generals', 'button', { parent, x: 450, y: 14, width: 140, height: 36, text: '🎴 武将牌 (315)', display: false, layer: 101,
-      color: '#26483b', css: { fontSize: '13px', color: '#fff', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #6b9e84' } }),
+      color: '#26483b', css: { fontSize: '13px', color: '#fff', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #6b9e84' }, clickRoutine: selectGeneralsTabRoutine }),
     widget('main-tab-extras', 'button', { parent, x: 600, y: 14, width: 140, height: 36, text: '🗡️ 附加牌 (31)', display: false, layer: 101,
-      color: '#1a3038', css: { fontSize: '13px', color: '#80d0ff', borderRadius: '6px', border: '1px solid #488098' } }),
+      color: '#1a3038', css: { fontSize: '13px', color: '#80d0ff', borderRadius: '6px', border: '1px solid #488098' }, clickRoutine: selectExtrasTabRoutine }),
 
     widget('import-to-reserve-tray-btn', 'button', { parent, x: 980, y: 14, width: 180, height: 36, text: '🚀 确认备牌并导入托盘', display: false, layer: 101,
       color: '#2b5746', css: { fontSize: '13px', color: '#fff', fontWeight: 'bold', borderRadius: '6px', border: '1px solid #789b83' }, clickRoutine: importToReserveTrayRoutine }),
@@ -33,23 +33,23 @@ export function createLibraryTableWidgets(): Widget[] {
     label('nav-sidebar-title', '📂 扩展包分类导航', 16, 70, 182, parent, { display: false, layer: 101 }),
 
     widget('nav-gen-all', 'button', { parent, x: 18, y: 100, width: 178, height: 32, text: '全部武将 (315)', display: false, layer: 101,
-      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '5px' } }),
+      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '5px' }, clickRoutine: switchGenAllRoutine }),
     widget('nav-gen-std', 'button', { parent, x: 18, y: 138, width: 178, height: 32, text: '标准包 (25)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenStdRoutine }),
     widget('nav-gen-feng', 'button', { parent, x: 18, y: 176, width: 178, height: 32, text: '风包 (8)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-huo', 'button', { parent, x: 18, y: 214, width: 178, height: 32, text: '火包 (8)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-lin', 'button', { parent, x: 18, y: 252, width: 178, height: 32, text: '林包 (8)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-shan', 'button', { parent, x: 18, y: 290, width: 178, height: 32, text: '山包 (8)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-yijiang', 'button', { parent, x: 18, y: 328, width: 178, height: 32, text: '一将成名 (11)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-sp', 'button', { parent, x: 18, y: 366, width: 178, height: 32, text: 'SP 武将包 (15)', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
     widget('nav-gen-other', 'button', { parent, x: 18, y: 404, width: 178, height: 32, text: '其他扩展武将', display: false, layer: 101,
-      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' } }),
+      color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
 
     // 4. 中间手牌式部分重叠牌带浏览视口 (Middle Overlapping Browsing Viewport)
     label('general-library-title', '🎴 标准武将包 (25张 ｜ 手牌式重叠平铺，点击切换 [允许 / Ban])', 210, 65, 980, parent, { display: false, layer: 101 }),
@@ -92,9 +92,9 @@ export function createLibraryTableWidgets(): Widget[] {
       color: '#382c1e', css: { fontSize: '12px', color: '#ffe0a0', borderRadius: '6px' }, clickRoutine: unselectAllExtrasRoutine }),
 
     widget('prev-page-btn', 'button', { parent, x: 1200, y: 1027, width: 90, height: 36, text: '◄ 上一页', display: false, layer: 101,
-      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '6px' } }),
+      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '6px' }, clickRoutine: prevPageRoutine }),
     label('page-indicator', '1 / 1', 1295, 1033, 80, parent, { display: false, layer: 101 }),
     widget('next-page-btn', 'button', { parent, x: 1380, y: 1027, width: 90, height: 36, text: '下一页 ►', display: false, layer: 101,
-      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '6px' } }),
+      color: '#243b32', css: { fontSize: '12px', color: '#fff', borderRadius: '6px' }, clickRoutine: nextPageRoutine }),
   ];
 }

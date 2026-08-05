@@ -19,7 +19,8 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
   const backAssetUri = catalog.backs?.[definition.backKey];
   const backTemplate = backAssetUri ? imageCardBack(backAssetUri) : cardBack(definition.fallback);
 
-  const deck = widget(definition.deck, 'deck', { parent: definition.holder,
+  const deckParent = (category === 'generals' || category === 'gameplay-extra') ? 'table-controller' : definition.holder;
+  const deck = widget(definition.deck, 'deck', { parent: deckParent,
     cardDefaults: { width: 90, height: 126, enlarge: definition.enlarge },
     faceTemplates: [backTemplate, assetCardFace()], cardTypes });
   const cards = assets.map(asset => {
