@@ -1,3 +1,5 @@
+import { dialogText, dialogTitle } from './inputDialog.js';
+
 const MAX_PLAYER_COUNT = 12;
 
 export const privateZoneIds = Array.from(
@@ -108,18 +110,12 @@ const createConfirmPrivateIdentityPeekRoutine = (number: number) => [
     func: 'INPUT',
     header: '查看身份牌？',
     fields: [
-      {
-        type: 'text',
-        label: '当前可见区域',
-        value: `玩家 ${number} 的私密展示区`,
-      },
-      {
-        type: 'text',
-        label: '确认结果',
-        value: `确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`,
-      },
+      dialogTitle(`当前区域：玩家 ${number} 的私密展示区`),
+      dialogText(`确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`),
     ],
     block: true,
+    confirmButtonText: '确认查看',
+    cancelButtonText: '取消',
   },
   ...createOpenPrivatePeekRoutine(number),
 ] as const;
