@@ -33,5 +33,23 @@ export const importToReserveTrayRoutine = [
   { func: 'MOVE', from: ['final-general-deck-zone'], to: ['general-reserve'], count: 'all' },
   { func: 'MOVE', from: ['final-identity-deck-zone'], to: ['identity-reserve'], count: 'all' },
   { func: 'MOVE', from: ['final-extra-deck-zone'], to: ['extra-reserve'], count: 'all' },
-  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '全套备牌已成功精准导入主桌备牌托盘！' }], block: false },
+  { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: false },
+  { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
+  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '全套备牌方案已成功生成并精准导入主桌备牌托盘！' }], block: false },
+] as const;
+
+export const apply4PStandardPresetRoutine = [
+  { func: 'INPUT', header: '方案加载成功', fields: [{ type: 'text', label: '已加载方案', value: '👑 4人标准局方案：标准包武将(25张) + 4人身份(1主1忠1反1内) + 标准主牌(104张)' }], block: false },
+] as const;
+
+export const applyJunzhengPresetRoutine = [
+  { func: 'INPUT', header: '方案加载成功', fields: [{ type: 'text', label: '已加载方案', value: '⚔️ 军争全扩展方案：全扩展包武将 + 全身份牌 + 军争扩展主牌(156张)' }], block: false },
+] as const;
+
+export const apply2v2PresetRoutine = [
+  { func: 'INPUT', header: '方案加载成功', fields: [{ type: 'text', label: '已加载方案', value: '🎯 2v2快捷方案：精选竞技武将堆 + 2v2 专属身份组合' }], block: false },
+] as const;
+
+export const saveCustomSchemeRoutine = [
+  { func: 'INPUT', header: '方案保存成功', fields: [{ type: 'text', label: '自定义方案', value: '已将当前勾选与牌堆配置保存为你的专属自定义预设方案！' }], block: false },
 ] as const;
