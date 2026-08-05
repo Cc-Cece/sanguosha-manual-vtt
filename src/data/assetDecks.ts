@@ -63,6 +63,7 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
         reservePageId: reserveMeta.homePageId,
         reserveHomeIndex: reserveMeta.homeIndex,
         reserveState: 'draft',
+        reservePendingRemoval: false,
         reserveVisualState: 'selected',
         css: selectedCss(reserveMeta.libraryType),
         clickRoutine: createToggleReserveCardRoutine(reserveMeta.libraryType),
