@@ -40,4 +40,25 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     const handZone = widgets.find(w => w.id === 'personal-hand');
     expect(handZone?.text).toContain('🖐️');
   });
+
+  it('contains quick-shuffle-zone and renames marker reserve to health deck', () => {
+    const game = createFourPlayerPrototype(loadTestCatalog());
+    const widgets = widgetsOf(game);
+
+    const shuffleZone = widgets.find(w => w.id === 'quick-shuffle-zone');
+    expect(shuffleZone).toBeDefined();
+    expect(shuffleZone?.text).toContain('快捷洗牌区');
+
+    const shuffleBtn = widgets.find(w => w.id === 'quick-shuffle-btn');
+    expect(shuffleBtn).toBeDefined();
+    expect(shuffleBtn?.clickRoutine).toEqual([{ func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' }]);
+
+    const markerReserve = widgets.find(w => w.id === 'marker-reserve');
+    expect(markerReserve?.text).toBe('血量');
+
+    const markerDeck = widgets.find(w => w.id === 'marker-deck');
+    expect(markerDeck).toBeDefined();
+    expect(JSON.stringify(markerDeck)).toContain('血量牌');
+  });
 });
+

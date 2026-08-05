@@ -5,6 +5,11 @@ export const collectAndShuffleRoutine = [
   { func: 'SHUFFLE', holder: ['draw-pile'], mode: 'true random' },
 ] as const;
 
+export const quickShuffleRoutine = [
+  { func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' },
+] as const;
+
+
 export const lockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: false }] as const;
 export const unlockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: true }] as const;
 

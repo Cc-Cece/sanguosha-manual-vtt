@@ -7,7 +7,7 @@ const definitions: Record<AssetCategory, { deck: string; holder: string; back: s
   'gameplay-extra': { deck: 'extra-deck', holder: 'extra-reserve', back: '扩展牌', enlarge: 2.35 },
   generals: { deck: 'general-deck', holder: 'general-reserve', back: '武将牌', enlarge: 2.5 },
   identities: { deck: 'identity-deck', holder: 'identity-reserve', back: '身份牌', enlarge: 2.5 },
-  'markers-and-reference': { deck: 'marker-deck', holder: 'marker-reserve', back: '标记', enlarge: 2.2 },
+  'markers-and-reference': { deck: 'marker-deck', holder: 'marker-reserve', back: '血量牌', enlarge: 2.2 },
 };
 
 function buildDeck(category: AssetCategory, assets: CardAsset[]): Widget[] {

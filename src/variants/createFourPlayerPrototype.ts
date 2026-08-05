@@ -1,7 +1,7 @@
 import { createAssetDecks } from '../data/assetDecks.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
-import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, resetTableRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
+import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
 import { freeZone, handZone, label, pileZone, widget } from '../widgets/factory.js';
@@ -25,6 +25,8 @@ function tableWidgets(): Widget[] {
     widget('collect-shuffle', 'button', { parent: 'host-toolbar', x: 559, y: 9, width: 110, height: 36, text: '🔀 收拢洗牌', clickRoutine: collectAndShuffleRoutine }),
     widget('clear-seats', 'button', { parent: 'host-toolbar', x: 675, y: 9, width: 100, height: 36, text: '👤 重置座位', clickRoutine: clearAllSeatsRoutine }),
     widget('reset-table', 'button', { parent: 'host-toolbar', x: 781, y: 9, width: 105, height: 36, text: '🔄 整桌重置', color: '#74322b', clickRoutine: resetTableRoutine }),
+    freeZone('quick-shuffle-zone', '🔀 快捷洗牌区', 575, 408, 135, 182),
+    widget('quick-shuffle-btn', 'button', { x: 585, y: 550, width: 115, height: 32, text: '🔀 一键洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, clickRoutine: quickShuffleRoutine }),
     pileZone('draw-pile', '🎴 摸牌堆', 735, 430),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
@@ -41,7 +43,7 @@ function reserveWidgets(): Widget[] {
     pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray'),
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray'),
     pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray'),
-    pileZone('marker-reserve', '标记／参考', 384, 42, 118, 145, 'reserve-tray'),
+    pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray'),
   ];
 }
 
