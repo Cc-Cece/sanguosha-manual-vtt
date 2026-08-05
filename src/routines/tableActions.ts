@@ -1,4 +1,3 @@
-import { cancelAllBlindSelectionsRoutine } from './blindSelection.js';
 import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 
 const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
@@ -27,11 +26,11 @@ export const arrangeLayoutRoutine = [
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
-  ...cancelAllBlindSelectionsRoutine,
   ...resetAllPrivatePeeksRoutine,
   { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
-  { func: 'FLIP', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], face: 0 },
-  { func: 'SHUFFLE', holder: ['draw-pile', 'general-reserve', 'identity-reserve'], mode: 'true random' },
+  { func: 'CALL', widget: 'reserve-panel-controller', routine: 'fullTableResetRoutine' },
+  { func: 'FLIP', holder: ['draw-pile', 'identity-reserve', 'marker-reserve'], face: 0 },
+  { func: 'SHUFFLE', holder: ['draw-pile', 'identity-reserve'], mode: 'true random' },
   ...arrangeLayoutRoutine,
 ] as const;
 
@@ -66,67 +65,14 @@ export const toggleHostToolbarRoutine = [
   },
 ] as const;
 
-const DECKBUILDING_FRAME_IDS = [
-  'reserve-prep-drawer',
-  'library-toolbar',
-  'library-toolbar-title',
-  'main-tab-generals',
-  'main-tab-extras',
-  'import-to-reserve-tray-btn',
-  'close-library-tray-btn',
-  'nav-sidebar',
-  'nav-sidebar-title',
-  'nav-gen-all',
-  'nav-gen-std',
-  'nav-gen-feng',
-  'nav-gen-huo',
-  'nav-gen-lin',
-  'nav-gen-shan',
-  'nav-gen-yijiang',
-  'nav-gen-sp',
-  'nav-gen-other',
-  'general-library-title',
-  'summary-sidebar',
-  'summary-sidebar-title',
-  'summary-generals-box',
-  'summary-extras-box',
-  'reset-draft-btn',
-  'action-bar',
-  'bulk-allow-all-btn',
-  'bulk-ban-all-btn',
-  'bulk-select-extras-btn',
-  'bulk-unselect-extras-btn',
-  'prev-page-btn',
-  'page-indicator',
-  'next-page-btn',
-];
-
-const DECKBUILDING_PAGE_IDS = [
-  'gen-page-1',
-  'gen-page-2',
-  'gen-page-3',
-  'gen-page-4',
-  'gen-page-5',
-  'extra-composer-title',
-  'extra-card-composer-zone',
-];
-
 export const toggleLibraryTrayRoutine = [
   {
     func: 'IF',
     operand1: '${PROPERTY display OF reserve-prep-drawer}',
     relation: '==',
     operand2: true,
-    thenRoutine: [
-      { func: 'SET', collection: [...DECKBUILDING_FRAME_IDS, ...DECKBUILDING_PAGE_IDS], property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
-    ],
-    elseRoutine: [
-      { func: 'SET', collection: DECKBUILDING_FRAME_IDS, property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-1'], property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-2', 'gen-page-3', 'gen-page-4', 'gen-page-5', 'extra-composer-title', 'extra-card-composer-zone'], property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
-    ],
+    thenRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'closePanelRoutine' }],
+    elseRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'openPanelRoutine' }],
   },
 ] as const;
 

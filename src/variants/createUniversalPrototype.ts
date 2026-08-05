@@ -1,5 +1,6 @@
 import { seatIds } from '../config/playerCapacity.js';
 import { createAssetDecks } from '../data/assetDecks.js';
+import { buildReserveModel } from '../data/reserveViewRegistry.js';
 import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
@@ -9,7 +10,6 @@ import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
-import { createBlindSelectionWidgets } from '../widgets/blindSelectionTable.js';
 import { createCandidateWidgets } from '../widgets/candidateZone.js';
 import { freeZone, handZone, label, pileZone, widget } from '../widgets/factory.js';
 import { createIdentityComposerWidgets } from '../widgets/identityComposer.js';
@@ -44,23 +44,12 @@ function tableWidgets(): Widget[] {
     widget('shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleDrawPileRoutine }),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
-  ].map(item => item.id === 'personal-hand' ? {
-    ...item,
-    onlyVisibleForSeat: allSeats,
-    linkedToSeat: allSeats,
-    onEnter: {
-      blindSourceSeat: null,
-      blindSourcePlayer: null,
-      blindSelected: false,
-      clickable: true,
-      movable: true,
-    },
+  ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
     enterRoutine: [
       ...handZoneFlipFaceUpRoutine,
       { func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }
     ],
-    leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }]
-  } : item);
+    leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] } : item);
 }
 
 function reserveWidgets(): Widget[] {
@@ -81,15 +70,15 @@ function reserveWidgets(): Widget[] {
 }
 
 export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
+  const reserveModel = buildReserveModel(catalog);
   const widgets = [
     ...tableWidgets(),
     ...createPlayerManagementWidgets(),
     ...reserveWidgets(),
-    ...createBlindSelectionWidgets(catalog.backs.main),
     ...Array.from({ length: 12 }, (_, i) => createPlayerModule(i)).flat(),
-    ...createAssetDecks(catalog),
+    ...createLibraryTableWidgets(reserveModel),
+    ...createAssetDecks(catalog, reserveModel),
     ...createHealthDeck(),
-    ...createLibraryTableWidgets(),
     ...createCandidateWidgets(),
     ...createIdentityComposerWidgets(),
   ];
@@ -109,7 +98,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         language: 'zh-CN',
         attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
         ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
-        helpText: '目标玩家可从自己的模块展开真实手牌到共享暗牌选择台，用于顺手牵羊、过河拆桥等人工暗选；所有临时牌始终使用约定手牌背面。',
+        helpText: '房主从顶部工具栏打开牌库编组，按真实分类浏览并点击切换允许或 Ban；确认后仅将选中的武将和扩展牌导入备牌托盘。',
         variant: '4-12 人通用人工桌面',
         bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms',
         image: '/i/game-icons.net/delapouite/round-table.svg',

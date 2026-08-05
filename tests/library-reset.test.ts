@@ -1,20 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { clearCandidatesRoutine, resetDeckbuildingTableRoutine } from '../src/routines/libraryReset.js';
 
-describe('library reset routines', () => {
-  it('validates clearCandidatesRoutine recalls candidate and excluded zones to general-reserve', () => {
-    const serialized = JSON.stringify(clearCandidatesRoutine);
-    expect(serialized).toContain('general-candidate-zone');
-    expect(serialized).toContain('general-excluded-zone');
-    expect(serialized).toContain('general-staging-zone');
-    expect(serialized).toContain('general-reserve');
+describe('reserve reset compatibility routines', () => {
+  it('delegates reset to the reserve panel controller', () => {
+    expect(JSON.stringify(clearCandidatesRoutine)).toContain('fullTableResetRoutine');
+    expect(JSON.stringify(resetDeckbuildingTableRoutine)).toContain('fullTableResetRoutine');
   });
 
-  it('validates resetDeckbuildingTableRoutine confirms and recalls deckbuilding zones to reserve holders', () => {
-    const serialized = JSON.stringify(resetDeckbuildingTableRoutine);
-    expect(serialized).toContain('重置编组桌？');
-    expect(serialized).toContain('general-reserve');
-    expect(serialized).toContain('identity-reserve');
-    expect(serialized).toContain('final-general-deck-zone');
+  it('does not reference removed candidate and final-deck holders', () => {
+    const serialized = JSON.stringify([clearCandidatesRoutine, resetDeckbuildingTableRoutine]);
+    expect(serialized).not.toContain('general-candidate-zone');
+    expect(serialized).not.toContain('final-general-deck-zone');
+    expect(serialized).not.toContain('final-identity-deck-zone');
   });
 });

@@ -1,5 +1,4 @@
 import { PLAYER_MODULE_STAGING_POSITIONS } from '../layouts/playerModuleStaging.js';
-import { createOpenBlindSelectionRoutine } from '../routines/blindSelection.js';
 import {
   createPrivatePeekClickRoutine,
   createPrivatePeekEnterRoutine,
@@ -16,6 +15,7 @@ export function createPlayerModule(index: number): Widget[] {
   const playerLabelId = `player-label-${n}`;
   const privateId = `private-zone-${n}`;
   const privatePeekButtonId = `toggle-perspective-${n}`;
+  const blindId = `blind-zone-${n}`;
   const bounds = PLAYER_MODULE_STAGING_POSITIONS[n] || { x: 685, y: 90, width: 430, height: 260 };
   const initialDisplay = n <= 4;
 
@@ -35,7 +35,6 @@ export function createPlayerModule(index: number): Widget[] {
       width: 75,
       height: 32,
       index,
-      hand: 'personal-hand',
       displayEmpty: '＋ 入座',
       display: 'playerName',
       tableNickname: '',
@@ -119,19 +118,59 @@ export function createPlayerModule(index: number): Widget[] {
       color: '#0000',
       css: { border: '1px solid #c6a0c7', borderRadius: '7px' },
     }),
-    widget(`open-blind-selection-${n}`, 'button', {
+    widget(`show-blind-${n}`, 'button', {
       parent: moduleId,
       x: 305,
       y: 198,
-      width: 111,
+      width: 54,
       height: 18,
-      text: '🂠 暗选手牌',
-      movable: false,
-      color: '#2b3d3a',
-      css: { fontSize: '10px', color: '#d8e6df', borderRadius: '5px', border: '1px solid #617d72' },
+      text: '盲选',
+      css: { fontSize: '10px' },
       onlyVisibleForSeat: [seatId],
       linkedToSeat: [seatId],
-      clickRoutine: createOpenBlindSelectionRoutine(n),
+      clickRoutine: [{ func: 'SET', collection: [blindId], property: 'display', value: true }],
     }),
+    widget(`hide-blind-${n}`, 'button', {
+      parent: moduleId,
+      x: 362,
+      y: 198,
+      width: 54,
+      height: 18,
+      text: '收起',
+      css: { fontSize: '10px' },
+      onlyVisibleForSeat: [seatId],
+      linkedToSeat: [seatId],
+      clickRoutine: [{ func: 'SET', collection: [blindId], property: 'display', value: false }],
+    }),
+    widget(blindId, 'holder', {
+      x: 630 + (index % 4) * 25,
+      y: 335 + (index % 4) * 18,
+      width: 540,
+      height: 150,
+      display: false,
+      text: `玩家 ${n} 手牌背面盲选（由本人摆放等量代理）`,
+      alignChildren: true,
+      preventPiles: true,
+      stackOffsetX: 45,
+      stackOffsetY: 0,
+      color: '#28333be8',
+      textColor: '#e0e8ed',
+      css: { border: '2px dashed #9bb0bd', borderRadius: '9px' },
+    }),
+    ...Array.from({ length: 10 }, (_, proxy) =>
+      widget(`blind-proxy-${n}-${proxy + 1}`, 'basic', {
+        parent: blindId,
+        width: 72,
+        height: 101,
+        movable: true,
+        enlarge: 4,
+        faces: [
+          {
+            objects: [{ type: 'text', x: 4, y: 40, width: 64, height: 20, value: '牌背', color: '#e6c980', fontSize: 14, textAlign: 'center' }],
+            css: { background: 'radial-gradient(circle,#713027,#301010)', border: '3px double #c39b54', borderRadius: '6px' },
+          },
+        ],
+      }),
+    ),
   ];
 }

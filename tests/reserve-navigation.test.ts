@@ -1,25 +1,38 @@
 import { describe, expect, it } from 'vitest';
-import { selectExtrasTabRoutine, selectGeneralsTabRoutine, switchGenAllRoutine, switchGenStdRoutine } from '../src/routines/reserveRoutines.js';
+import { buildReserveModel } from '../src/data/reserveViewRegistry.js';
+import { createPageNavigationRoutine, createSwitchViewRoutine } from '../src/routines/reserveNavigation.js';
 import { toggleLibraryTrayRoutine } from '../src/routines/tableActions.js';
+import { loadTestCatalog } from './helpers.js';
 
-describe('reserve panel navigation and page display routines', () => {
-  it('validates toggleLibraryTrayRoutine displays ONLY gen-page-1 when opening drawer', () => {
-    const elseRoutine = toggleLibraryTrayRoutine[0].elseRoutine;
-    const routineJson = JSON.stringify(elseRoutine);
+describe('reserve panel navigation', () => {
+  const model = buildReserveModel(loadTestCatalog());
 
-    expect(routineJson).toContain('gen-page-1');
-    const setGenPage1 = elseRoutine.find(step => step.func === 'SET' && (step.collection as readonly string[])?.includes('gen-page-1') && step.value === true);
-    expect(setGenPage1).toBeDefined();
-
-    const setGenPage2False = elseRoutine.find(step => step.func === 'SET' && (step.collection as readonly string[])?.includes('gen-page-2') && step.value === false);
-    expect(setGenPage2False).toBeDefined();
+  it('opens and closes through the reserve controller rather than hard-coded pages', () => {
+    const serialized = JSON.stringify(toggleLibraryTrayRoutine);
+    expect(serialized).toContain('openPanelRoutine');
+    expect(serialized).toContain('closePanelRoutine');
+    expect(serialized).not.toContain('gen-page-1');
   });
 
-  it('ensures tab and sub-category switching routines do NOT contain INPUT popups', () => {
-    const routines = [selectGeneralsTabRoutine, selectExtrasTabRoutine, switchGenAllRoutine, switchGenStdRoutine];
-    for (const routine of routines) {
-      const routineJson = JSON.stringify(routine);
-      expect(routineJson).not.toContain('"func":"INPUT"');
+  it('gives each real category a distinct page mapping', () => {
+    const wind = JSON.stringify(createSwitchViewRoutine(model, 'general:gen-feng'));
+    const fire = JSON.stringify(createSwitchViewRoutine(model, 'general:gen-huo'));
+    expect(wind).toContain('gen-feng-page-1');
+    expect(fire).toContain('gen-huo-page-1');
+    expect(wind).not.toEqual(fire);
+    expect(wind).not.toContain('"func":"INPUT","header":"方案');
+  });
+
+  it('generates boundary-aware navigation for every real page', () => {
+    const next = JSON.stringify(createPageNavigationRoutine(model, 'next'));
+    const prev = JSON.stringify(createPageNavigationRoutine(model, 'prev'));
+    const multiPageIds = model.views
+      .filter(view => view.pageIds.length > 1)
+      .flatMap(view => view.pageIds);
+    for (const pageId of multiPageIds) {
+      expect(next + prev).toContain(pageId);
     }
+    expect(next).toContain('currentPage');
+    expect(next).toContain('activeViewKey');
   });
 });

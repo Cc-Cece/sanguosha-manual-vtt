@@ -1,7 +1,6 @@
 import type { Widget } from '../types/vtt.js';
-import { assembleExtraDeckRoutine, assembleIdentityDeckRoutine, sendIdentitiesToMainTableRoutine } from '../routines/deckAssembly.js';
-import { freeZone, label, pileZone, widget } from './factory.js';
 
+/** Identity cards remain in the reserve tray and are manually selected by players. */
 export function createIdentityComposerWidgets(): Widget[] {
   return [];
 }
