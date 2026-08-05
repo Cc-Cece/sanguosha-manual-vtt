@@ -9,7 +9,9 @@ describe('deckbuilding assembly and cross-table routines', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
-    expect(widgets.find(w => w.id === 'general-candidate-zone')).toBeDefined();
+    const candidateZone = widgets.find(w => w.id === 'general-candidate-zone');
+    expect(candidateZone).toBeDefined();
+    expect(candidateZone?.display).toBe(false);
     expect(widgets.find(w => w.id === 'final-general-deck-zone')).toBeDefined();
     expect(widgets.find(w => w.id === 'assemble-generals-btn')).toBeDefined();
     expect(widgets.find(w => w.id === 'send-generals-btn')).toBeDefined();

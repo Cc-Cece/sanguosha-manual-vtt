@@ -4,23 +4,23 @@ export function widget(id: string, type: Widget['type'], properties: Omit<Widget
   return { id, type, ...properties };
 }
 
-export function label(id: string, text: string, x: number, y: number, width: number, parent?: string): Widget {
+export function label(id: string, text: string, x: number, y: number, width: number, parent?: string, extraProperties?: Partial<Widget>): Widget {
   return widget(id, 'label', { text, x, y, width, height: 24, ...(parent ? { parent } : {}), movable: false, layer: 3,
-    css: { color: '#f3dfb3', fontSize: '15px', textAlign: 'center', fontWeight: '600', textShadow: '0 1px 2px #000' } });
+    css: { color: '#f3dfb3', fontSize: '15px', textAlign: 'center', fontWeight: '600', textShadow: '0 1px 2px #000' }, ...extraProperties });
 }
 
 const zoneBase = (text: string, x: number, y: number, width: number, height: number, parent?: string) => ({
   x, y, width, height, ...(parent ? { parent } : {}), text, movable: false, dropTarget: { type: 'card' }, textColor: '#ead9b4',
 });
 
-export function pileZone(id: string, text: string, x: number, y: number, width = 96, height = 138, parent?: string): Widget {
+export function pileZone(id: string, text: string, x: number, y: number, width = 96, height = 138, parent?: string, extraProperties?: Partial<Widget>): Widget {
   return widget(id, 'holder', { ...zoneBase(text, x, y, width, height, parent), alignChildren: true, preventPiles: false,
-    stackOffsetX: 0, stackOffsetY: 0, color: '#172a25d9', css: { border: '2px solid #b89455', borderRadius: '8px' } });
+    stackOffsetX: 0, stackOffsetY: 0, color: '#172a25d9', css: { border: '2px solid #b89455', borderRadius: '8px' }, ...extraProperties });
 }
 
-export function freeZone(id: string, text: string, x: number, y: number, width: number, height: number, parent?: string): Widget {
+export function freeZone(id: string, text: string, x: number, y: number, width: number, height: number, parent?: string, extraProperties?: Partial<Widget>): Widget {
   return widget(id, 'holder', { ...zoneBase(text, x, y, width, height, parent), alignChildren: false, preventPiles: false,
-    color: '#1e4136a8', css: { border: '2px solid #789b83', borderRadius: '8px' } });
+    color: '#1e4136a8', css: { border: '2px solid #789b83', borderRadius: '8px' }, ...extraProperties });
 }
 
 export function handZone(id: string, text: string, x: number, y: number, width: number, height: number): Widget {

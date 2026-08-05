@@ -62,6 +62,47 @@ export const toggleHostToolbarRoutine = [
   },
 ] as const;
 
+const DECKBUILDING_WIDGET_IDS = [
+  'library-table-background',
+  'library-toolbar',
+  'general-library-title',
+  'general-library-view',
+  'transition-area',
+  'transition-hint-1',
+  'transition-hint-2',
+  'candidate-title',
+  'general-candidate-zone',
+  'assemble-generals-btn',
+  'final-general-deck-zone',
+  'send-generals-btn',
+  'excluded-title',
+  'general-excluded-zone',
+  'general-staging-zone',
+  'clear-candidates-btn',
+  'identity-composer-title',
+  'identity-composer-zone',
+  'assemble-identities-btn',
+  'final-identity-deck-zone',
+  'send-identities-btn',
+];
+
+export const toggleLibraryTableRoutine = [
+  {
+    func: 'IF',
+    operand1: '${PROPERTY display OF library-table-background}',
+    relation: '==',
+    operand2: true,
+    thenRoutine: [
+      { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: false },
+      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📚 牌库编组' },
+    ],
+    elseRoutine: [
+      { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: true },
+      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起牌库' },
+    ],
+  },
+] as const;
+
 export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },

@@ -24,6 +24,10 @@ describe('host control toolbar and routines', () => {
     expect(toggleTrayBtn).toBeDefined();
     expect(toggleTrayBtn?.parent).toBe('host-toolbar-panel');
     expect(toggleTrayBtn?.clickRoutine).toEqual(toggleReserveTrayRoutine);
+
+    const toggleLibBtn = widgets.find(w => w.id === 'toggle-library-table');
+    expect(toggleLibBtn).toBeDefined();
+    expect(toggleLibBtn?.parent).toBe('host-toolbar-panel');
   });
 
   it('provides individual and batch seat clearing routines', () => {
