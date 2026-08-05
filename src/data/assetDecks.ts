@@ -4,6 +4,11 @@ import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js'
 import type { ReserveModel } from '../types/reserveLibrary.js';
 import type { Widget } from '../types/vtt.js';
 import { assetCardFace, cardBack, imageCardBack, widget } from '../widgets/factory.js';
+import {
+  RESERVE_ROW_CARD_STEP,
+  RESERVE_ROW_DROP_OFFSET_X,
+  RESERVE_ROW_DROP_OFFSET_Y,
+} from '../widgets/reserveSpreadRow.js';
 
 const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; backKey: 'generals' | 'identities' | 'main'; fallback: string; enlarge: number }> = {
   'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', backKey: 'main', fallback: '三国杀', enlarge: 4.7 },
@@ -42,12 +47,13 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
         deck: definition.deck,
         cardType: `type-${asset.sequence}`,
         parent: reserveMeta.homeRowId,
-        x: 0,
-        y: 0,
+        x: RESERVE_ROW_DROP_OFFSET_X + reserveMeta.homeIndex * RESERVE_ROW_CARD_STEP,
+        y: RESERVE_ROW_DROP_OFFSET_Y,
         z: reserveMeta.cardOrder + 1,
         activeFace: 1,
         movable: false,
         clickable: true,
+        overlap: true,
         reserveLibraryType: reserveMeta.libraryType,
         reserveCategoryId: reserveMeta.categoryId,
         reserveCategoryLabel: reserveMeta.categoryLabel,
