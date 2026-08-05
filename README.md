@@ -1,42 +1,12 @@
-# Sanguosha Manual VirtualTabletop
+# 三国杀人工 VirtualTabletop（4 人原型）
 
-An initialization scaffold for a future `.vtt` game package importable into [ArnoldSmith86/virtualtabletop](https://github.com/ArnoldSmith86/virtualtabletop). The project will use cards, characters, identity-mode terminology, and interaction ideas from [libnoname/noname](https://github.com/libnoname/noname) as reference material.
+这是从 VirtualTabletop 原生组件结构重新构建的弱规则联网桌面。当前版本只支持 4 人，用于验证 Seat 安全、私密可见性、模块布局和原生同步；不自动处理任何三国杀规则。
 
-This is deliberately not an automated rules engine. VirtualTabletop will provide rooms, synchronization, seats, private hands, cards, and tabletop state; players will discuss rules through external voice chat and manually perform and resolve actions. The backend and package must not decide whether a Sanguosha action is legal.
-
-## Status
-
-**Initialization complete; P0 has not started.** No cards, characters, identities, routines, layouts, formal `0.json`, playable package, or rules have been implemented. The expected future artifact is `dist/*.vtt`.
-
-## Read-only upstream references
-
-- `../virtualtabletop` — upstream platform and `.vtt` format reference.
-- `../noname-main` — read-only data and interaction reference.
-
-Never modify these directories or install dependencies inside them. New work belongs only in this repository.
-
-## Recommended development workflow
-
-1. Work from typed, separable sources under `src/` and keep assets under `assets/`.
-2. Keep data, layouts, widgets, routines, variants, and assets independently maintainable.
-3. Validate source and Widget ID uniqueness before packaging.
-4. Generate VirtualTabletop-compatible JSON and `.vtt` artifacts into `dist/` only through future build tooling.
-
-## Commands
-
-```text
+```powershell
 pnpm install
-pnpm validate
-pnpm test
-pnpm build
 pnpm check
 ```
 
-The current build and validation commands are initialization placeholders; `build` does not create a `.vtt` package.
+构建产物为 `dist/Sanguosha-Manual-4P-Prototype.vtt`，压缩包内只含 `0.json`。将该文件导入本地 VirtualTabletop 后，建议至少开启一个观察者窗口和两个玩家窗口验证隐私与同步。
 
-## License, sources, and current use
-
-Project code is provisionally licensed under GPL-3.0; see `LICENSE`. VirtualTabletop (`ArnoldSmith86/virtualtabletop`) and noname (`libnoname/noname`) remain upstream platform/reference projects. Any future direct code copy must preserve its source, copyright notices, and applicable license.
-
-Images, card faces, character artwork, fonts, and audio must not be presumed GPL-licensed. Their provenance and permission must be assessed and recorded separately. This project is currently intended only for non-commercial testing in private games among friends.
-
+设计说明见 [架构](docs/architecture.md)、[参考映射](docs/reference-structure-map.md) 和 [阶段计划](docs/development-plan.md)。
