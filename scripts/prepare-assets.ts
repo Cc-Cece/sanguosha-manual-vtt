@@ -6,6 +6,9 @@ const webpRepoRoot = resolve('assets', 'cards-webp');
 const outputRoot = resolve('temp', 'optimized-assets');
 const catalogPath = resolve('temp', 'asset-catalog.json');
 
+import { rm } from 'node:fs/promises';
+
+await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
 
 const repoCatalogPath = resolve(webpRepoRoot, 'catalog.json');
