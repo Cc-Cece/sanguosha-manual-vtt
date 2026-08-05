@@ -55,7 +55,11 @@ describe('table aesthetics and player module leave-seat buttons', () => {
 
     const shuffleBtn = widgets.find(w => w.id === 'quick-shuffle-btn');
     expect(shuffleBtn).toBeDefined();
-    expect(shuffleBtn?.clickRoutine).toEqual([{ func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' }]);
+    expect(shuffleBtn?.clickRoutine).toEqual([
+      { func: 'FLIP', holder: ['quick-shuffle-zone'], face: 0 },
+      { func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' },
+      { func: 'INPUT', header: '洗牌完成', fields: [{ type: 'text', label: '提示', value: '快捷洗牌区已完成随机洗牌，牌叠已自动背置。' }], block: false },
+    ]);
 
     const markerReserve = widgets.find(w => w.id === 'marker-reserve');
     expect(markerReserve?.text).toBe('血量');

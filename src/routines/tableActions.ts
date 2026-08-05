@@ -6,7 +6,9 @@ export const collectAndShuffleRoutine = [
 ] as const;
 
 export const quickShuffleRoutine = [
+  { func: 'FLIP', holder: ['quick-shuffle-zone'], face: 0 },
   { func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' },
+  { func: 'INPUT', header: '洗牌完成', fields: [{ type: 'text', label: '提示', value: '快捷洗牌区已完成随机洗牌，牌叠已自动背置。' }], block: false },
 ] as const;
 
 

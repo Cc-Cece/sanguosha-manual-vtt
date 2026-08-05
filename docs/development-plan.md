@@ -350,7 +350,7 @@ preventPiles: false
 - [x] 导出了单 Seats 及全员 Seat 的清理与重置 Routine，解决离座或断线残留问题
 - [x] 在不破坏 Seat 权限的前提下增加备牌托盘动态显隐（`toggleReserveTrayRoutine`）
 - [x] 将备牌托盘原「标记／参考」槽位及卡牌升级为真实三国杀「血量」牌组 (`health-deck`)，支持 5/4/3/2/1 勾玉与多面体力切换
-- [x] 将快捷洗牌区升级为 `pileZone` 并在 `quickShuffleRoutine` 中对齐，洗牌后自动坍缩居中**合成整整齐齐的一摞牌**
+- [x] 将快捷洗牌区升级为 `pileZone` 并在 `quickShuffleRoutine` 中对齐，洗牌后自动自动背置 (`FLIP face: 0`)，弹出 Toast 提示，并坍缩居中**合成整整齐齐的一摞牌**
 - [x] 优化私密展示区组件属性（移除 `childrenPerOwner` 拦截、提升 `layer: 2` 图层），彻底解决卡牌放进去无法鼠标拖拽拉出的问题
 - [x] 摸牌堆 (🎴)、手牌区 (🖐️)、标题栏 (👑) 与勋章卡槽完成高对比度图标与古朴暗绿漆木主题视觉美化
 - [x] 新增 `host-control.test.ts` 及 `table-aesthetics.test.ts` 自动化测试套件，并通过上游 validator 校验
