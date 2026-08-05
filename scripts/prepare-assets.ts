@@ -15,10 +15,14 @@ try {
   const catalog = JSON.parse(catalogData) as AssetCatalog;
 
   for (const asset of catalog.assets) {
-    await copyFile(resolve(webpRepoRoot, asset.optimizedFile), resolve(outputRoot, asset.optimizedFile));
+    const dest = resolve(outputRoot, asset.optimizedFile);
+    await mkdir(resolve(dest, '..'), { recursive: true });
+    await copyFile(resolve(webpRepoRoot, asset.optimizedFile), dest);
   }
   for (const back of catalog.backAssets) {
-    await copyFile(resolve(webpRepoRoot, back.optimizedFile), resolve(outputRoot, back.optimizedFile));
+    const dest = resolve(outputRoot, back.optimizedFile);
+    await mkdir(resolve(dest, '..'), { recursive: true });
+    await copyFile(resolve(webpRepoRoot, back.optimizedFile), dest);
   }
 
   await writeFile(catalogPath, JSON.stringify(catalog, null, 2));
