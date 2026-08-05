@@ -6,6 +6,7 @@ on:
     branches:
       - master
       - feature/library-and-deckbuilding-table
+      - feature/reserve-panel-functional-rebuild
 
 permissions:
   contents: read
