@@ -127,13 +127,7 @@ export function createPageNavigationRoutine(model: ReserveModel, direction: 'pre
 export function createOpenReservePanelRoutine(model: ReserveModel): RoutineStep[] {
   const initialView = findReserveView(model, 'general:gen-all');
   return [
-    {
-      func: 'IF',
-      operand1: '${PROPERTY draftState OF reserve-panel-controller}',
-      relation: '==',
-      operand2: 'confirmed',
-      thenRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'restoreReservedCardsRoutine' }],
-    },
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'restoreReservedCardsRoutine' },
     { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: true },
     { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
     ...switchViewSteps(model, initialView),
