@@ -1,5 +1,6 @@
 export type ReserveLibraryType = 'general' | 'extra';
 export type ReserveDraftState = 'editing' | 'confirmed';
+export type ReserveCardState = 'draft' | 'reserved' | 'in-use';
 
 export interface ReserveCategory {
   id: string;
