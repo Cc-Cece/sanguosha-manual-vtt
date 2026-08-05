@@ -95,6 +95,8 @@ function categorySummaryBranch(
   const baseCollection = libraryType === 'general' ? 'reserveGeneralCards' : 'reserveExtraCards';
   const selectedCollection = `${prefix}Selected`;
   const unselectedCollection = `${prefix}Unselected`;
+  const inUseCollection = `${prefix}InUse`;
+  const pendingCollection = `${prefix}Pending`;
   const scopeCollection = `${prefix}Scope`;
   const selectedWord = libraryType === 'general' ? '允许' : '已选';
   const unselectedWord = libraryType === 'general' ? 'Ban' : '未选';
@@ -111,10 +113,14 @@ function categorySummaryBranch(
     { func: 'COUNT', collection: selectedCollection, variable: `${prefix}SelectedCount` },
     { func: 'SELECT', source: scopeCollection, type: 'card', property: 'reserveSelected', relation: '==', value: false, collection: unselectedCollection },
     { func: 'COUNT', collection: unselectedCollection, variable: `${prefix}UnselectedCount` },
+    { func: 'SELECT', source: scopeCollection, type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: inUseCollection },
+    { func: 'COUNT', collection: inUseCollection, variable: `${prefix}InUseCount` },
+    { func: 'SELECT', source: scopeCollection, type: 'card', property: 'reservePendingRemoval', relation: '==', value: true, collection: pendingCollection },
+    { func: 'COUNT', collection: pendingCollection, variable: `${prefix}PendingCount` },
     {
       func: 'LABEL',
       label: ['summary-current-box'],
-      value: `当前分类：${label}\n总数：\${${prefix}Total}\n${selectedWord}：\${${prefix}SelectedCount}　${unselectedWord}：\${${prefix}UnselectedCount}`,
+      value: `当前分类：${label}\n总数：\${${prefix}Total}\n${selectedWord}：\${${prefix}SelectedCount}　${unselectedWord}：\${${prefix}UnselectedCount}\n游戏中：\${${prefix}InUseCount}　待移除：\${${prefix}PendingCount}`,
     },
   );
 }
@@ -140,6 +146,17 @@ function nestedCategoryIf(
   };
 }
 
+function stateCountSteps(base: string, prefix: string): RoutineStep[] {
+  return routineSteps(
+    { func: 'SELECT', source: base, type: 'card', property: 'reserveState', relation: '==', value: 'reserved', collection: `${prefix}Reserved` },
+    { func: 'COUNT', collection: `${prefix}Reserved`, variable: `${prefix}ReservedCount` },
+    { func: 'SELECT', source: base, type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: `${prefix}InUse` },
+    { func: 'COUNT', collection: `${prefix}InUse`, variable: `${prefix}InUseCount` },
+    { func: 'SELECT', source: base, type: 'card', property: 'reservePendingRemoval', relation: '==', value: true, collection: `${prefix}Pending` },
+    { func: 'COUNT', collection: `${prefix}Pending`, variable: `${prefix}PendingCount` },
+  );
+}
+
 export function createUpdateReserveSummaryRoutine(model: ReserveModel): RoutineStep[] {
   const generalCategories = model.categories.filter(category => category.libraryType === 'general');
   const extraCategories = model.categories.filter(category => category.libraryType === 'extra');
@@ -151,19 +168,21 @@ export function createUpdateReserveSummaryRoutine(model: ReserveModel): RoutineS
     { func: 'COUNT', collection: 'reserveGeneralSelected', variable: 'reserveGeneralSelectedCount' },
     { func: 'SELECT', source: 'reserveGeneralCards', type: 'card', property: 'reserveSelected', relation: '==', value: false, collection: 'reserveGeneralUnselected' },
     { func: 'COUNT', collection: 'reserveGeneralUnselected', variable: 'reserveGeneralUnselectedCount' },
+    ...stateCountSteps('reserveGeneralCards', 'reserveGeneral'),
     { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'extra', collection: 'reserveExtraCards' },
     { func: 'COUNT', collection: 'reserveExtraCards', variable: 'reserveExtraTotal' },
     { func: 'SELECT', source: 'reserveExtraCards', type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: 'reserveExtraSelected' },
     { func: 'COUNT', collection: 'reserveExtraSelected', variable: 'reserveExtraSelectedCount' },
     { func: 'SELECT', source: 'reserveExtraCards', type: 'card', property: 'reserveSelected', relation: '==', value: false, collection: 'reserveExtraUnselected' },
     { func: 'COUNT', collection: 'reserveExtraUnselected', variable: 'reserveExtraUnselectedCount' },
+    ...stateCountSteps('reserveExtraCards', 'reserveExtra'),
     {
       func: 'LABEL', label: ['summary-generals-box'],
-      value: '武将总数：${reserveGeneralTotal}\n允许入局：${reserveGeneralSelectedCount}\nBan 禁用：${reserveGeneralUnselectedCount}',
+      value: '武将总数：${reserveGeneralTotal}\n允许入局：${reserveGeneralSelectedCount}　Ban：${reserveGeneralUnselectedCount}\n托盘待用：${reserveGeneralReservedCount}\n游戏中：${reserveGeneralInUseCount}\n待归还后移除：${reserveGeneralPendingCount}',
     },
     {
       func: 'LABEL', label: ['summary-extras-box'],
-      value: '扩展牌总数：${reserveExtraTotal}\n已选择：${reserveExtraSelectedCount}\n未选择：${reserveExtraUnselectedCount}',
+      value: '扩展牌总数：${reserveExtraTotal}\n已选择：${reserveExtraSelectedCount}　未选：${reserveExtraUnselectedCount}\n托盘待用：${reserveExtraReservedCount}\n游戏中：${reserveExtraInUseCount}\n待归还后移除：${reserveExtraPendingCount}',
     },
     {
       func: 'IF',
@@ -199,17 +218,20 @@ function batchBranch(libraryType: ReserveLibraryType, categoryId: string, mode: 
       { func: 'SELECT', source: scopeName, type: 'card', property: 'reserveSelected', relation: '==', value: false, collection: 'reserveCurrentUnselected' },
       { func: 'SET', collection: 'reserveCurrentSelected', property: 'reserveSelected', value: false },
       { func: 'SET', collection: 'reserveCurrentSelected', property: 'reserveVisualState', value: 'unselected' },
-      { func: 'SET', collection: 'reserveCurrentSelected', property: 'css', value: unselectedCss(libraryType) },
       { func: 'SET', collection: 'reserveCurrentUnselected', property: 'reserveSelected', value: true },
       { func: 'SET', collection: 'reserveCurrentUnselected', property: 'reserveVisualState', value: 'selected' },
-      { func: 'SET', collection: 'reserveCurrentUnselected', property: 'css', value: selectedCss(libraryType) },
+      { func: 'SELECT', source: 'reserveCurrentSelected', type: 'card', property: 'reserveState', relation: '==', value: 'draft', collection: 'reserveCurrentSelectedDraft' },
+      { func: 'SET', collection: 'reserveCurrentSelectedDraft', property: 'css', value: unselectedCss(libraryType) },
+      { func: 'SELECT', source: 'reserveCurrentUnselected', type: 'card', property: 'reserveState', relation: '==', value: 'draft', collection: 'reserveCurrentUnselectedDraft' },
+      { func: 'SET', collection: 'reserveCurrentUnselectedDraft', property: 'css', value: selectedCss(libraryType) },
     )
     : (() => {
       const value = mode === 'select';
       return routineSteps(
         { func: 'SET', collection: scopeName, property: 'reserveSelected', value },
         { func: 'SET', collection: scopeName, property: 'reserveVisualState', value: value ? 'selected' : 'unselected' },
-        { func: 'SET', collection: scopeName, property: 'css', value: value ? selectedCss(libraryType) : unselectedCss(libraryType) },
+        { func: 'SELECT', source: scopeName, type: 'card', property: 'reserveState', relation: '==', value: 'draft', collection: 'reserveCurrentDraft' },
+        { func: 'SET', collection: 'reserveCurrentDraft', property: 'css', value: value ? selectedCss(libraryType) : unselectedCss(libraryType) },
       );
     })();
   return [...prefix, ...operation, ...routineSteps({ func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' })];
