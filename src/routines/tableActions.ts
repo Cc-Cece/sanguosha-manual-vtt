@@ -1,3 +1,5 @@
+import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
+
 const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
 
 export const collectAndShuffleRoutine = [
@@ -24,6 +26,7 @@ export const arrangeLayoutRoutine = [
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
+  ...resetAllPrivatePeeksRoutine,
   { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
   { func: 'FLIP', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], face: 0 },
   { func: 'SHUFFLE', holder: ['draw-pile', 'general-reserve', 'identity-reserve'], mode: 'true random' },
@@ -131,60 +134,14 @@ export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);
 
-export const createTogglePerspectiveRoutine = (number: number) => [
-  {
-    func: 'IF',
-    operand1: `\${PROPERTY player OF seat-${number}}`,
-    relation: '==',
-    operand2: '\${playerName}',
-    thenRoutine: [
-      {
-        func: 'IF',
-        operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
-        relation: '==',
-        operand2: true,
-        thenRoutine: [
-          { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
-          { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【非己方视角】预览（私密区已隐藏）` }], block: false },
-        ],
-        elseRoutine: [
-          { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
-          { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【己方视角】（完整显示私密展示区）` }], block: false },
-        ],
-      },
-    ],
-    elseRoutine: [
-      {
-        func: 'IF',
-        operand1: '${PROPERTY player OF seat-1}',
-        relation: '==',
-        operand2: '\${playerName}',
-        thenRoutine: [
-          {
-            func: 'IF',
-            operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
-            relation: '==',
-            operand2: true,
-            thenRoutine: [
-              { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
-              { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：房主已切换为【非己方视角】预览` }], block: false },
-            ],
-            elseRoutine: [
-              { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
-              { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：房主已切换为【己方视角】` }], block: false },
-            ],
-          },
-        ],
-        elseRoutine: [
-          { func: 'INPUT', header: '无法切换视角', fields: [{ type: 'text', label: '提示', value: `只有本座玩家或玩家 1 (房主) 可以切换玩家 ${number} 的视角` }], block: false },
-        ],
-      },
-    ],
-  },
-] as const;
+/**
+ * Compatibility alias for older imports. It no longer changes shared display state and never
+ * grants the host access to another Seat's private face.
+ */
+export const createTogglePerspectiveRoutine = (number: number) =>
+  createPrivatePeekClickRoutine(number);
 
 export const togglePerspective1Routine = createTogglePerspectiveRoutine(1);
 export const togglePerspective2Routine = createTogglePerspectiveRoutine(2);
 export const togglePerspective3Routine = createTogglePerspectiveRoutine(3);
 export const togglePerspective4Routine = createTogglePerspectiveRoutine(4);
-
