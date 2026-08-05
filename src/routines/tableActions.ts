@@ -50,3 +50,26 @@ export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);
+
+export const createTogglePerspectiveRoutine = (number: number) => [
+  {
+    func: 'IF',
+    operand1: `\${PROPERTY display OF private-backdrop-${number}}`,
+    relation: '==',
+    operand2: true,
+    thenRoutine: [
+      { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: false },
+      { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【非己方视角】预览（私密区已隐藏）` }], block: false },
+    ],
+    elseRoutine: [
+      { func: 'SET', collection: [`private-backdrop-${number}`, `private-zone-${number}`], property: 'display', value: true },
+      { func: 'INPUT', header: '视角切换', fields: [{ type: 'text', label: '当前视角', value: `玩家 ${number}：已切换为【己方视角】（完整显示私密展示区）` }], block: false },
+    ],
+  },
+] as const;
+
+export const togglePerspective1Routine = createTogglePerspectiveRoutine(1);
+export const togglePerspective2Routine = createTogglePerspectiveRoutine(2);
+export const togglePerspective3Routine = createTogglePerspectiveRoutine(3);
+export const togglePerspective4Routine = createTogglePerspectiveRoutine(4);
+

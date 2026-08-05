@@ -1,9 +1,11 @@
 import { PLAYER_MODULES } from '../layouts/table.js';
 import { leaveSeat1Routine, leaveSeat2Routine, leaveSeat3Routine, leaveSeat4Routine, safeSeatClickRoutine } from '../routines/seatSafety.js';
+import { togglePerspective1Routine, togglePerspective2Routine, togglePerspective3Routine, togglePerspective4Routine } from '../routines/tableActions.js';
 import type { Widget } from '../types/vtt.js';
 import { freeZone, label, widget } from './factory.js';
 
 const leaveSeatRoutines = [leaveSeat1Routine, leaveSeat2Routine, leaveSeat3Routine, leaveSeat4Routine];
+const perspectiveRoutines = [togglePerspective1Routine, togglePerspective2Routine, togglePerspective3Routine, togglePerspective4Routine];
 
 export function createPlayerModule(index: number): Widget[] {
   const n = index + 1;
@@ -14,13 +16,15 @@ export function createPlayerModule(index: number): Widget[] {
   return [
     widget(moduleId, 'basic', { ...PLAYER_MODULES[index], movable: true, color: '#122c25dc', layer: 0,
       css: { border: '3px solid #8a7042', borderRadius: '11px', boxShadow: '0 4px 12px #0008' } }),
-    widget(seatId, 'seat', { parent: moduleId, x: 8, y: 7, width: 98, height: 32, index, color: '#6d2922', clickRoutine: safeSeatClickRoutine,
+    widget(seatId, 'seat', { parent: moduleId, x: 8, y: 7, width: 90, height: 32, index, color: '#6d2922', clickRoutine: safeSeatClickRoutine,
       playerChangeRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] }),
-    label(`player-label-${n}`, `☰ 玩家 ${n}`, 108, 10, 85, moduleId),
-    widget(`leave-seat-${n}`, 'button', { parent: moduleId, x: 195, y: 9, width: 46, height: 28, text: '离座',
+    label(`player-label-${n}`, `☰ 玩家 ${n}`, 99, 10, 75, moduleId),
+    widget(`leave-seat-${n}`, 'button', { parent: moduleId, x: 175, y: 9, width: 42, height: 28, text: '离座',
       color: '#5e2420', css: { fontSize: '11px', color: '#ffd0a0', borderRadius: '6px', border: '1px solid #9e4438' }, clickRoutine: leaveSeatRoutines[index] }),
-    label(`hand-count-title-${n}`, '🃏 手牌', 246, 10, 68, moduleId),
-    widget(`hand-count-${n}`, 'label', { parent: moduleId, x: 318, y: 8, width: 98, height: 28, text: 0, movable: false,
+    widget(`toggle-perspective-${n}`, 'button', { parent: moduleId, x: 219, y: 9, width: 45, height: 28, text: '👁️ 视角',
+      color: '#1a3038', css: { fontSize: '10px', color: '#80d0ff', borderRadius: '6px', border: '1px solid #488098' }, clickRoutine: perspectiveRoutines[index] }),
+    label(`hand-count-title-${n}`, '🃏 手牌', 265, 10, 55, moduleId),
+    widget(`hand-count-${n}`, 'label', { parent: moduleId, x: 322, y: 8, width: 95, height: 28, text: 0, movable: false,
       css: { background: '#1a1820', color: '#ffe0a0', fontSize: '17px', textAlign: 'center', fontWeight: '700', border: '1px solid #b89455', borderRadius: '6px' } }),
     freeZone(`public-zone-${n}`, '◎ 对外展示区｜武将・体力・装备・判定・附加牌', 8, 48, 287, 170, moduleId),
     widget(`private-backdrop-${n}`, 'basic', { parent: moduleId, x: 305, y: 48, width: 115, height: 170, movable: false,

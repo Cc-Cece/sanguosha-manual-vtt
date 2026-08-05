@@ -74,5 +74,17 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     const healthCards = widgets.filter(w => w.deck === 'health-deck');
     expect(healthCards.length).toBeGreaterThanOrEqual(16);
   });
+
+  it('provides toggle-perspective buttons for each player module', () => {
+    const game = createFourPlayerPrototype(loadTestCatalog());
+    const widgets = widgetsOf(game);
+
+    for (let i = 1; i <= 4; i++) {
+      const btn = widgets.find(w => w.id === `toggle-perspective-${i}`);
+      expect(btn).toBeDefined();
+      expect(btn?.parent).toBe(`player-module-${i}`);
+      expect(btn?.text).toContain('视角');
+    }
+  });
 });
 
