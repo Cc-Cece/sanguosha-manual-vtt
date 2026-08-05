@@ -1,7 +1,7 @@
 import type { ReserveModel } from '../types/reserveLibrary.js';
 import type { Widget } from '../types/vtt.js';
 import { createUpdateReserveSummaryRoutine } from '../routines/reserveCardRoutines.js';
-import { createFullTableReserveResetRoutine, createRestoreStagedCardsRoutine } from '../routines/reserveImportRoutines.js';
+import { createFullTableReserveResetRoutine, createRestoreReservedCardsRoutine } from '../routines/reserveImportRoutines.js';
 import { createCloseReservePanelRoutine, createOpenReservePanelRoutine } from '../routines/reserveNavigation.js';
 import { widget } from './factory.js';
 
@@ -24,7 +24,7 @@ export function createReservePanelController(model: ReserveModel): Widget {
     updateSummaryRoutine: createUpdateReserveSummaryRoutine(model),
     openPanelRoutine: createOpenReservePanelRoutine(model),
     closePanelRoutine: createCloseReservePanelRoutine(model),
-    restoreStagedCardsRoutine: createRestoreStagedCardsRoutine(model),
+    restoreReservedCardsRoutine: createRestoreReservedCardsRoutine(model),
     fullTableResetRoutine: createFullTableReserveResetRoutine(model),
   });
 }
