@@ -65,7 +65,7 @@ const confirmPublicRevealRoutine = (cardId: string) => [
       {
         type: 'text',
         label: '当前可见区域',
-        value: '公开或未标记区域',
+        value: `公开或未标记区域（区域标识：\${PROPERTY parent OF ${cardId}}）`,
       },
       {
         type: 'text',
