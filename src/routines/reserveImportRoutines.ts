@@ -39,10 +39,38 @@ function restoreReservedCardsSteps(model: ReserveModel): RoutineStep[] {
       ));
     }
   }
-  for (const card of model.cards) {
-    steps.push({ func: 'SET', collection: [card.cardWidgetId], property: 'z', value: card.cardOrder + 1 });
+  return steps;
+}
+
+function cleanupPendingReturnedCardsSteps(model: ReserveModel): RoutineStep[] {
+  const steps: RoutineStep[] = [];
+  for (const page of model.pages) {
+    for (const row of page.rows) {
+      const prefix = `cleanup_${safeCollectionName(row.id)}`;
+      const tray = trayId(page.libraryType);
+      steps.push(...routineSteps(
+        { func: 'SELECT', source: 'all', type: 'card', property: 'reserveHomeHolder', relation: '==', value: row.id, collection: `${prefix}_home` },
+        { func: 'SELECT', source: `${prefix}_home`, type: 'card', property: 'reservePendingRemoval', relation: '==', value: true, collection: `${prefix}_pending` },
+        { func: 'SELECT', source: `${prefix}_pending`, type: 'card', property: 'parent', relation: '==', value: tray, collection: `${prefix}_returned` },
+        { func: 'MOVE', collection: `${prefix}_returned`, to: row.id, count: 'all', face: 1 },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'reserveState', value: 'draft' },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'reservePendingRemoval', value: false },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'reserveVisualState', value: 'unselected' },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'movable', value: false },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'clickable', value: true },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'activeFace', value: 1 },
+        { func: 'SET', collection: `${prefix}_returned`, property: 'css', value: unselectedCss(page.libraryType) },
+      ));
+    }
   }
   return steps;
+}
+
+export function createCleanupReturnedPendingCardsRoutine(model: ReserveModel): RoutineStep[] {
+  return [
+    ...cleanupPendingReturnedCardsSteps(model),
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
+  ];
 }
 
 export function createRestoreReservedCardsRoutine(model: ReserveModel): RoutineStep[] {
@@ -55,7 +83,7 @@ export function createRestoreReservedCardsRoutine(model: ReserveModel): RoutineS
   ];
 }
 
-/** Backwards-compatible export for generated files and older tests. */
+/** Backwards-compatible export for older generated files. */
 export const createRestoreStagedCardsRoutine = createRestoreReservedCardsRoutine;
 
 function selectDraftCards(libraryType: ReserveLibraryType, collection: string): RoutineStep[] {
