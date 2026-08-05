@@ -16,14 +16,38 @@ const privatePeekButtonIdFor = (number: number) => `toggle-perspective-${number}
 const privateIdentityCollectionFor = (number: number) => `privateIdentityCards${number}`;
 const privateIdentityCountFor = (number: number) => `privateIdentityCount${number}`;
 
+/**
+ * Default privacy state: every client sees only the active face (face 0 / card back).
+ * The holder's showInactiveFaceToSeat property is enabled only while the owning Seat peeks.
+ */
 export const createResetPrivatePeekRoutine = (number: number) => [
-  { func: 'SET', collection: [privateZoneIdFor(number)], property: 'showInactiveFaceToSeat', value: null },
-  { func: 'SET', collection: [privatePeekButtonIdFor(number)], property: 'mobilePeekOpen', value: false },
+  {
+    func: 'SET',
+    collection: [privateZoneIdFor(number)],
+    property: 'showInactiveFaceToSeat',
+    value: null,
+  },
+  {
+    func: 'SET',
+    collection: [privatePeekButtonIdFor(number)],
+    property: 'mobilePeekOpen',
+    value: false,
+  },
 ] as const;
 
 export const resetAllPrivatePeeksRoutine = [
-  { func: 'SET', collection: privateZoneIds, property: 'showInactiveFaceToSeat', value: null },
-  { func: 'SET', collection: privatePeekButtonIds, property: 'mobilePeekOpen', value: false },
+  {
+    func: 'SET',
+    collection: privateZoneIds,
+    property: 'showInactiveFaceToSeat',
+    value: null,
+  },
+  {
+    func: 'SET',
+    collection: privatePeekButtonIds,
+    property: 'mobilePeekOpen',
+    value: false,
+  },
 ] as const;
 
 const createOwnedSeatGuard = (number: number, allowedRoutine: readonly Record<string, unknown>[]) => [
@@ -57,12 +81,26 @@ const createCollectPrivateIdentityCardsRoutine = (number: number) => [
     collection: privateIdentityCollectionFor(number),
     mode: 'intersect',
   },
-  { func: 'COUNT', collection: privateIdentityCollectionFor(number), variable: privateIdentityCountFor(number) },
+  {
+    func: 'COUNT',
+    collection: privateIdentityCollectionFor(number),
+    variable: privateIdentityCountFor(number),
+  },
 ] as const;
 
 const createOpenPrivatePeekRoutine = (number: number) => [
-  { func: 'SET', collection: [privateZoneIdFor(number)], property: 'showInactiveFaceToSeat', value: [seatIdFor(number)] },
-  { func: 'SET', collection: [privatePeekButtonIdFor(number)], property: 'mobilePeekOpen', value: true },
+  {
+    func: 'SET',
+    collection: [privateZoneIdFor(number)],
+    property: 'showInactiveFaceToSeat',
+    value: [seatIdFor(number)],
+  },
+  {
+    func: 'SET',
+    collection: [privatePeekButtonIdFor(number)],
+    property: 'mobilePeekOpen',
+    value: true,
+  },
 ] as const;
 
 const createConfirmPrivateIdentityPeekRoutine = (number: number) => [
@@ -70,14 +108,26 @@ const createConfirmPrivateIdentityPeekRoutine = (number: number) => [
     func: 'INPUT',
     header: '查看身份牌？',
     fields: [
-      { type: 'text', label: '当前可见区域', value: `玩家 ${number} 的私密展示区` },
-      { type: 'text', label: '确认结果', value: `确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。` },
+      {
+        type: 'text',
+        label: '当前可见区域',
+        value: `玩家 ${number} 的私密展示区`,
+      },
+      {
+        type: 'text',
+        label: '确认结果',
+        value: `确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`,
+      },
     ],
     block: true,
   },
   ...createOpenPrivatePeekRoutine(number),
 ] as const;
 
+/**
+ * Desktop hover remains immediate for ordinary private cards. When an identity card is present,
+ * hover deliberately stays covered; the owner must click the eye and confirm the visible scope.
+ */
 export const createPrivatePeekEnterRoutine = (number: number) =>
   createOwnedSeatGuard(number, [
     ...createCollectPrivateIdentityCardsRoutine(number),
@@ -91,9 +141,15 @@ export const createPrivatePeekEnterRoutine = (number: number) =>
     },
   ]);
 
+/** Desktop: leaving the eye button immediately returns everyone, including the owner, to backs. */
 export const createPrivatePeekLeaveRoutine = (number: number) =>
   createResetPrivatePeekRoutine(number);
 
+/**
+ * Touch devices use one tap to open and the next tap to cover. The same click path is also used
+ * on desktop whenever the private zone contains an identity card, so identity viewing can never
+ * bypass the confirmation dialogue.
+ */
 export const createPrivatePeekClickRoutine = (number: number) =>
   createOwnedSeatGuard(number, [
     {
