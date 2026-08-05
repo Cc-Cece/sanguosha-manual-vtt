@@ -1,12 +1,11 @@
-import { copyFile, mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { copyFile, mkdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
+import { organizeAssetCatalog } from '../src/data/cardAssetOrganization.js';
 import type { AssetCatalog } from '../src/types/assets.js';
 
 const webpRepoRoot = resolve('assets', 'cards-webp');
 const outputRoot = resolve('temp', 'optimized-assets');
 const catalogPath = resolve('temp', 'asset-catalog.json');
-
-import { rm } from 'node:fs/promises';
 
 await rm(outputRoot, { recursive: true, force: true });
 await mkdir(outputRoot, { recursive: true });
@@ -15,7 +14,7 @@ const repoCatalogPath = resolve(webpRepoRoot, 'catalog.json');
 try {
   await stat(repoCatalogPath);
   const catalogData = await readFile(repoCatalogPath, 'utf8');
-  const catalog = JSON.parse(catalogData) as AssetCatalog;
+  const catalog = organizeAssetCatalog(JSON.parse(catalogData) as AssetCatalog);
 
   for (const asset of catalog.assets) {
     const destPath = resolve(outputRoot, asset.optimizedFile);
