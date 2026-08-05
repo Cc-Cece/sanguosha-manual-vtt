@@ -36,8 +36,8 @@ export interface GameSettings {
 export type RoutineStep = Record<string, unknown>;
 
 export interface GameFile {
-  _meta: { version: number; info: GameInfo; gameSettings?: GameSettings };
-  [id: string]: Widget | { version: number; info: GameInfo; gameSettings?: GameSettings };
+  _meta: { version: number; info: GameInfo; gameSettings?: GameSettings; customProperties?: string[] };
+  [id: string]: Widget | { version: number; info: GameInfo; gameSettings?: GameSettings; customProperties?: string[] };
 }
 
 export interface Bounds { x: number; y: number; width: number; height: number }

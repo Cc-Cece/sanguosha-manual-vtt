@@ -68,10 +68,13 @@ function reserveWidgets(): Widget[] {
   ];
 }
 
+import { createReservePanelControllerWidget } from '../widgets/reservePanelController.js';
+
 export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
   const widgets = [
     ...tableWidgets(),
     ...createPlayerManagementWidgets(),
+    createReservePanelControllerWidget(),
     ...reserveWidgets(),
     ...Array.from({ length: 12 }, (_, i) => createPlayerModule(i)).flat(),
     ...createAssetDecks(catalog),
@@ -84,6 +87,15 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
   const game: GameFile = {
     _meta: {
       version: 21,
+      customProperties: [
+        'reserveLibraryType',
+        'reserveCategoryId',
+        'reserveSelected',
+        'reserveDefaultSelected',
+        'reserveHomeHolder',
+        'reserveHomeIndex',
+        'reserveState',
+      ],
       gameSettings: {
         boardSize: { width: BOARD.width, height: BOARD.height },
         legacyModes: {},

@@ -96,15 +96,12 @@ const DECKBUILDING_FRAME_IDS = [
   'next-page-btn',
 ];
 
-const DECKBUILDING_PAGE_IDS = [
-  'gen-page-1',
-  'gen-page-2',
-  'gen-page-3',
-  'gen-page-4',
-  'gen-page-5',
-  'extra-composer-title',
-  'extra-card-composer-zone',
-];
+import { buildReserveViewRegistry } from '../data/reserveViewModel.js';
+
+const viewRegistry = buildReserveViewRegistry();
+const allReservePageIds = viewRegistry.pages.map(p => p.id);
+const firstGenPageId = viewRegistry.pagesByCategory.all_general[0];
+const otherPages = allReservePageIds.filter(id => id !== firstGenPageId);
 
 export const toggleLibraryTrayRoutine = [
   {
@@ -113,13 +110,13 @@ export const toggleLibraryTrayRoutine = [
     relation: '==',
     operand2: true,
     thenRoutine: [
-      { func: 'SET', collection: [...DECKBUILDING_FRAME_IDS, ...DECKBUILDING_PAGE_IDS], property: 'display', value: false },
+      { func: 'SET', collection: [...DECKBUILDING_FRAME_IDS, ...allReservePageIds], property: 'display', value: false },
       { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
     ],
     elseRoutine: [
       { func: 'SET', collection: DECKBUILDING_FRAME_IDS, property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-1'], property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-2', 'gen-page-3', 'gen-page-4', 'gen-page-5', 'extra-composer-title', 'extra-card-composer-zone'], property: 'display', value: false },
+      { func: 'SET', collection: [firstGenPageId], property: 'display', value: true },
+      { func: 'SET', collection: otherPages, property: 'display', value: false },
       { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
     ],
   },
