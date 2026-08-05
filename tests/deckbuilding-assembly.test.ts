@@ -13,9 +13,8 @@ describe('deckbuilding assembly and cross-table routines', () => {
     expect(drawer).toBeDefined();
     expect(drawer?.display).toBe(false);
 
-    expect(widgets.find(w => w.id === 'gen-row-std')).toBeDefined();
-    expect(widgets.find(w => w.id === 'gen-row-exp')).toBeDefined();
-    expect(widgets.find(w => w.id === 'identity-composer-zone')).toBeDefined();
+    expect(widgets.find(w => w.id === 'gen-page-1')).toBeDefined();
+    expect(widgets.find(w => w.id === 'gen-page-2')).toBeDefined();
     expect(widgets.find(w => w.id === 'extra-card-composer-zone')).toBeDefined();
   });
 
