@@ -30,12 +30,10 @@ export const assembleExtraDeckRoutine = [
 ] as const;
 
 export const importToReserveTrayRoutine = [
-  { func: 'MOVE', from: ['final-general-deck-zone'], to: ['general-reserve'], count: 'all' },
-  { func: 'MOVE', from: ['final-identity-deck-zone'], to: ['identity-reserve'], count: 'all' },
-  { func: 'MOVE', from: ['final-extra-deck-zone'], to: ['extra-reserve'], count: 'all' },
+  { func: 'MOVE', from: ['gen-row-std', 'gen-row-exp'], to: ['general-reserve'], count: 'all', face: 0 },
+  { func: 'MOVE', from: ['extra-card-composer-zone'], to: ['extra-reserve'], count: 'all', face: 0 },
   { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: false },
-  { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
-  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '全套备牌方案已成功生成并精准导入主桌备牌托盘！' }], block: false },
+  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '允许的武将牌与选中的附加牌已全部盖面注入主桌备牌托盘！' }], block: false },
 ] as const;
 
 export const apply4PStandardPresetRoutine = [

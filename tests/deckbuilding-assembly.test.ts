@@ -46,10 +46,9 @@ describe('deckbuilding assembly and cross-table routines', () => {
     });
   });
 
-  it('validates importToReserveTrayRoutine moves all prepared decks into main table reserve-tray slots', () => {
+  it('validates importToReserveTrayRoutine moves allowed generals and selected extra cards into reserve-tray', () => {
     const importRoutine = JSON.stringify(importToReserveTrayRoutine);
     expect(importRoutine).toContain('general-reserve');
-    expect(importRoutine).toContain('identity-reserve');
     expect(importRoutine).toContain('extra-reserve');
   });
 });

@@ -6,7 +6,7 @@ const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { dec
   'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', backKey: 'main', fallback: '三国杀', enlarge: 4.7 },
   'gameplay-extra': { deck: 'extra-deck', holder: 'extra-card-composer-zone', backKey: 'main', fallback: '扩展牌', enlarge: 4.7 },
   generals: { deck: 'general-deck', holder: 'gen-row-std', backKey: 'generals', fallback: '武将牌', enlarge: 5.0 },
-  identities: { deck: 'identity-deck', holder: 'identity-composer-zone', backKey: 'identities', fallback: '身份牌', enlarge: 5.0 },
+  identities: { deck: 'identity-deck', holder: 'identity-reserve', backKey: 'identities', fallback: '身份牌', enlarge: 5.0 },
 };
 
 type DeckCategory = keyof typeof definitions;
