@@ -130,7 +130,7 @@ describe('Seat nickname behavior remains integrated', () => {
     const seat = createPlayerModule(0).find(widget => widget.id === 'seat-1');
     const routineObjects = collectObjects(createSafeSeatClickRoutine('seat-1', 'player-label-1'));
 
-    expect(seat?.displayEmpty).toBe('＋ 入座');
+    expect(seat?.displayEmpty).toBe('入座');
     expect(seat?.display).toBe('playerName');
     expect(seat?.tableNickname).toBe('');
     expect(routineObjects).toContainEqual(expect.objectContaining({

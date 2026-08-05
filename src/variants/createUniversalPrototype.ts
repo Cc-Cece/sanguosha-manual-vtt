@@ -113,7 +113,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         helpText: '【快捷操作指南】\n1. 房主操作：顶部工具栏点击「👥 玩家管理」可按需增加/关闭席位（4–12席），或一键设置 75%/90%/100% 全局缩放；\n2. 牌库编组：点击「📚 牌库编组」展开全套备牌面板，支持按标准/风/火/林/山/一将/SP/其他扩展逐分类预览，点击卡牌切换 [允许/Ban]，确认后仅将勾选牌盖面导入备牌托盘；\n3. 托盘洗牌：备牌托盘下设有武将/身份/扩展/血量 4 个专属洗牌按钮，洗牌静默无弹窗；\n4. 个人手牌：将卡牌移入右下角「🖐️ 我的手牌」即自动对其他玩家隐藏具体牌面，模块仅显示手牌数。',
         attribution: '卡牌图源基于 Tabletop Simulator 3765935052 参考包深度清洗与二次加工；构建时按分类重构目录树并嵌入高性能 WebP 贴图。',
         bgg: 'https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9B%BD%E6%9D%80',
-        image: '/assets/other/cover.webp',
+        image: '/assets/1800751566_23558',
       },
     },
   };

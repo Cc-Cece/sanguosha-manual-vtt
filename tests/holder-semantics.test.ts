@@ -7,8 +7,9 @@ it('uses distinct native holder semantics for piles, free areas and the hand', (
   const game = createFourPlayerPrototype(loadTestCatalog());
   for (const id of ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'])
     expect(game[id]).toMatchObject({ alignChildren: true, preventPiles: false, stackOffsetX: 0, stackOffsetY: 0 });
-  for (const id of ['recycle-zone', 'public-zone-1', 'private-zone-1'])
+  for (const id of ['recycle-zone', 'public-zone-1'])
     expect(game[id]).toMatchObject({ alignChildren: false, preventPiles: false });
+  expect(game['private-zone-1']).toMatchObject({ alignChildren: false, preventPiles: true });
   expect(game['personal-hand']).toMatchObject({ alignChildren: true, preventPiles: true, childrenPerOwner: true, stackOffsetY: 0 });
 });
 
