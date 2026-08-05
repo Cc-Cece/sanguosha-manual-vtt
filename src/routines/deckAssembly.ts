@@ -30,34 +30,28 @@ export const assembleExtraDeckRoutine = [
 ] as const;
 
 export const importToReserveTrayRoutine = [
-  // 1. 过滤允许入局的武将并注入 general-reserve 托盘
-  { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'general', collection: 'allGenerals' },
-  { func: 'SELECT', source: 'allGenerals', type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: 'selectedGenerals' },
-  { func: 'MOVE', collection: 'selectedGenerals', to: ['general-reserve'], count: 'all', face: 0 },
-  { func: 'SET', collection: 'selectedGenerals', property: 'reserveState', value: 'staged' },
-
-  // 2. 过滤选中的附加牌并注入 extra-reserve 托盘
-  { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'extra', collection: 'allExtras' },
-  { func: 'SELECT', source: 'allExtras', type: 'card', property: 'reserveSelected', relation: '==', value: true, collection: 'selectedExtras' },
-  { func: 'MOVE', collection: 'selectedExtras', to: ['extra-reserve'], count: 'all', face: 0 },
-  { func: 'SET', collection: 'selectedExtras', property: 'reserveState', value: 'staged' },
-
-  // 3. 收起抽屉面板并提醒
+  {
+    func: 'MOVE',
+    from: [
+      'gen-page-1-row-1', 'gen-page-1-row-2', 'gen-page-1-row-3', 'gen-page-1-row-4',
+      'gen-page-2-row-1', 'gen-page-2-row-2', 'gen-page-2-row-3', 'gen-page-2-row-4',
+      'gen-page-3-row-1', 'gen-page-3-row-2', 'gen-page-3-row-3', 'gen-page-3-row-4',
+      'gen-page-4-row-1', 'gen-page-4-row-2', 'gen-page-4-row-3', 'gen-page-4-row-4',
+      'gen-page-5-row-1', 'gen-page-5-row-2', 'gen-page-5-row-3', 'gen-page-5-row-4',
+    ],
+    to: ['general-reserve'],
+    count: 'all',
+    face: 0,
+  },
+  {
+    func: 'MOVE',
+    from: ['extra-row-1', 'extra-row-2', 'extra-row-3'],
+    to: ['extra-reserve'],
+    count: 'all',
+    face: 0,
+  },
   { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: false },
-  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '选中的武将牌与附加牌已成功盖面注入主桌备牌托盘！' }], block: false },
-] as const;
-
-export const reEditReserveRoutine = [
-  { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'general', collection: 'stagedGenerals' },
-  { func: 'MOVE', collection: 'stagedGenerals', to: ['general-reserve'], count: 'all', face: 1 },
-  { func: 'SET', collection: 'stagedGenerals', property: 'reserveState', value: 'draft' },
-
-  { func: 'SELECT', source: 'all', type: 'card', property: 'reserveLibraryType', relation: '==', value: 'extra', collection: 'stagedExtras' },
-  { func: 'MOVE', collection: 'stagedExtras', to: ['extra-reserve'], count: 'all', face: 1 },
-  { func: 'SET', collection: 'stagedExtras', property: 'reserveState', value: 'draft' },
-
-  { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: true },
-  { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
+  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '选中的武将牌与附加牌已全部盖面注入主桌备牌托盘！' }], block: false },
 ] as const;
 
 export const apply4PStandardPresetRoutine = [

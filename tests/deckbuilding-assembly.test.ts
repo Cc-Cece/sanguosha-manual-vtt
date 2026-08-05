@@ -13,9 +13,9 @@ describe('deckbuilding assembly and cross-table routines', () => {
     expect(drawer).toBeDefined();
     expect(drawer?.display).toBe(false);
 
-    expect(widgets.find(w => w.id === 'gen-page-std-1')).toBeDefined();
-    expect(widgets.find(w => w.id === 'gen-page-feng-1')).toBeDefined();
-    expect(widgets.find(w => w.id === 'extra-page-equipment-1')).toBeDefined();
+    expect(widgets.find(w => w.id === 'gen-page-1')).toBeDefined();
+    expect(widgets.find(w => w.id === 'gen-page-2')).toBeDefined();
+    expect(widgets.find(w => w.id === 'extra-card-composer-zone')).toBeDefined();
   });
 
   it('validates assembleGeneralDeckRoutine sequence: flip, move, shuffle', () => {
