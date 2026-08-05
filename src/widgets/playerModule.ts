@@ -104,7 +104,7 @@ export function createPlayerModule(index: number): Widget[] {
       text: '',
       layer: 2,
       alignChildren: false,
-      preventPiles: false,
+      preventPiles: true,
       showInactiveFaceToSeat: null,
       onEnter: {
         activeFace: 0,
