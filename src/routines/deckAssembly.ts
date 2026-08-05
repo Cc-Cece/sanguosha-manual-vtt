@@ -53,3 +53,18 @@ export const apply2v2PresetRoutine = [
 export const saveCustomSchemeRoutine = [
   { func: 'INPUT', header: '方案保存成功', fields: [{ type: 'text', label: '自定义方案', value: '已将当前勾选与牌堆配置保存为你的专属自定义预设方案！' }], block: false },
 ] as const;
+
+export const importStandardGenPackageRoutine = [
+  { func: 'MOVE', from: ['pkg-gen-std-pile'], to: ['general-candidate-zone'], count: 'all' },
+  { func: 'INPUT', header: '标准包引入成功', fields: [{ type: 'text', label: '提示', value: '已将标准包 25 位武将平移移入武将候选区！' }], block: false },
+] as const;
+
+export const importExpansionGenPackageRoutine = [
+  { func: 'MOVE', from: ['pkg-gen-feng-pile', 'pkg-gen-huo-pile', 'pkg-gen-lin-pile', 'pkg-gen-shan-pile', 'pkg-gen-yijiang-pile', 'pkg-gen-sp-pile'], to: ['general-candidate-zone'], count: 'all' },
+  { func: 'INPUT', header: '扩展包引入成功', fields: [{ type: 'text', label: '提示', value: '已将风火林山/一将/SP 扩展包全套武将移入武将候选区！' }], block: false },
+] as const;
+
+export const importJunzhengPackageRoutine = [
+  { func: 'MOVE', from: ['pkg-extra-junzheng-pile'], to: ['extra-card-composer-zone'], count: 'all' },
+  { func: 'INPUT', header: '军争包引入成功', fields: [{ type: 'text', label: '提示', value: '已将军争扩展牌 52 张平移移入扩展牌构成区！' }], block: false },
+] as const;
