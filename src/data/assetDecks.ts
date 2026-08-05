@@ -1,7 +1,8 @@
+import { createIdentityCardClickRoutine } from '../routines/identityReveal.js';
+import { createToggleReserveCardRoutine, selectedCss } from '../routines/reserveCardRoutines.js';
 import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js';
 import type { ReserveModel } from '../types/reserveLibrary.js';
 import type { Widget } from '../types/vtt.js';
-import { createToggleReserveCardRoutine, selectedCss } from '../routines/reserveCardRoutines.js';
 import { assetCardFace, cardBack, imageCardBack, widget } from '../widgets/factory.js';
 
 const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; backKey: 'generals' | 'identities' | 'main'; fallback: string; enlarge: number }> = {
@@ -62,14 +63,19 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
       });
     }
 
-    return widget(`card-${asset.sequence}`, 'card', {
+    const cardId = `card-${asset.sequence}`;
+    return widget(cardId, 'card', {
       deck: definition.deck,
       cardType: `type-${asset.sequence}`,
       parent: definition.holder,
       x: 0,
       y: 0,
       z: index + 1,
-      activeFace: category === 'gameplay-standard-junzheng-160' ? 0 : 1,
+      activeFace: category === 'gameplay-standard-junzheng-160' || category === 'identities' ? 0 : 1,
+      ...(category === 'identities' ? {
+        identityCard: true,
+        clickRoutine: createIdentityCardClickRoutine(cardId),
+      } : {}),
     });
   });
 
