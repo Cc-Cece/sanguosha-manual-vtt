@@ -1,35 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import { buildExtraMetadataList, buildGeneralMetadataList, EXTRA_CATEGORIES, GENERAL_CATEGORIES } from '../src/data/reserveLibraryCatalog.js';
+import { buildReserveModel, RESERVE_CARDS_PER_PAGE, RESERVE_CARDS_PER_ROW, RESERVE_ROWS_PER_PAGE } from '../src/data/reserveViewRegistry.js';
 import { loadTestCatalog } from './helpers.js';
 
-describe('reserve panel catalog data integrity', () => {
+describe('classified reserve model', () => {
   const catalog = loadTestCatalog();
+  const model = buildReserveModel(catalog);
 
-  it('uses explicit package metadata for every general', () => {
-    const generalAssets = catalog.assets.filter(asset => asset.category === 'generals');
-    const generals = buildGeneralMetadataList(catalog.assets);
-    expect(generals).toHaveLength(generalAssets.length);
-
-    const widgetIds = new Set(generals.map(general => general.cardWidgetId));
-    expect(widgetIds.size).toBe(generals.length);
-
-    const categoryIds = new Set(GENERAL_CATEGORIES.map(category => category.id));
-    for (const general of generals) {
-      expect(categoryIds.has(general.categoryId)).toBe(true);
-    }
+  it('uses the audited card counts and hides the empty standard category', () => {
+    expect(model.generalCardIds).toHaveLength(315);
+    expect(model.extraCardIds).toHaveLength(31);
+    expect(Object.fromEntries(model.categories.map(category => [category.id, category.count]))).toEqual({
+      'gen-all': 315,
+      'gen-feng': 8,
+      'gen-huo': 8,
+      'gen-lin': 8,
+      'gen-shan': 8,
+      'gen-yijiang': 33,
+      'gen-sp': 121,
+      'gen-other': 129,
+      'extra-all': 31,
+    });
+    expect(model.categories.some(category => category.id === 'gen-std')).toBe(false);
   });
 
-  it('covers every expansion playing card without sequence-based guessing', () => {
-    const extraAssets = catalog.assets.filter(asset => asset.category === 'gameplay-extra');
-    const extras = buildExtraMetadataList(catalog.assets);
-    expect(extras).toHaveLength(extraAssets.length);
+  it('creates ten reusable general pages and one expansion page', () => {
+    expect(model.views.find(view => view.key === 'general:gen-all')?.pageIds).toHaveLength(10);
+    expect(model.views.find(view => view.key === 'general:gen-sp')?.pageIds).toHaveLength(2);
+    expect(model.views.find(view => view.key === 'general:gen-other')?.pageIds).toHaveLength(3);
+    expect(model.views.find(view => view.key === 'extra:extra-all')?.pageIds).toHaveLength(1);
+    expect(model.pages).toHaveLength(11);
+  });
 
-    const widgetIds = new Set(extras.map(extra => extra.cardWidgetId));
-    expect(widgetIds.size).toBe(extras.length);
-
-    const categoryIds = new Set(EXTRA_CATEGORIES.map(category => category.id));
-    for (const extra of extras) {
-      expect(categoryIds.has(extra.categoryId)).toBe(true);
+  it('covers every managed card exactly once within layout capacity', () => {
+    expect(model.cards).toHaveLength(346);
+    expect(new Set(model.cards.map(card => card.sequence)).size).toBe(346);
+    expect(new Set(model.cards.map(card => card.cardWidgetId)).size).toBe(346);
+    for (const page of model.pages) {
+      expect(page.cardSequences.length).toBeLessThanOrEqual(RESERVE_CARDS_PER_PAGE);
+      expect(page.rows.length).toBeLessThanOrEqual(RESERVE_ROWS_PER_PAGE);
+      for (const row of page.rows) {
+        expect(row.cardSequences.length).toBeGreaterThan(0);
+        expect(row.cardSequences.length).toBeLessThanOrEqual(RESERVE_CARDS_PER_ROW);
+        expect(row.label).toContain(`${row.cardSequences.length} 张`);
+      }
     }
   });
 });

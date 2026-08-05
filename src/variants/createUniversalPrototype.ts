@@ -1,5 +1,6 @@
 import { seatIds } from '../config/playerCapacity.js';
 import { createAssetDecks } from '../data/assetDecks.js';
+import { buildReserveModel } from '../data/reserveViewRegistry.js';
 import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
@@ -10,7 +11,6 @@ import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
-import { createBlindSelectionWidgets } from '../widgets/blindSelectionTable.js';
 import { createCandidateWidgets } from '../widgets/candidateZone.js';
 import { freeZone, handZone, label, pileZone, widget } from '../widgets/factory.js';
 import { createIdentityComposerWidgets } from '../widgets/identityComposer.js';
@@ -45,33 +45,33 @@ function tableWidgets(): Widget[] {
     widget('shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleDrawPileRoutine }),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
-  ].map(item => item.id === 'personal-hand' ? {
-    ...item,
-    onlyVisibleForSeat: allSeats,
-    linkedToSeat: allSeats,
-    onEnter: {
-      blindSourceSeat: null,
-      blindSourcePlayer: null,
-      blindSelected: false,
-      clickable: true,
-      movable: true,
-    },
+  ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
     enterRoutine: [
       ...handZoneFlipFaceUpRoutine,
       { func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }
     ],
-    leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }]
-  } : item);
+    leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] } : item);
 }
 
 function reserveWidgets(): Widget[] {
+  const cleanupReturnedPendingCardsRoutine = [
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'cleanupReturnedPendingCardsRoutine' },
+  ];
   return [
     widget('reserve-tray', 'basic', { ...RESERVE_TRAY, movable: true, color: '#3a1d18e8',
       css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
     label('reserve-title', '备牌托盘｜不参与常规洗牌', 15, 8, 490, 'reserve-tray'),
-    pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
+    pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', {
+      onEnter: { activeFace: 0, reserveState: 'reserved' },
+      onLeave: { reserveState: 'in-use' },
+      enterRoutine: cleanupReturnedPendingCardsRoutine,
+    }),
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
-    pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
+    pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', {
+      onEnter: { activeFace: 0, reserveState: 'reserved' },
+      onLeave: { reserveState: 'in-use' },
+      enterRoutine: cleanupReturnedPendingCardsRoutine,
+    }),
     pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
 
     widget('shuffle-general-reserve-btn', 'button', { parent: 'reserve-tray', x: 18, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleGeneralReserveRoutine }),
@@ -82,15 +82,15 @@ function reserveWidgets(): Widget[] {
 }
 
 export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
+  const reserveModel = buildReserveModel(catalog);
   const widgets = [
     ...tableWidgets(),
     ...createPlayerManagementWidgets(),
     ...reserveWidgets(),
-    ...createBlindSelectionWidgets(catalog.backs.main),
     ...Array.from({ length: 12 }, (_, i) => createPlayerModule(i)).flat(),
-    ...createAssetDecks(catalog),
+    ...createLibraryTableWidgets(reserveModel),
+    ...createAssetDecks(catalog, reserveModel),
     ...createHealthDeck(),
-    ...createLibraryTableWidgets(),
     ...createCandidateWidgets(),
     ...createIdentityComposerWidgets(),
   ];
@@ -103,7 +103,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         legacyModes: {},
       },
       info: {
-        name: '三国杀桌游 ｜ 4-12人通用版',
+        name: '三国杀人工桌面 ｜ 4-12人通用版',
         players: '4-12',
         mode: 'vs',
         language: 'zh-CN',

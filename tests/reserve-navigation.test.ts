@@ -1,25 +1,51 @@
 import { describe, expect, it } from 'vitest';
-import { selectExtrasTabRoutine, selectGeneralsTabRoutine, switchGenAllRoutine, switchGenStdRoutine } from '../src/routines/reserveRoutines.js';
+import { buildReserveModel } from '../src/data/reserveViewRegistry.js';
+import { createPageNavigationRoutine, createSwitchViewRoutine } from '../src/routines/reserveNavigation.js';
 import { toggleLibraryTrayRoutine } from '../src/routines/tableActions.js';
+import { widgetsOf } from '../src/validation/validate.js';
+import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
+import { loadTestCatalog } from './helpers.js';
 
-describe('reserve panel navigation and page display routines', () => {
-  it('validates toggleLibraryTrayRoutine displays ONLY gen-page-1 when opening drawer', () => {
-    const elseRoutine = toggleLibraryTrayRoutine[0].elseRoutine;
-    const routineJson = JSON.stringify(elseRoutine);
+describe('reserve panel navigation', () => {
+  const catalog = loadTestCatalog();
+  const model = buildReserveModel(catalog);
 
-    expect(routineJson).toContain('gen-page-1');
-    const setGenPage1 = elseRoutine.find(step => step.func === 'SET' && (step.collection as readonly string[])?.includes('gen-page-1') && step.value === true);
-    expect(setGenPage1).toBeDefined();
-
-    const setGenPage2False = elseRoutine.find(step => step.func === 'SET' && (step.collection as readonly string[])?.includes('gen-page-2') && step.value === false);
-    expect(setGenPage2False).toBeDefined();
+  it('opens through the controller and uses a safe close path rather than hard-coded pages', () => {
+    const serialized = JSON.stringify(toggleLibraryTrayRoutine);
+    expect(serialized).toContain('openPanelRoutine');
+    expect(serialized).toContain('safeClosePanelRoutine');
+    expect(serialized).not.toContain('gen-page-1');
   });
 
-  it('ensures tab and sub-category switching routines do NOT contain INPUT popups', () => {
-    const routines = [selectGeneralsTabRoutine, selectExtrasTabRoutine, switchGenAllRoutine, switchGenStdRoutine];
-    for (const routine of routines) {
-      const routineJson = JSON.stringify(routine);
-      expect(routineJson).not.toContain('"func":"INPUT"');
+  it('synchronizes confirmed edits when closing but allows an unconfirmed first draft to hide', () => {
+    const widgets = widgetsOf(createFourPlayerPrototype(catalog));
+    const controller = widgets.find(widget => widget.id === 'reserve-panel-controller')!;
+    const close = JSON.stringify(controller.closePanelRoutine);
+    expect(close).toContain('draftState');
+    expect(close).toContain('confirmed');
+    expect(close).toContain('syncAndCloseRoutine');
+    expect(close).toContain('reserve-prep-drawer');
+  });
+
+  it('gives each real category a distinct page mapping', () => {
+    const wind = JSON.stringify(createSwitchViewRoutine(model, 'general:gen-feng'));
+    const fire = JSON.stringify(createSwitchViewRoutine(model, 'general:gen-huo'));
+    expect(wind).toContain('gen-feng-page-1');
+    expect(fire).toContain('gen-huo-page-1');
+    expect(wind).not.toEqual(fire);
+    expect(wind).not.toContain('"func":"INPUT","header":"方案');
+  });
+
+  it('generates boundary-aware navigation for every real page', () => {
+    const next = JSON.stringify(createPageNavigationRoutine(model, 'next'));
+    const prev = JSON.stringify(createPageNavigationRoutine(model, 'prev'));
+    const multiPageIds = model.views
+      .filter(view => view.pageIds.length > 1)
+      .flatMap(view => view.pageIds);
+    for (const pageId of multiPageIds) {
+      expect(next + prev).toContain(pageId);
     }
+    expect(next).toContain('currentPage');
+    expect(next).toContain('activeViewKey');
   });
 });

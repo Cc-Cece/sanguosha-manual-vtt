@@ -1,4 +1,3 @@
-import { cancelAllBlindSelectionsRoutine, createCancelBlindSelectionForSeatRoutine } from './blindSelection.js';
 import { createResetPrivatePeekRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 
 const EMPTY_SEAT_COLOR = '#8c7043';
@@ -33,7 +32,6 @@ const createApplyNicknameRoutine = (seatId: string, playerLabelId: string) => {
 };
 
 const createResetSeatDisplayRoutine = (seatId: string, playerLabelId: string, playerNumber: number) => [
-  ...createCancelBlindSelectionForSeatRoutine(playerNumber),
   { func: 'SET', collection: [seatId], property: 'player', value: '' },
   { func: 'SET', collection: [seatId], property: 'tableNickname', value: '' },
   { func: 'SET', collection: [seatId], property: 'display', value: 'playerName' },
@@ -168,10 +166,9 @@ export const clearAllSeatsRoutine = [
   {
     func: 'INPUT',
     header: '重置所有玩家座位？',
-    fields: [{ type: 'text', text: `将清理全部 ${MAX_PLAYER_COUNT} 个座位、桌内昵称、私密查看和暗牌选择状态，需要玩家重新入座。` }],
+    fields: [{ type: 'text', text: `将清理全部 ${MAX_PLAYER_COUNT} 个座位、桌内昵称和私密查看状态，需要玩家重新入座。` }],
     block: true,
   },
-  ...cancelAllBlindSelectionsRoutine,
   { func: 'SET', collection: seatIds, property: 'player', value: '' },
   { func: 'SET', collection: seatIds, property: 'tableNickname', value: '' },
   { func: 'SET', collection: seatIds, property: 'display', value: 'playerName' },

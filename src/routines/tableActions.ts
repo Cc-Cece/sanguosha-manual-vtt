@@ -1,42 +1,48 @@
-import { cancelAllBlindSelectionsRoutine } from './blindSelection.js';
 import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 
 const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
+const setupIds = ['player-management-panel', 'reserve-prep-drawer'];
 
-export const collectAndShuffleRoutine = [
-  { func: 'MOVE', from: ['recycle-zone'], to: ['draw-pile'], count: 'all', face: 0 },
-  { func: 'SHUFFLE', holder: ['draw-pile'], mode: 'true random' },
+export const lockLayoutRoutine = [
+  { func: 'SET', collection: moduleIds, property: 'movable', value: false },
+  { func: 'SET', collection: setupIds, property: 'movable', value: false },
+] as const;
+
+export const unlockLayoutRoutine = [
+  { func: 'SET', collection: moduleIds, property: 'movable', value: true },
+  { func: 'SET', collection: setupIds, property: 'movable', value: true },
+] as const;
+
+export const arrangeLayoutRoutine = [
+  ...Array.from({ length: 12 }, (_, i) => ({
+    func: 'MOVEXY',
+    collection: [`player-module-${i + 1}`],
+    x: 40 + (i % 4) * 440,
+    y: 90 + Math.floor(i / 4) * 270,
+  })),
+  { func: 'MOVEXY', collection: ['reserve-tray'], x: 640, y: 900 },
+] as const;
+
+export const resetTableRoutine = [
+  { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
+  ...resetAllPrivatePeeksRoutine,
+  { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
+  { func: 'CALL', widget: 'reserve-panel-controller', routine: 'fullTableResetRoutine' },
+  { func: 'FLIP', holder: ['draw-pile', 'identity-reserve', 'marker-reserve'], face: 0 },
+  { func: 'SHUFFLE', holder: ['draw-pile', 'identity-reserve'], mode: 'true random' },
+  ...arrangeLayoutRoutine,
 ] as const;
 
 export const quickShuffleRoutine = [
   { func: 'FLIP', holder: ['quick-shuffle-zone'], face: 0 },
   { func: 'SHUFFLE', holder: ['quick-shuffle-zone'], mode: 'true random' },
-  { func: 'INPUT', header: '洗牌完成', fields: [{ type: 'text', label: '提示', value: '快捷洗牌区已完成随机洗牌，牌叠已自动背置。' }], block: false },
 ] as const;
 
-export const lockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: false }] as const;
-export const unlockLayoutRoutine = [{ func: 'SET', collection: moduleIds, property: 'movable', value: true }] as const;
-
-export const arrangeLayoutRoutine = [
-  { func: 'SET', collection: ['player-module-1'], property: 'x', value: 685 }, { func: 'SET', collection: ['player-module-1'], property: 'y', value: 90 },
-  { func: 'SET', collection: ['player-module-2'], property: 'x', value: 1340 }, { func: 'SET', collection: ['player-module-2'], property: 'y', value: 390 },
-  { func: 'SET', collection: ['player-module-3'], property: 'x', value: 685 }, { func: 'SET', collection: ['player-module-3'], property: 'y', value: 790 },
-  { func: 'SET', collection: ['player-module-4'], property: 'x', value: 30 }, { func: 'SET', collection: ['player-module-4'], property: 'y', value: 390 },
-  { func: 'SET', collection: ['reserve-tray'], property: 'x', value: 30 }, { func: 'SET', collection: ['reserve-tray'], property: 'y', value: 760 },
+export const collectAndShuffleRoutine = [
+  { func: 'RECALL', holder: ['draw-pile'], owned: true, inHolder: true },
+  { func: 'FLIP', holder: ['draw-pile'], face: 0 },
+  { func: 'SHUFFLE', holder: ['draw-pile'], mode: 'true random' },
 ] as const;
-
-export const resetTableRoutine = [
-  { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
-  ...cancelAllBlindSelectionsRoutine,
-  ...resetAllPrivatePeeksRoutine,
-  { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
-  { func: 'FLIP', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], face: 0 },
-  { func: 'SHUFFLE', holder: ['draw-pile', 'general-reserve', 'identity-reserve'], mode: 'true random' },
-  ...arrangeLayoutRoutine,
-] as const;
-
-export const showReserveTrayRoutine = [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: true }] as const;
-export const hideReserveTrayRoutine = [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: false }] as const;
 
 export const toggleReserveTrayRoutine = [
   {
@@ -57,7 +63,7 @@ export const toggleHostToolbarRoutine = [
     operand2: true,
     thenRoutine: [
       { func: 'SET', collection: ['host-toolbar-panel'], property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-toolbar-btn'], property: 'text', value: '👑 房主工具' },
+      { func: 'SET', collection: ['toggle-toolbar-btn'], property: 'text', value: '▶ 展开' },
     ],
     elseRoutine: [
       { func: 'SET', collection: ['host-toolbar-panel'], property: 'display', value: true },
@@ -66,67 +72,14 @@ export const toggleHostToolbarRoutine = [
   },
 ] as const;
 
-const DECKBUILDING_FRAME_IDS = [
-  'reserve-prep-drawer',
-  'library-toolbar',
-  'library-toolbar-title',
-  'main-tab-generals',
-  'main-tab-extras',
-  'import-to-reserve-tray-btn',
-  'close-library-tray-btn',
-  'nav-sidebar',
-  'nav-sidebar-title',
-  'nav-gen-all',
-  'nav-gen-std',
-  'nav-gen-feng',
-  'nav-gen-huo',
-  'nav-gen-lin',
-  'nav-gen-shan',
-  'nav-gen-yijiang',
-  'nav-gen-sp',
-  'nav-gen-other',
-  'general-library-title',
-  'summary-sidebar',
-  'summary-sidebar-title',
-  'summary-generals-box',
-  'summary-extras-box',
-  'reset-draft-btn',
-  'action-bar',
-  'bulk-allow-all-btn',
-  'bulk-ban-all-btn',
-  'bulk-select-extras-btn',
-  'bulk-unselect-extras-btn',
-  'prev-page-btn',
-  'page-indicator',
-  'next-page-btn',
-];
-
-const DECKBUILDING_PAGE_IDS = [
-  'gen-page-1',
-  'gen-page-2',
-  'gen-page-3',
-  'gen-page-4',
-  'gen-page-5',
-  'extra-composer-title',
-  'extra-card-composer-zone',
-];
-
 export const toggleLibraryTrayRoutine = [
   {
     func: 'IF',
     operand1: '${PROPERTY display OF reserve-prep-drawer}',
     relation: '==',
     operand2: true,
-    thenRoutine: [
-      { func: 'SET', collection: [...DECKBUILDING_FRAME_IDS, ...DECKBUILDING_PAGE_IDS], property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
-    ],
-    elseRoutine: [
-      { func: 'SET', collection: DECKBUILDING_FRAME_IDS, property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-1'], property: 'display', value: true },
-      { func: 'SET', collection: ['gen-page-2', 'gen-page-3', 'gen-page-4', 'gen-page-5', 'extra-composer-title', 'extra-card-composer-zone'], property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
-    ],
+    thenRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'safeClosePanelRoutine' }],
+    elseRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'openPanelRoutine' }],
   },
 ] as const;
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { normalizeInputDialogs } from '../src/routines/inputDialog.js';
-import type { AssetCatalog } from '../src/types/assets.js';
 import { createUniversalPrototype } from '../src/variants/createUniversalPrototype.js';
+import { loadTestCatalog } from './helpers.js';
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
@@ -29,18 +29,6 @@ function collectInputSteps(value: unknown): Record<string, unknown>[] {
   visit(value);
   return results;
 }
-
-const emptyCatalog: AssetCatalog = {
-  sourceRoot: 'test',
-  generatedAt: '2026-08-06T00:00:00.000Z',
-  assets: [],
-  backs: {
-    generals: '/assets/general-back',
-    identities: '/assets/identity-back',
-    main: '/assets/main-back',
-  },
-  backAssets: [],
-};
 
 describe('global INPUT dialog normalization', () => {
   it('converts legacy information rows and localizes default buttons', () => {
@@ -89,7 +77,7 @@ describe('global INPUT dialog normalization', () => {
   });
 
   it('removes every legacy text field from the generated game file', () => {
-    const game = createUniversalPrototype(emptyCatalog);
+    const game = createUniversalPrototype(loadTestCatalog());
     const inputs = collectInputSteps(game);
 
     expect(inputs.length).toBeGreaterThan(0);
