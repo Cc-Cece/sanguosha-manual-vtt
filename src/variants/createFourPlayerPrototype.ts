@@ -2,6 +2,7 @@ import { createAssetDecks } from '../data/assetDecks.js';
 import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
+import { handZoneFlipFaceUpRoutine } from '../routines/playerHand.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
@@ -37,7 +38,10 @@ function tableWidgets(): Widget[] {
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
   ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
-    enterRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }],
+    enterRoutine: [
+      ...handZoneFlipFaceUpRoutine,
+      { func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }
+    ],
     leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] } : item);
 }
 
