@@ -1,3 +1,5 @@
+import { dialogText, dialogTitle } from './inputDialog.js';
+
 const MAX_PLAYER_COUNT = 12;
 
 const privateZoneIdFor = (number: number) => `private-zone-${number}`;
@@ -9,18 +11,12 @@ const confirmPrivateRevealRoutine = (number: number) => [
     func: 'INPUT',
     header: '查看身份牌？',
     fields: [
-      {
-        type: 'text',
-        label: '当前可见区域',
-        value: `玩家 ${number} 的私密展示区`,
-      },
-      {
-        type: 'text',
-        label: '确认结果',
-        value: `确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`,
-      },
+      dialogTitle(`当前区域：玩家 ${number} 的私密展示区`),
+      dialogText(`确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`),
     ],
     block: true,
+    confirmButtonText: '确认查看',
+    cancelButtonText: '取消',
   },
   {
     func: 'SET',
@@ -41,18 +37,12 @@ const confirmHandRevealRoutine = (cardId: string) => [
     func: 'INPUT',
     header: '查看身份牌？',
     fields: [
-      {
-        type: 'text',
-        label: '当前可见区域',
-        value: '个人手牌区',
-      },
-      {
-        type: 'text',
-        label: '确认结果',
-        value: '确认后仅当前手牌所有者可见身份牌正面。将身份牌移出手牌前，请先将其盖回。',
-      },
+      dialogTitle('当前区域：个人手牌区'),
+      dialogText('确认后仅当前手牌所有者可见身份牌正面。将身份牌移出手牌前，请先将其盖回。'),
     ],
     block: true,
+    confirmButtonText: '确认查看',
+    cancelButtonText: '取消',
   },
   { func: 'FLIP', collection: [cardId], face: 1 },
 ] as const;
@@ -62,18 +52,12 @@ const confirmPublicRevealRoutine = (cardId: string) => [
     func: 'INPUT',
     header: '公开身份牌？',
     fields: [
-      {
-        type: 'text',
-        label: '当前可见区域',
-        value: `公开或未标记区域（区域标识：\${PROPERTY parent OF ${cardId}}）`,
-      },
-      {
-        type: 'text',
-        label: '确认结果',
-        value: '确认后身份牌将以共享状态翻到正面，所有能够看到当前区域的玩家都能看到身份。',
-      },
+      dialogTitle(`当前区域：公开或未标记区域（区域标识：\${PROPERTY parent OF ${cardId}}）`),
+      dialogText('确认后身份牌将以共享状态翻到正面，所有能够看到当前区域的玩家都能看到身份。'),
     ],
     block: true,
+    confirmButtonText: '确认公开',
+    cancelButtonText: '取消',
   },
   { func: 'FLIP', collection: [cardId], face: 1 },
 ] as const;
