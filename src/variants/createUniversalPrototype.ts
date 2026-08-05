@@ -4,6 +4,7 @@ import { buildReserveModel } from '../data/reserveViewRegistry.js';
 import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
+import { normalizeInputDialogs } from '../routines/inputDialog.js';
 import { shuffleDrawPileRoutine, shuffleExtraReserveRoutine, shuffleGeneralReserveRoutine, shuffleIdentityReserveRoutine, shuffleMarkerReserveRoutine } from '../routines/pileShuffle.js';
 import { handZoneFlipFaceUpRoutine } from '../routines/playerHand.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
@@ -107,7 +108,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
   };
 
   for (const item of widgets) game[item.id] = item;
-  return game;
+  return normalizeInputDialogs(game);
 }
 
 export function createFourPlayerPrototype(catalog: AssetCatalog): GameFile {
