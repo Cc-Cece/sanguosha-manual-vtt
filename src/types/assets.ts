@@ -1,10 +1,23 @@
 export type AssetCategory = 'gameplay-standard-junzheng-160' | 'gameplay-extra' | 'generals' | 'identities' | 'markers-and-reference';
 
+export type GeneralAssetSubCategory =
+  | 'standard'
+  | 'wind'
+  | 'fire'
+  | 'forest'
+  | 'mountain'
+  | 'fame'
+  | 'sp'
+  | 'other-expansions';
+
+export type AssetSubCategory = GeneralAssetSubCategory | 'basic' | 'expansions' | 'identity' | 'health' | 'other';
+
 export interface CardAsset {
   id: string;
   sequence: number;
   cardId: number;
   category: AssetCategory;
+  subCategory?: AssetSubCategory;
   source: string;
   optimizedFile: string;
   asset: string;
