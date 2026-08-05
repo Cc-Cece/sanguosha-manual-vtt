@@ -46,3 +46,13 @@ jobs:
       - name: Run project checks
         working-directory: sanguosha-manual-vtt
         run: pnpm check
+
+      - name: Upload checked source snapshot
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: checked-source
+          path: |
+            sanguosha-manual-vtt/tests
+            sanguosha-manual-vtt/.gitignore
+          retention-days: 1
