@@ -1,7 +1,7 @@
 import { cancelAllBlindSelectionsRoutine, createCancelBlindSelectionForSeatRoutine } from './blindSelection.js';
 import { createResetPrivatePeekRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 
-const EMPTY_SEAT_COLOR = '#6d2922';
+const EMPTY_SEAT_COLOR = '#8c7043';
 const MAX_PLAYER_COUNT = 12;
 
 const seatIds = Array.from({ length: MAX_PLAYER_COUNT }, (_, index) => `seat-${index + 1}`);
@@ -23,11 +23,14 @@ const nicknameInputField = (value: string) => ({
   regexHint: '请输入 1–10 个字符。昵称只用于本桌显示。',
 });
 
-const createApplyNicknameRoutine = (seatId: string, playerLabelId: string) => [
-  { func: 'SET', collection: [seatId], property: 'tableNickname', value: '${seatNickname}' },
-  { func: 'SET', collection: [seatId], property: 'display', value: '${seatNickname}' },
-  { func: 'LABEL', label: [playerLabelId], value: '☰ ${seatNickname}' },
-] as const;
+const createApplyNicknameRoutine = (seatId: string, playerLabelId: string) => {
+  const playerNumber = seatNumberFromId(seatId);
+  return [
+    { func: 'SET', collection: [seatId], property: 'tableNickname', value: '${seatNickname}' },
+    { func: 'SET', collection: [seatId], property: 'display', value: '${seatNickname}' },
+    { func: 'LABEL', label: [playerLabelId], value: `${playerNumber}` },
+  ] as const;
+};
 
 const createResetSeatDisplayRoutine = (seatId: string, playerLabelId: string, playerNumber: number) => [
   ...createCancelBlindSelectionForSeatRoutine(playerNumber),
@@ -35,7 +38,7 @@ const createResetSeatDisplayRoutine = (seatId: string, playerLabelId: string, pl
   { func: 'SET', collection: [seatId], property: 'tableNickname', value: '' },
   { func: 'SET', collection: [seatId], property: 'display', value: 'playerName' },
   { func: 'SET', collection: [seatId], property: 'color', value: EMPTY_SEAT_COLOR },
-  { func: 'LABEL', label: [playerLabelId], value: `☰ 玩家 ${playerNumber}` },
+  { func: 'LABEL', label: [playerLabelId], value: `${playerNumber}` },
   ...createResetPrivatePeekRoutine(playerNumber),
 ] as const;
 
@@ -176,7 +179,7 @@ export const clearAllSeatsRoutine = [
   ...Array.from({ length: MAX_PLAYER_COUNT }, (_, index) => ({
     func: 'LABEL',
     label: [`player-label-${index + 1}`],
-    value: `☰ 玩家 ${index + 1}`,
+    value: `${index + 1}`,
   })),
   ...resetAllPrivatePeeksRoutine,
 ] as const;
