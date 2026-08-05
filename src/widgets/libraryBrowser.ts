@@ -15,13 +15,16 @@ export function createLibraryTableWidgets(): Widget[] {
     widget('close-library-tray-btn', 'button', { parent, x: 1330, y: 14, width: 150, height: 36, text: '🙈 收起备牌面板', display: false, layer: 101,
       color: '#382c1e', css: { fontSize: '13px', color: '#ffe0a0', borderRadius: '6px', border: '1px solid #a88448' }, clickRoutine: toggleLibraryTrayRoutine }),
 
-    label('general-library-title', '🎴 武将牌全集 (正面向面网格展示，直接拖至主桌备牌托盘)', 15, 62, 1470, parent, { display: false, layer: 101 }),
-    freeZone('general-library-view', '🎴 武将牌全集陈列网格', 15, 90, 1470, 480, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 96, stackOffsetY: 132 }),
+    label('general-library-title', '🎴 标准武将包 (25张 ｜ 正面向面平铺，直接拖至主桌备牌托盘)', 15, 62, 1470, parent, { display: false, layer: 101 }),
+    freeZone('gen-row-std', '🎴 标准武将包 (25张)', 15, 90, 1470, 150, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 98, stackOffsetY: 0 }),
 
-    label('identity-composer-title', '👑 身份牌全集 (正面向面网格展示)', 15, 580, 720, parent, { display: false, layer: 101 }),
-    freeZone('identity-composer-zone', '👑 身份牌全集陈列网格', 15, 608, 720, 470, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 96, stackOffsetY: 132 }),
+    label('general-exp-title', '🎴 扩展包武将 (风/火/林/山/一将/SP ｜ 正面向面平铺)', 15, 255, 1470, parent, { display: false, layer: 101 }),
+    freeZone('gen-row-exp', '🎴 扩展包武将集', 15, 283, 1470, 150, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 98, stackOffsetY: 0 }),
 
-    label('extra-composer-title', '🗡️ 扩展牌全集 (正面向面网格展示)', 750, 580, 735, parent, { display: false, layer: 101 }),
-    freeZone('extra-card-composer-zone', '🗡️ 扩展牌全集陈列网格', 750, 608, 735, 470, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 96, stackOffsetY: 132 }),
+    label('identity-composer-title', '👑 全套身份牌 (主/忠/反/内 ｜ 正面向面平铺)', 15, 448, 1470, parent, { display: false, layer: 101 }),
+    freeZone('identity-composer-zone', '👑 全套身份牌集', 15, 476, 1470, 150, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 98, stackOffsetY: 0 }),
+
+    label('extra-composer-title', '🗡️ 军争扩展牌 (52张 ｜ 正面向面平铺)', 15, 641, 1470, parent, { display: false, layer: 101 }),
+    freeZone('extra-card-composer-zone', '🗡️ 军争扩展牌集', 15, 669, 1470, 150, parent, { display: false, layer: 101, alignChildren: true, preventPiles: true, stackOffsetX: 98, stackOffsetY: 0 }),
   ];
 }
