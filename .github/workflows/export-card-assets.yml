@@ -1,4 +1,4 @@
-name: Export card assets
+name: Export repository snapshot
 
 on:
   pull_request:
@@ -21,12 +21,12 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
-      - name: Archive card assets
-        run: zip -r card-assets.zip assets/cards-webp
+      - name: Archive repository snapshot
+        run: zip -r repository-snapshot.zip . -x '.git/*' 'node_modules/*'
 
-      - name: Upload card assets artifact
+      - name: Upload repository snapshot artifact
         uses: actions/upload-artifact@v4
         with:
-          name: card-assets
-          path: card-assets.zip
+          name: repository-snapshot
+          path: repository-snapshot.zip
           retention-days: 1
