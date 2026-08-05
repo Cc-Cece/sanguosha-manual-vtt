@@ -129,7 +129,7 @@ export function createOpenReservePanelRoutine(model: ReserveModel): RoutineStep[
   return [
     { func: 'CALL', widget: 'reserve-panel-controller', routine: 'restoreReservedCardsRoutine' },
     { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: true },
-    { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
+    { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '✅ 同步并收起' },
     ...switchViewSteps(model, initialView),
   ];
 }
@@ -139,5 +139,18 @@ export function createCloseReservePanelRoutine(model: ReserveModel): RoutineStep
     { func: 'SET', collection: model.allPageIds, property: 'display', value: false },
     { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: false },
     { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📚 牌库编组' },
+  ];
+}
+
+export function createSafeCloseReservePanelRoutine(model: ReserveModel): RoutineStep[] {
+  return [
+    {
+      func: 'IF',
+      operand1: '${PROPERTY draftState OF reserve-panel-controller}',
+      relation: '==',
+      operand2: 'confirmed',
+      thenRoutine: [{ func: 'CALL', widget: 'reserve-panel-controller', routine: 'syncAndCloseRoutine' }],
+      elseRoutine: createCloseReservePanelRoutine(model),
+    },
   ];
 }
