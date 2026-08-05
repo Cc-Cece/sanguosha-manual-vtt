@@ -3,6 +3,7 @@ name: Export card assets
 on:
   pull_request:
     branches:
+      - master
       - feature/library-and-deckbuilding-table
       - chore/organize-card-assets
     paths:
