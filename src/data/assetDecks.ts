@@ -1,5 +1,6 @@
 import { createIdentityCardClickRoutine } from '../routines/identityReveal.js';
-import { createToggleReserveCardRoutine, selectedCss } from '../routines/reserveCardRoutines.js';
+import { selectedCss } from '../routines/reserveCardRoutines.js';
+import { createReserveCardClickRoutine } from '../routines/reserveCardInteraction.js';
 import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js';
 import type { ReserveModel } from '../types/reserveLibrary.js';
 import type { Widget } from '../types/vtt.js';
@@ -66,7 +67,7 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
         reservePendingRemoval: false,
         reserveVisualState: 'selected',
         css: selectedCss(reserveMeta.libraryType),
-        clickRoutine: createToggleReserveCardRoutine(reserveMeta.libraryType),
+        clickRoutine: createReserveCardClickRoutine(reserveMeta.libraryType),
       });
     }
 
