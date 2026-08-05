@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { buildReserveModel } from '../src/data/reserveViewRegistry.js';
-import { createFullTableReserveResetRoutine, createRestoreReservedCardsRoutine } from '../src/routines/reserveImportRoutines.js';
+import {
+  createCleanupReturnedPendingCardsRoutine,
+  createFullTableReserveResetRoutine,
+  createRestoreReservedCardsRoutine,
+} from '../src/routines/reserveImportRoutines.js';
 import { loadTestCatalog } from './helpers.js';
 
 describe('safe reserve-card restoration', () => {
@@ -25,6 +29,16 @@ describe('safe reserve-card restoration', () => {
   it('uses collection MOVE syntax for every restore operation', () => {
     expect(serialized).toContain('"func":"MOVE","collection":"restore_');
     expect(serialized).not.toContain('"func":"MOVE","from":"restore_');
+  });
+
+  it('ejects a pending card immediately after it returns to its reserve tray', () => {
+    const cleanup = JSON.stringify(createCleanupReturnedPendingCardsRoutine(model));
+    expect(cleanup).toContain('"property":"reservePendingRemoval","relation":"==","value":true');
+    expect(cleanup).toContain('"property":"parent","relation":"==","value":"general-reserve"');
+    expect(cleanup).toContain('"property":"parent","relation":"==","value":"extra-reserve"');
+    expect(cleanup).toContain('"func":"MOVE","collection":"cleanup_');
+    expect(cleanup).not.toContain('"func":"MOVE","from":"cleanup_');
+    expect(cleanup).toContain('"property":"reserveVisualState","value":"unselected"');
   });
 
   it('force-restores every managed card only during a complete table reset', () => {
