@@ -51,17 +51,22 @@ export function createLibraryTableWidgets(): Widget[] {
     widget('nav-gen-other', 'button', { parent, x: 18, y: 404, width: 178, height: 32, text: '其他扩展武将', display: false, layer: 101,
       color: '#1a2e27', css: { fontSize: '12px', color: '#c5e0d4', borderRadius: '5px' }, clickRoutine: switchGenExpRoutine }),
 
-    // 4. 中间手牌式部分重叠牌带浏览视口 (Middle Overlapping Browsing Viewport)
+    // 4. 中间共享主视口与 5 页武将 / 附加牌多行手牌式 Holder
     label('general-library-title', '🎴 武将牌库 (315张 ｜ 手牌式 56px 重叠平铺，点击切换 [允许 / Ban])', 210, 65, 980, parent, { display: false, layer: 101 }),
 
-    spreadRowZone('gen-page-1', '🎴 武将牌库 - 第 1 页 (68张)', 210, 92, 980, parent, { display: false, layer: 101 }, 56),
-    spreadRowZone('gen-page-2', '🎴 武将牌库 - 第 2 页 (68张)', 210, 92, 980, parent, { display: false, layer: 101 }, 56),
-    spreadRowZone('gen-page-3', '🎴 武将牌库 - 第 3 页 (68张)', 210, 92, 980, parent, { display: false, layer: 101 }, 56),
-    spreadRowZone('gen-page-4', '🎴 武将牌库 - 第 4 页 (68张)', 210, 92, 980, parent, { display: false, layer: 101 }, 56),
-    spreadRowZone('gen-page-5', '🎴 武将牌库 - 第 5 页 (43张)', 210, 92, 980, parent, { display: false, layer: 101 }, 56),
+    ...[1, 2, 3, 4, 5].flatMap(page => [
+      widget(`gen-page-${page}`, 'basic', { parent, x: 210, y: 92, width: 980, height: 560, display: false, movable: false, layer: 101, color: '#0000' }),
+      spreadRowZone(`gen-page-${page}-row-1`, `🎴 第 ${page} 页 - 第 1 行 (17张)`, 0, 0, 980, `gen-page-${page}`, { display: true, layer: 101 }, 56),
+      spreadRowZone(`gen-page-${page}-row-2`, `🎴 第 ${page} 页 - 第 2 行 (17张)`, 0, 140, 980, `gen-page-${page}`, { display: true, layer: 101 }, 56),
+      spreadRowZone(`gen-page-${page}-row-3`, `🎴 第 ${page} 页 - 第 3 行 (17张)`, 0, 280, 980, `gen-page-${page}`, { display: true, layer: 101 }, 56),
+      spreadRowZone(`gen-page-${page}-row-4`, `🎴 第 ${page} 页 - 第 4 行 (17张)`, 0, 420, 980, `gen-page-${page}`, { display: true, layer: 101 }, 56),
+    ]),
 
-    label('extra-composer-title', '🗡️ 军争与附加扩展牌 (31张 ｜ 手牌式 56px 重叠平铺)', 210, 665, 980, parent, { display: false, layer: 101 }),
-    spreadRowZone('extra-card-composer-zone', '🗡️ 军争与附加扩展牌集', 210, 692, 980, parent, { display: false, layer: 101 }, 56),
+    label('extra-composer-title', '🗡️ 军争与附加扩展牌 (31张 ｜ 共享主视口手牌式平铺)', 210, 65, 980, parent, { display: false, layer: 101 }),
+    widget('extra-card-composer-zone', 'basic', { parent, x: 210, y: 92, width: 980, height: 560, display: false, movable: false, layer: 101, color: '#0000' }),
+    spreadRowZone('extra-row-1', '🗡️ 装备附加牌 (12张)', 0, 0, 980, 'extra-card-composer-zone', { display: true, layer: 101 }, 56),
+    spreadRowZone('extra-row-2', '🗡️ 锦囊附加牌 (12张)', 0, 140, 980, 'extra-card-composer-zone', { display: true, layer: 101 }, 56),
+    spreadRowZone('extra-row-3', '🗡️ 特殊模式牌 (7张)', 0, 280, 980, 'extra-card-composer-zone', { display: true, layer: 101 }, 56),
 
     // 5. 右侧实时摘要侧栏 (Right Summary Sidebar)
     widget('summary-sidebar', 'basic', { parent, x: 1200, y: 62, width: 288, height: 950, display: false, movable: false, layer: 101,

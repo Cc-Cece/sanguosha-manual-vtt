@@ -30,10 +30,28 @@ export const assembleExtraDeckRoutine = [
 ] as const;
 
 export const importToReserveTrayRoutine = [
-  { func: 'MOVE', from: ['gen-page-1', 'gen-page-2', 'gen-page-3', 'gen-page-4', 'gen-page-5'], to: ['general-reserve'], count: 'all', face: 0 },
-  { func: 'MOVE', from: ['extra-card-composer-zone'], to: ['extra-reserve'], count: 'all', face: 0 },
+  {
+    func: 'MOVE',
+    from: [
+      'gen-page-1-row-1', 'gen-page-1-row-2', 'gen-page-1-row-3', 'gen-page-1-row-4',
+      'gen-page-2-row-1', 'gen-page-2-row-2', 'gen-page-2-row-3', 'gen-page-2-row-4',
+      'gen-page-3-row-1', 'gen-page-3-row-2', 'gen-page-3-row-3', 'gen-page-3-row-4',
+      'gen-page-4-row-1', 'gen-page-4-row-2', 'gen-page-4-row-3', 'gen-page-4-row-4',
+      'gen-page-5-row-1', 'gen-page-5-row-2', 'gen-page-5-row-3', 'gen-page-5-row-4',
+    ],
+    to: ['general-reserve'],
+    count: 'all',
+    face: 0,
+  },
+  {
+    func: 'MOVE',
+    from: ['extra-row-1', 'extra-row-2', 'extra-row-3'],
+    to: ['extra-reserve'],
+    count: 'all',
+    face: 0,
+  },
   { func: 'SET', collection: ['reserve-prep-drawer'], property: 'display', value: false },
-  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '允许的武将牌与选中的附加牌已全部盖面注入主桌备牌托盘！' }], block: false },
+  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '选中的武将牌与附加牌已全部盖面注入主桌备牌托盘！' }], block: false },
 ] as const;
 
 export const apply4PStandardPresetRoutine = [

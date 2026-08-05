@@ -25,31 +25,23 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
 
   const cards = assets.map((asset, idx) => {
     let targetHolder = definition.holder;
-    let relX = 0;
-    let relY = 5;
 
     if (category === 'generals') {
       const page = Math.floor(idx / 68) + 1;
       const inPageIndex = idx % 68;
-      const col = inPageIndex % 17;
-      const row = Math.floor(inPageIndex / 17);
-      targetHolder = `gen-page-${page}`;
-      relX = col * 56;
-      relY = row * 140 + 5;
+      const row = Math.floor(inPageIndex / 17) + 1;
+      targetHolder = `gen-page-${page}-row-${row}`;
     } else if (category === 'gameplay-extra') {
-      const col = idx % 12;
-      const row = Math.floor(idx / 12);
-      targetHolder = 'extra-card-composer-zone';
-      relX = col * 56;
-      relY = row * 140 + 5;
+      const row = Math.floor(idx / 12) + 1;
+      targetHolder = `extra-row-${row}`;
     }
 
     return widget(`card-${asset.sequence}`, 'card', {
       deck: definition.deck,
       cardType: `type-${asset.sequence}`,
       parent: targetHolder,
-      x: relX,
-      y: relY,
+      x: 0,
+      y: 0,
       activeFace: category === 'gameplay-standard-junzheng-160' ? 0 : 1,
     });
   });
