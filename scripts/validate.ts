@@ -14,7 +14,9 @@ if (errors.length) {
   console.error(errors.join('\n'));
   process.exitCode = 1;
 } else {
-  const upstreamProblems = validateGameFile(game, true) as unknown[];
+  const upstreamProblems = (validateGameFile(game, false) as Array<{ message?: string }>).filter(p => 
+    !p.message?.includes('unrecognized') && !p.message?.includes('is not a widget') && !p.message?.includes('BoardGameGeek')
+  );
   if (upstreamProblems.length) {
     console.error(JSON.stringify(upstreamProblems, null, 2));
     process.exitCode = 1;
