@@ -28,6 +28,20 @@ describe('player module visual hierarchy', () => {
     expect(css.border).toContain('var(--color)');
   });
 
+  it('keeps the Seat and header controls above the decorative header background', () => {
+    const header = widgetById('player-header-1');
+    const seat = widgetById('seat-1');
+    const leaveButton = widgetById('leave-seat-1');
+    const peekButton = widgetById('toggle-perspective-1');
+    const headerCss = header.css as Record<string, unknown>;
+
+    expect(Number(seat.layer)).toBeGreaterThan(Number(header.layer));
+    expect(Number(leaveButton.layer)).toBeGreaterThan(Number(header.layer));
+    expect(Number(peekButton.layer)).toBeGreaterThan(Number(header.layer));
+    expect(headerCss.pointerEvents).toBe('none');
+    expect((seat.css as Record<string, unknown>).cursor).toBe('pointer');
+  });
+
   it('moves the Seat number to a bottom-right numeric badge', () => {
     const badge = widgetById('player-label-1');
 
