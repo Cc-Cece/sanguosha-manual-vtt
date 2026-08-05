@@ -1,32 +1,52 @@
-name: Export repository snapshot
+name: Organize card assets
 
 on:
   pull_request:
     branches:
       - master
-      - feature/library-and-deckbuilding-table
-      - chore/organize-card-assets
     paths:
       - .github/workflows/export-card-assets.yml
       - assets/cards-webp/**
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  export:
+  organize:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
-      - name: Check out repository
+      - name: Check out card organization branch
         uses: actions/checkout@v4
-
-      - name: Archive repository snapshot
-        run: zip -r repository-snapshot.zip . -x '.git/*' 'node_modules/*'
-
-      - name: Upload repository snapshot artifact
-        uses: actions/upload-artifact@v4
         with:
-          name: repository-snapshot
-          path: repository-snapshot.zip
-          retention-days: 1
+          ref: chore/organize-card-assets
+          fetch-depth: 0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Organize and rename card assets
+        run: pnpm assets:organize
+
+      - name: Validate project
+        run: pnpm check
+
+      - name: Remove temporary workflow and commit results
+        run: |
+          rm -f .github/workflows/export-card-assets.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: classify and rename card assets"
+          git push origin HEAD:chore/organize-card-assets
