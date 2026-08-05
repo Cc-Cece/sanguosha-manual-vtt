@@ -5,26 +5,33 @@ export function widget(id: string, type: Widget['type'], properties: Omit<Widget
 }
 
 export function label(id: string, text: string, x: number, y: number, width: number, parent?: string): Widget {
-  return widget(id, 'label', { text, x, y, width, height: 26, ...(parent ? { parent } : {}), movable: false, layer: 2,
-    css: { color: '#f5dfb0', fontSize: '16px', textAlign: 'center', fontWeight: '600' } });
+  return widget(id, 'label', { text, x, y, width, height: 24, ...(parent ? { parent } : {}), movable: false, layer: 3,
+    css: { color: '#f3dfb3', fontSize: '15px', textAlign: 'center', fontWeight: '600', textShadow: '0 1px 2px #000' } });
 }
 
-export function zone(id: string, text: string, x: number, y: number, width: number, height: number, parent?: string): Widget {
-  return widget(id, 'holder', { x, y, width, height, ...(parent ? { parent } : {}), text, movable: false, alignChildren: true,
-    preventPiles: true, stackOffsetX: 18, stackOffsetY: 2, color: '#14251ecc', textColor: '#f4ddb0',
-    css: { border: '2px dashed #b99457', borderRadius: '8px' } });
+const zoneBase = (text: string, x: number, y: number, width: number, height: number, parent?: string) => ({
+  x, y, width, height, ...(parent ? { parent } : {}), text, movable: false, dropTarget: { type: 'card' }, textColor: '#ead9b4',
+});
+
+export function pileZone(id: string, text: string, x: number, y: number, width = 96, height = 138, parent?: string): Widget {
+  return widget(id, 'holder', { ...zoneBase(text, x, y, width, height, parent), alignChildren: true, preventPiles: false,
+    stackOffsetX: 0, stackOffsetY: 0, color: '#172a25d9', css: { border: '2px solid #b89455', borderRadius: '8px' } });
 }
 
-export const cardBack = (labelText: string) => ({ objects: [{ type: 'text', x: 5, y: 45, width: 80, height: 30,
+export function freeZone(id: string, text: string, x: number, y: number, width: number, height: number, parent?: string): Widget {
+  return widget(id, 'holder', { ...zoneBase(text, x, y, width, height, parent), alignChildren: false, preventPiles: false,
+    color: '#1e4136a8', css: { border: '2px solid #789b83', borderRadius: '8px' } });
+}
+
+export function handZone(id: string, text: string, x: number, y: number, width: number, height: number): Widget {
+  return widget(id, 'holder', { ...zoneBase(text, x, y, width, height), alignChildren: true, preventPiles: true,
+    childrenPerOwner: true, stackOffsetX: 54, stackOffsetY: 0, color: '#16251fe8',
+    css: { border: '3px solid #d2ae64', borderRadius: '12px', boxShadow: '0 -4px 18px #0009' } });
+}
+
+export const cardBack = (labelText: string) => ({ objects: [{ type: 'text', x: 5, y: 48, width: 80, height: 28,
   value: labelText, color: '#edd394', fontSize: 17, textAlign: 'center' }],
   css: { background: 'radial-gradient(circle,#81312a,#3a1010)', border: '3px double #cba75e', borderRadius: '7px' } });
 
-export const textCardFace = (title: string, subtitle: string, color = '#f2e5c5') => ({ objects: [
-  { type: 'text', x: 5, y: 12, width: 80, height: 38, value: title, color: '#28170d', fontSize: 19, textAlign: 'center', css: { fontWeight: '700' } },
-  { type: 'text', x: 5, y: 70, width: 80, height: 22, value: subtitle, color: '#5d3822', fontSize: 12, textAlign: 'center' },
-], css: { background: color, border: '3px solid #71462a', borderRadius: '7px' } });
-
-export const dynamicTextCardFace = (titleProperty: string, subtitleProperty: string, color = '#f2e5c5') => ({ objects: [
-  { type: 'text', x: 5, y: 12, width: 80, height: 38, color: '#28170d', fontSize: 19, textAlign: 'center', dynamicProperties: { value: titleProperty }, css: { fontWeight: '700' } },
-  { type: 'text', x: 5, y: 70, width: 80, height: 32, color: '#5d3822', fontSize: 12, textAlign: 'center', dynamicProperties: { value: subtitleProperty } },
-], css: { background: color, border: '3px solid #71462a', borderRadius: '7px' } });
+export const assetCardFace = () => ({ border: false, radius: 6, objects: [{ type: 'image', x: 0, y: 0, width: 90, height: 126,
+  color: 'transparent', dynamicProperties: { value: 'asset' }, css: { backgroundSize: '100% 100%', backgroundRepeat: 'no-repeat', backgroundPosition: 'center' } }] });

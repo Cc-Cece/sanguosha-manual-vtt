@@ -1,57 +1,56 @@
-import { GENERALS, PLAYING_CARDS } from '../data/placeholders.js';
-import { resetTableRoutine, shuffleRoutine } from '../routines/tableActions.js';
+import { createAssetDecks } from '../data/assetDecks.js';
+import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
+import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, resetTableRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
+import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
-import { cardBack, dynamicTextCardFace, label, widget, zone } from '../widgets/factory.js';
+import { freeZone, handZone, label, pileZone, widget } from '../widgets/factory.js';
 import { createPlayerModule } from '../widgets/playerModule.js';
 
-function centralWidgets(): Widget[] {
+function tableWidgets(): Widget[] {
+  const allSeats = ['seat-1', 'seat-2', 'seat-3', 'seat-4'];
   return [
-    widget('table-background', 'basic', { x: 0, y: 0, width: 1800, height: 1200, movable: false, layer: -10,
-      color: '#173c31', css: { background: 'radial-gradient(circle,#285746,#102c25)', border: '18px solid #4b2d1c' } }),
-    label('table-title', '三国杀 · 4人弱规则测试桌', 650, 362, 500),
-    zone('general-deck-holder', '武将牌堆', 650, 430, 100, 140),
-    zone('main-deck-holder', '主牌堆', 820, 430, 100, 140),
-    zone('discard-holder', '弃牌区', 990, 430, 120, 140),
-    zone('resolution-holder', '出牌／结算区', 690, 620, 420, 150),
-    widget('shuffle-button', 'button', { x: 760, y: 790, width: 130, height: 44, text: '洗牌测试', color: '#6b2a23', clickRoutine: shuffleRoutine }),
-    widget('reset-button', 'button', { x: 920, y: 790, width: 160, height: 44, text: '整桌重置测试', color: '#6b2a23', clickRoutine: resetTableRoutine }),
-    widget('main-deck', 'deck', { x: 820, y: 430, cardDefaults: { width: 90, height: 126, enlarge: 2.3 },
-      faceTemplates: [cardBack('三国杀'), dynamicTextCardFace('name', 'category')],
-      cardTypes: Object.fromEntries(PLAYING_CARDS.map(([name, category], index) => [`playing-${index + 1}`, { name, category }])) }),
-    widget('general-deck', 'deck', { x: 650, y: 430, cardDefaults: { width: 90, height: 126, enlarge: 2.5 },
-      faceTemplates: [cardBack('武将'), dynamicTextCardFace('name', 'detail', '#d9c89d')],
-      cardTypes: Object.fromEntries(GENERALS.map(([name, kingdom, health], index) => [`general-${index + 1}`, { name, detail: `${kingdom} · ${health}体力` }])) }),
-    widget('identity-deck', 'deck', { x: 0, y: 0, cardDefaults: { width: 80, height: 112, enlarge: 2.5 },
-      faceTemplates: [cardBack('身份牌'), dynamicTextCardFace('name', 'detail', '#e8d5b0')],
-      cardTypes: Object.fromEntries(['主公', '忠臣', '反贼', '内奸'].map((name, index) => [`identity-${index + 1}`, { name, detail: '仅本座位可见' }])) }),
+    widget('table-background', 'basic', { x: 0, y: 0, width: 1800, height: 1200, movable: false, layer: -10, color: '#173c31',
+      css: { background: 'radial-gradient(circle,#285746,#102c25)', border: '18px solid #4b2d1c' } }),
+    label('table-title', '三国杀 · 4 人人工桌面', 650, 326, 500),
+    label('public-table-hint', '公共桌面｜自由放置・重叠・翻面・旋转', 665, 720, 470),
+    widget('table-controller', 'basic', { x: 0, y: 0, width: 1, height: 1, display: false, movable: false, updateHandCountsRoutine }),
+    widget('host-toolbar', 'basic', { x: 570, y: 18, width: 660, height: 54, movable: false, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'],
+      color: '#20252be8', css: { border: '2px solid #b5965b', borderRadius: '9px' } }),
+    label('host-toolbar-title', '玩家 1 布局工具', 10, 15, 125, 'host-toolbar'),
+    widget('lock-layout', 'button', { parent: 'host-toolbar', x: 140, y: 9, width: 90, height: 36, text: '锁定布局', clickRoutine: lockLayoutRoutine }),
+    widget('unlock-layout', 'button', { parent: 'host-toolbar', x: 238, y: 9, width: 90, height: 36, text: '解锁布局', clickRoutine: unlockLayoutRoutine }),
+    widget('arrange-layout', 'button', { parent: 'host-toolbar', x: 336, y: 9, width: 90, height: 36, text: '自动整理', clickRoutine: arrangeLayoutRoutine }),
+    widget('collect-shuffle', 'button', { parent: 'host-toolbar', x: 434, y: 9, width: 100, height: 36, text: '收拢并洗牌', clickRoutine: collectAndShuffleRoutine }),
+    widget('reset-table', 'button', { parent: 'host-toolbar', x: 542, y: 9, width: 105, height: 36, text: '整桌重置', color: '#74322b', clickRoutine: resetTableRoutine }),
+    pileZone('draw-pile', '摸牌堆', 735, 430),
+    freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
+    handZone('personal-hand', '我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
+  ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
+    enterRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }],
+    leaveRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] } : item);
+}
+
+function reserveWidgets(): Widget[] {
+  return [
+    widget('reserve-tray', 'basic', { ...RESERVE_TRAY, movable: true, color: '#3a1d18e8',
+      css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
+    label('reserve-title', '备牌托盘｜不参与常规洗牌', 15, 8, 490, 'reserve-tray'),
+    pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray'),
+    pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray'),
+    pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray'),
+    pileZone('marker-reserve', '标记／参考', 384, 42, 118, 145, 'reserve-tray'),
   ];
 }
 
-function cards(): Widget[] {
-  const playing = PLAYING_CARDS.map(([name, category], index) => widget(`playing-card-${index + 1}`, 'card', {
-    deck: 'main-deck', cardType: `playing-${index + 1}`, parent: 'main-deck-holder', activeFace: 0,
-  }));
-  const generals = GENERALS.map(([name, kingdom, health], index) => widget(`general-card-${index + 1}`, 'card', {
-    deck: 'general-deck', cardType: `general-${index + 1}`, parent: 'general-deck-holder', activeFace: 0,
-  }));
-  return [...playing, ...generals];
-}
-
-export function createFourPlayerPrototype(): GameFile {
-  const widgets = [
-    ...centralWidgets(),
-    ...Array.from({ length: 4 }, (_, index) => createPlayerModule(index)).flat(),
-    ...cards(),
-  ];
-  const game: GameFile = {
-    _meta: { version: 17, info: {
-      name: '三国杀人工桌面', description: '4人原生结构测试版：弱规则、私密手牌、安全座位。', players: '4', mode: 'vs',
-      language: 'zh-CN', attribution: '占位素材；仅使用 VirtualTabletop 通用结构。',
-      ruleText: '所有规则、体力、技能、距离、伤害、回合与胜负均由玩家人工裁定。',
-      helpText: '先入座；拖动牌完成发牌与出牌。PC 悬停、触屏长按使用原生放大。', variant: '4人原型',
-      bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms', image: '/i/game-icons.net/delapouite/round-table.svg',
-    } },
-  };
+export function createFourPlayerPrototype(catalog: AssetCatalog): GameFile {
+  const widgets = [...tableWidgets(), ...reserveWidgets(), ...Array.from({ length: 4 }, (_, i) => createPlayerModule(i)).flat(), ...createAssetDecks(catalog)];
+  const game: GameFile = { _meta: { version: 17, info: {
+    name: '三国杀人工桌面', description: '4 人真实牌面适配版：弱规则、私密手牌、安全 Seat 与自由公共区。', players: '4', mode: 'vs', language: 'zh-CN',
+    attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
+    ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
+    helpText: '玩家 1 管理布局；牌只在待回收区点击收拢并洗牌。PC 悬停、触屏长按使用原生放大。', variant: '4 人 Phase 1.1',
+    bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms', image: '/i/game-icons.net/delapouite/round-table.svg',
+  } } };
   for (const item of widgets) game[item.id] = item;
   return game;
 }

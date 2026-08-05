@@ -1,12 +1,18 @@
-# 三国杀人工 VirtualTabletop（4 人原型）
+# 三国杀人工 VirtualTabletop（4 人 Phase 1.1）
 
-这是从 VirtualTabletop 原生组件结构重新构建的弱规则联网桌面。当前版本只支持 4 人，用于验证 Seat 安全、私密可见性、模块布局和原生同步；不自动处理任何三国杀规则。
+这是弱规则、强同步和强私密可见性的 4 人联网桌面。它不自动处理技能、距离、伤害、回合或胜负。
 
 ```powershell
 pnpm install
 pnpm check
 ```
 
-构建产物为 `dist/Sanguosha-Manual-4P-Prototype.vtt`，压缩包内只含 `0.json`。将该文件导入本地 VirtualTabletop 后，建议至少开启一个观察者窗口和两个玩家窗口验证隐私与同步。
+构建环境需要可从 `PATH` 调用的 FFmpeg，用于生成 WebP 牌面缓存。
 
-设计说明见 [架构](docs/architecture.md)、[参考映射](docs/reference-structure-map.md) 和 [阶段计划](docs/development-plan.md)。
+构建会只读加载相邻参考目录中的 552 张牌面，生成：
+
+`dist/Sanguosha-Manual-4P-Prototype.vtt`
+
+包内包含一个 `0.json` 和经过网页压缩的牌面资产。设计与来源见 [架构](docs/architecture.md)、[牌面来源](docs/asset-sources.md)、[参考映射](docs/reference-structure-map.md) 和 [阶段计划](docs/development-plan.md)。
+
+当前只生成 4 人版本。导入本地 VirtualTabletop 后，应使用两个玩家会话和一个观察者会话完成计划书中保留的人工隐私／同步验收。

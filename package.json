@@ -6,11 +6,12 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "build": "tsx scripts/build.ts",
+    "assets": "tsx scripts/prepare-assets.ts",
+    "build": "pnpm assets && tsx scripts/build.ts",
     "validate": "tsx scripts/validate.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "check": "pnpm typecheck && pnpm validate && pnpm test && pnpm build"
+    "check": "pnpm typecheck && pnpm build && pnpm validate && pnpm test"
   },
   "devDependencies": {
     "@types/node": "^24.0.0",

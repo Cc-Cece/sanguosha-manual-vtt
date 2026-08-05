@@ -1,4 +1,4 @@
-import { CENTRAL_SAFE_ZONE, PLAYER_MODULES, TABLE } from '../layouts/table.js';
+import { CENTRAL_SAFE_ZONE, PERSONAL_HAND, PLAYER_MODULES, RESERVE_TRAY, TABLE } from '../layouts/table.js';
 import type { Bounds, GameFile, Widget } from '../types/vtt.js';
 
 export function widgetsOf(game: GameFile): Widget[] {
@@ -25,6 +25,14 @@ export function validatePrototype(game: GameFile): string[] {
     if (overlaps(box, CENTRAL_SAFE_ZONE)) errors.push(`player module ${i + 1} overlaps central zone`);
     PLAYER_MODULES.slice(i + 1).forEach((other, j) => { if (overlaps(box, other)) errors.push(`player modules ${i + 1} and ${i + j + 2} overlap`); });
   });
+  for (const [name, box] of [['reserve tray', RESERVE_TRAY], ['personal hand', PERSONAL_HAND]] as const)
+    if (box.x < TABLE.safeMargin || box.y < TABLE.safeMargin || box.x + box.width > TABLE.width - TABLE.safeMargin || box.y + box.height > TABLE.height - TABLE.safeMargin)
+      errors.push(`${name} outside safe bounds`);
+  for (const [i, box] of PLAYER_MODULES.entries()) {
+    if (overlaps(box, RESERVE_TRAY)) errors.push(`player module ${i + 1} overlaps reserve tray`);
+    if (overlaps(box, PERSONAL_HAND)) errors.push(`player module ${i + 1} overlaps personal hand`);
+  }
+  if (overlaps(CENTRAL_SAFE_ZONE, RESERVE_TRAY) || overlaps(CENTRAL_SAFE_ZONE, PERSONAL_HAND)) errors.push('central zone overlaps peripheral utility area');
   if (widgets.filter(w => w.type === 'seat').length !== 4) errors.push('prototype must contain exactly four seats');
   return errors;
 }
