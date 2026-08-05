@@ -14,7 +14,7 @@ it('keeps only public and private play regions in each movable module', () => {
 
 it('enables native enlarge on real cards, generals and identities', () => {
   const game = createFourPlayerPrototype(loadTestCatalog());
-  expect(game['main-deck']).toHaveProperty('cardDefaults.enlarge', 2.35);
-  expect(game['general-deck']).toHaveProperty('cardDefaults.enlarge', 2.5);
-  expect(game['identity-deck']).toHaveProperty('cardDefaults.enlarge', 2.5);
+  expect(game['main-deck']).toHaveProperty('cardDefaults.enlarge', 4.7);
+  expect(game['general-deck']).toHaveProperty('cardDefaults.enlarge', 5.0);
+  expect(game['identity-deck']).toHaveProperty('cardDefaults.enlarge', 5.0);
 });

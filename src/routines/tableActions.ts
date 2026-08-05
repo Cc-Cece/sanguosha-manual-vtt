@@ -45,6 +45,23 @@ export const toggleReserveTrayRoutine = [
   },
 ] as const;
 
+export const toggleHostToolbarRoutine = [
+  {
+    func: 'IF',
+    operand1: '${PROPERTY display OF host-toolbar-panel}',
+    relation: '==',
+    operand2: true,
+    thenRoutine: [
+      { func: 'SET', collection: ['host-toolbar-panel'], property: 'display', value: false },
+      { func: 'SET', collection: ['toggle-toolbar-btn'], property: 'text', value: '👑 房主工具' },
+    ],
+    elseRoutine: [
+      { func: 'SET', collection: ['host-toolbar-panel'], property: 'display', value: true },
+      { func: 'SET', collection: ['toggle-toolbar-btn'], property: 'text', value: '🔽 收起' },
+    ],
+  },
+] as const;
+
 export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },

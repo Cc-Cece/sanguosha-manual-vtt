@@ -33,7 +33,7 @@ export function createHealthDeck(): Widget[] {
 
   const deck = widget(deckId, 'deck', {
     parent: holder,
-    cardDefaults: { width: 90, height: 126, enlarge: 2.3 },
+    cardDefaults: { width: 90, height: 126, enlarge: 4.6 },
     faceTemplates: [
       cardBack('血量牌'),
       healthCardFace('8 体力', '#b03a2e'),

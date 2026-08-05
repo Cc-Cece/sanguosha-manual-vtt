@@ -27,12 +27,15 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(serialized).toContain('无法释放座位');
   });
 
-  it('verifies icon enhancement on toolbar and removes redundant desktop labels', () => {
+  it('verifies icon enhancement on toolbar and seat chinese text', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
-    const hostTitle = widgets.find(w => w.id === 'host-toolbar-title');
-    expect(hostTitle?.text).toContain('👑');
+    const toggleBtn = widgets.find(w => w.id === 'toggle-toolbar-btn');
+    expect(toggleBtn?.text).toContain('收起');
+
+    const seat1 = widgets.find(w => w.id === 'seat-1');
+    expect(seat1?.text).toBe('入座');
 
     const drawPile = widgets.find(w => w.id === 'draw-pile');
     expect(drawPile?.text).toContain('🎴');
@@ -88,7 +91,7 @@ describe('table aesthetics and player module leave-seat buttons', () => {
       const btn = widgets.find(w => w.id === `toggle-perspective-${i}`);
       expect(btn).toBeDefined();
       expect(btn?.parent).toBe(`player-module-${i}`);
-      expect(btn?.text).toContain('视角');
+      expect(btn?.text).toBe('👁️');
 
       const serialized = JSON.stringify(btn?.clickRoutine);
       expect(serialized).toContain(`\${PROPERTY player OF seat-${i}}`);

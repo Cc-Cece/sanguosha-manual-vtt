@@ -17,12 +17,12 @@ describe('host control toolbar and routines', () => {
 
     const clearSeatsBtn = widgets.find(w => w.id === 'clear-seats');
     expect(clearSeatsBtn).toBeDefined();
-    expect(clearSeatsBtn?.parent).toBe('host-toolbar');
+    expect(clearSeatsBtn?.parent).toBe('host-toolbar-panel');
     expect(clearSeatsBtn?.clickRoutine).toEqual(clearAllSeatsRoutine);
 
     const toggleTrayBtn = widgets.find(w => w.id === 'toggle-tray');
     expect(toggleTrayBtn).toBeDefined();
-    expect(toggleTrayBtn?.parent).toBe('host-toolbar');
+    expect(toggleTrayBtn?.parent).toBe('host-toolbar-panel');
     expect(toggleTrayBtn?.clickRoutine).toEqual(toggleReserveTrayRoutine);
   });
 
