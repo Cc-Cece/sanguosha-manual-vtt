@@ -39,9 +39,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: sanguosha-manual-vtt/pnpm-lock.yaml
 
-      - name: Verify FFmpeg
-        run: ffmpeg -version
-
       - name: Install dependencies
         working-directory: sanguosha-manual-vtt
         run: pnpm install --frozen-lockfile
