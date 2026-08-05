@@ -59,6 +59,7 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
         reserveCategoryLabel: reserveMeta.categoryLabel,
         reserveSelected: reserveMeta.defaultSelected,
         reserveDefaultSelected: reserveMeta.defaultSelected,
+        reserveCommittedSelected: false,
         reserveHomeHolder: reserveMeta.homeRowId,
         reservePageId: reserveMeta.homePageId,
         reserveHomeIndex: reserveMeta.homeIndex,
