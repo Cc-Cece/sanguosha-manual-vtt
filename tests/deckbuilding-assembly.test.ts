@@ -5,21 +5,17 @@ import { createFourPlayerPrototype } from '../src/variants/createFourPlayerProto
 import { loadTestCatalog } from './helpers.js';
 
 describe('deckbuilding assembly and cross-table routines', () => {
-  it('contains candidate zone, final deck zone, and assembly buttons in prototype', () => {
+  it('contains reserve prep drawer and flat card view zones in prototype', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
-    const candidateZone = widgets.find(w => w.id === 'general-candidate-zone');
-    expect(candidateZone).toBeDefined();
-    expect(candidateZone?.display).toBe(false);
-    expect(widgets.find(w => w.id === 'final-general-deck-zone')).toBeDefined();
-    expect(widgets.find(w => w.id === 'assemble-generals-btn')).toBeDefined();
-    expect(widgets.find(w => w.id === 'send-generals-btn')).toBeDefined();
+    const drawer = widgets.find(w => w.id === 'reserve-prep-drawer');
+    expect(drawer).toBeDefined();
+    expect(drawer?.display).toBe(false);
 
+    expect(widgets.find(w => w.id === 'general-library-view')).toBeDefined();
     expect(widgets.find(w => w.id === 'identity-composer-zone')).toBeDefined();
-    expect(widgets.find(w => w.id === 'final-identity-deck-zone')).toBeDefined();
-    expect(widgets.find(w => w.id === 'assemble-identities-btn')).toBeDefined();
-    expect(widgets.find(w => w.id === 'send-identities-btn')).toBeDefined();
+    expect(widgets.find(w => w.id === 'extra-card-composer-zone')).toBeDefined();
   });
 
   it('validates assembleGeneralDeckRoutine sequence: flip, move, shuffle', () => {
