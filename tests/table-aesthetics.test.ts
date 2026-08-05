@@ -71,8 +71,10 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(healthDeck).toBeDefined();
     const serialized = JSON.stringify(healthDeck);
     expect(serialized).toContain('血量牌');
-    expect(serialized).toContain('5 体力');
-    expect(serialized).toContain('4 体力');
+    expect(serialized).toContain('8 体力');
+    expect(serialized).toContain('7 体力');
+    expect(serialized).toContain('6 体力');
+    expect(serialized).not.toContain('上限');
 
     const healthCards = widgets.filter(w => w.deck === 'health-deck');
     expect(healthCards.length).toBeGreaterThanOrEqual(16);
