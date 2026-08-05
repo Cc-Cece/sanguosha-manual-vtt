@@ -76,10 +76,7 @@ export function createCleanupReturnedPendingCardsRoutine(model: ReserveModel): R
 export function createRestoreReservedCardsRoutine(model: ReserveModel): RoutineStep[] {
   return [
     ...restoreReservedCardsSteps(model),
-    ...routineSteps(
-      { func: 'SET', collection: ['reserve-panel-controller'], property: 'draftState', value: 'editing' },
-      { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
-    ),
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
   ];
 }
 
@@ -112,7 +109,6 @@ export function createResetReserveDraftRoutine(model: ReserveModel): RoutineStep
     { func: 'SET', collection: 'resetDraftExtras', property: 'clickable', value: true },
     { func: 'SET', collection: 'resetDraftExtras', property: 'activeFace', value: 1 },
     { func: 'SET', collection: 'resetDraftExtras', property: 'css', value: selectedCss('extra') },
-    { func: 'SET', collection: ['reserve-panel-controller'], property: 'draftState', value: 'editing' },
     ...switchViewSteps(model, findReserveView(model, 'general:gen-all')),
   );
   return hostOnlyRoutine(raw);
