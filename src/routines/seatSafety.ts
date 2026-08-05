@@ -21,10 +21,38 @@ export const clearSeat2Routine = [{ func: 'SET', collection: ['seat-2'], propert
 export const clearSeat3Routine = [{ func: 'SET', collection: ['seat-3'], property: 'player', value: '' }] as const;
 export const clearSeat4Routine = [{ func: 'SET', collection: ['seat-4'], property: 'player', value: '' }] as const;
 
+export const createLeaveSeatRoutine = (seatId: string) => [
+  {
+    func: 'IF',
+    operand1: `\${PROPERTY player OF ${seatId}}`,
+    relation: '==',
+    operand2: '\${playerName}',
+    thenRoutine: [{ func: 'SET', collection: [seatId], property: 'player', value: '' }],
+    elseRoutine: [
+      {
+        func: 'IF',
+        operand1: '${PROPERTY player OF seat-1}',
+        relation: '==',
+        operand2: '\${playerName}',
+        thenRoutine: [{ func: 'SET', collection: [seatId], property: 'player', value: '' }],
+        elseRoutine: [
+          { func: 'INPUT', header: '无法释放座位', fields: [{ type: 'text', label: '提示', value: '只有本座玩家或玩家 1 (房主) 可以释放该座位' }], block: false },
+        ],
+      },
+    ],
+  },
+] as const;
+
+export const leaveSeat1Routine = createLeaveSeatRoutine('seat-1');
+export const leaveSeat2Routine = createLeaveSeatRoutine('seat-2');
+export const leaveSeat3Routine = createLeaveSeatRoutine('seat-3');
+export const leaveSeat4Routine = createLeaveSeatRoutine('seat-4');
+
 export const clearAllSeatsRoutine = [
   { func: 'INPUT', header: '重置所有玩家座位？', fields: [{ type: 'text', text: '将清理全部 4 个座位的占用玩家，需要玩家重新入座。' }], block: true },
   { func: 'SET', collection: ['seat-1', 'seat-2', 'seat-3', 'seat-4'], property: 'player', value: '' },
 ] as const;
+
 
 // Extension point for seat resetting
 export const futureHostClearRoutine = [
