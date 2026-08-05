@@ -21,3 +21,17 @@ export const sendIdentitiesToMainTableRoutine = [
   { func: 'MOVE', from: ['final-identity-deck-zone'], to: ['identity-reserve'], count: 'all' },
   { func: 'INPUT', header: '送入主桌成功', fields: [{ type: 'text', label: '提示', value: '编组的身份牌堆已送入主游戏桌身份备牌位！' }], block: false },
 ] as const;
+
+export const assembleExtraDeckRoutine = [
+  { func: 'FLIP', holder: ['extra-card-composer-zone'], face: 0 },
+  { func: 'MOVE', from: ['extra-card-composer-zone'], to: ['final-extra-deck-zone'], count: 'all', face: 0 },
+  { func: 'SHUFFLE', holder: ['final-extra-deck-zone'], mode: 'true random' },
+  { func: 'INPUT', header: '扩展牌堆合成完成', fields: [{ type: 'text', label: '提示', value: '已将扩展构成区卡牌盖回、合拢为专属扩展牌堆并完成随机洗牌！' }], block: false },
+] as const;
+
+export const importToReserveTrayRoutine = [
+  { func: 'MOVE', from: ['final-general-deck-zone'], to: ['general-reserve'], count: 'all' },
+  { func: 'MOVE', from: ['final-identity-deck-zone'], to: ['identity-reserve'], count: 'all' },
+  { func: 'MOVE', from: ['final-extra-deck-zone'], to: ['extra-reserve'], count: 'all' },
+  { func: 'INPUT', header: '备牌导入成功', fields: [{ type: 'text', label: '提示', value: '全套备牌已成功精准导入主桌备牌托盘！' }], block: false },
+] as const;

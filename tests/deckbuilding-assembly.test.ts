@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { assembleGeneralDeckRoutine, assembleIdentityDeckRoutine, sendGeneralsToMainTableRoutine, sendIdentitiesToMainTableRoutine } from '../src/routines/deckAssembly.js';
+import { assembleGeneralDeckRoutine, assembleIdentityDeckRoutine, importToReserveTrayRoutine, sendGeneralsToMainTableRoutine, sendIdentitiesToMainTableRoutine } from '../src/routines/deckAssembly.js';
 import { widgetsOf } from '../src/validation/validate.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
@@ -47,5 +47,12 @@ describe('deckbuilding assembly and cross-table routines', () => {
       to: ['identity-reserve'],
       count: 'all',
     });
+  });
+
+  it('validates importToReserveTrayRoutine moves all prepared decks into main table reserve-tray slots', () => {
+    const importRoutine = JSON.stringify(importToReserveTrayRoutine);
+    expect(importRoutine).toContain('general-reserve');
+    expect(importRoutine).toContain('identity-reserve');
+    expect(importRoutine).toContain('extra-reserve');
   });
 });

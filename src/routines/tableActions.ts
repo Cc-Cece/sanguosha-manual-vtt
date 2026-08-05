@@ -63,10 +63,11 @@ export const toggleHostToolbarRoutine = [
 ] as const;
 
 const DECKBUILDING_WIDGET_IDS = [
-  'library-tray',
+  'reserve-prep-drawer',
   'library-toolbar',
   'library-toolbar-title',
   'reset-library-table-btn',
+  'import-to-reserve-tray-btn',
   'close-library-tray-btn',
   'general-library-title',
   'general-library-view',
@@ -84,21 +85,25 @@ const DECKBUILDING_WIDGET_IDS = [
   'assemble-identities-btn',
   'final-identity-deck-zone',
   'send-identities-btn',
+  'extra-composer-title',
+  'extra-card-composer-zone',
+  'assemble-extras-btn',
+  'final-extra-deck-zone',
 ];
 
 export const toggleLibraryTrayRoutine = [
   {
     func: 'IF',
-    operand1: '${PROPERTY display OF library-tray}',
+    operand1: '${PROPERTY display OF reserve-prep-drawer}',
     relation: '==',
     operand2: true,
     thenRoutine: [
       { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: false },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📚 牌库编组' },
+      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
     ],
     elseRoutine: [
       { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: true },
-      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起抽屉' },
+      { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
     ],
   },
 ] as const;
