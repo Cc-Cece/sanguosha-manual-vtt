@@ -1,3 +1,4 @@
+import { cancelAllBlindSelectionsRoutine } from './blindSelection.js';
 import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 
 const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
@@ -26,6 +27,7 @@ export const arrangeLayoutRoutine = [
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
+  ...cancelAllBlindSelectionsRoutine,
   ...resetAllPrivatePeeksRoutine,
   { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
   { func: 'FLIP', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], face: 0 },
@@ -130,6 +132,7 @@ export const toggleLibraryTrayRoutine = [
 
 export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 1).flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
+  { func: 'SELECT', source: 'all', type: 'card', property: 'blindSourceSeat', relation: '==', value: `seat-${number}`, collection: `seat${number}HandCards`, mode: 'add' },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);
