@@ -17,7 +17,7 @@ export function healthCardFace(hpText: string, color: string) {
 }
 
 export function createHealthDeck(): Widget[] {
-  const holder = 'extra-card-composer-zone';
+  const holder = 'marker-reserve';
   const deckId = 'health-deck';
 
   const cardTypes: Record<string, unknown> = {

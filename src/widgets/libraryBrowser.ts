@@ -16,12 +16,12 @@ export function createLibraryTableWidgets(): Widget[] {
       color: '#382c1e', css: { fontSize: '13px', color: '#ffe0a0', borderRadius: '6px', border: '1px solid #a88448' }, clickRoutine: toggleLibraryTrayRoutine }),
 
     label('general-library-title', '🎴 武将牌全集 (正面向面展示，直接拖至主桌备牌托盘)', 15, 62, 1470, parent, { display: false, layer: 101 }),
-    freeZone('general-library-view', '🎴 武将牌全集陈列区', 15, 90, 1470, 480, parent, { display: false, layer: 101 }),
+    freeZone('general-library-view', '🎴 武将牌全集陈列区', 15, 90, 1470, 480, parent, { display: false, layer: 101, preventPiles: true }),
 
     label('identity-composer-title', '👑 身份牌全集 (正面向面展示)', 15, 580, 720, parent, { display: false, layer: 101 }),
-    freeZone('identity-composer-zone', '👑 身份牌全集陈列区', 15, 608, 720, 470, parent, { display: false, layer: 101 }),
+    freeZone('identity-composer-zone', '👑 身份牌全集陈列区', 15, 608, 720, 470, parent, { display: false, layer: 101, preventPiles: true }),
 
     label('extra-composer-title', '🗡️ 扩展牌与体力卡 (正面向面展示)', 750, 580, 735, parent, { display: false, layer: 101 }),
-    freeZone('extra-card-composer-zone', '🗡️ 扩展牌与体力卡陈列区', 750, 608, 735, 470, parent, { display: false, layer: 101 }),
+    freeZone('extra-card-composer-zone', '🗡️ 扩展牌与体力卡陈列区', 750, 608, 735, 470, parent, { display: false, layer: 101, preventPiles: true }),
   ];
 }

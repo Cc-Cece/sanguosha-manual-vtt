@@ -23,7 +23,7 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
     cardDefaults: { width: 90, height: 126, enlarge: definition.enlarge },
     faceTemplates: [backTemplate, assetCardFace()], cardTypes });
   const cards = assets.map(asset => widget(`card-${asset.sequence}`, 'card', { deck: definition.deck,
-    cardType: `type-${asset.sequence}`, parent: definition.holder, activeFace: 0 }));
+    cardType: `type-${asset.sequence}`, parent: definition.holder, activeFace: category === 'gameplay-standard-junzheng-160' ? 0 : 1 }));
   return [deck, ...cards];
 }
 
