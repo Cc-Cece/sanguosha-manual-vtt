@@ -28,6 +28,7 @@ describe('private display zone privacy', () => {
     expect(privateZone?.onlyVisibleForSeat).toBeUndefined();
     expect(privateZone?.linkedToSeat).toBeUndefined();
     expect(privateZone?.showInactiveFaceToSeat).toBeNull();
+    expect(privateZone?.preventPiles).toBe(true);
   });
 
   it('forces cards to enter and leave the private zone face down', () => {
