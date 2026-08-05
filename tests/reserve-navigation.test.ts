@@ -2,16 +2,29 @@ import { describe, expect, it } from 'vitest';
 import { buildReserveModel } from '../src/data/reserveViewRegistry.js';
 import { createPageNavigationRoutine, createSwitchViewRoutine } from '../src/routines/reserveNavigation.js';
 import { toggleLibraryTrayRoutine } from '../src/routines/tableActions.js';
+import { widgetsOf } from '../src/validation/validate.js';
+import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
 describe('reserve panel navigation', () => {
-  const model = buildReserveModel(loadTestCatalog());
+  const catalog = loadTestCatalog();
+  const model = buildReserveModel(catalog);
 
-  it('opens and closes through the reserve controller rather than hard-coded pages', () => {
+  it('opens through the controller and uses a safe close path rather than hard-coded pages', () => {
     const serialized = JSON.stringify(toggleLibraryTrayRoutine);
     expect(serialized).toContain('openPanelRoutine');
-    expect(serialized).toContain('closePanelRoutine');
+    expect(serialized).toContain('safeClosePanelRoutine');
     expect(serialized).not.toContain('gen-page-1');
+  });
+
+  it('synchronizes confirmed edits when closing but allows an unconfirmed first draft to hide', () => {
+    const widgets = widgetsOf(createFourPlayerPrototype(catalog));
+    const controller = widgets.find(widget => widget.id === 'reserve-panel-controller')!;
+    const close = JSON.stringify(controller.closePanelRoutine);
+    expect(close).toContain('draftState');
+    expect(close).toContain('confirmed');
+    expect(close).toContain('syncAndCloseRoutine');
+    expect(close).toContain('reserve-prep-drawer');
   });
 
   it('gives each real category a distinct page mapping', () => {
