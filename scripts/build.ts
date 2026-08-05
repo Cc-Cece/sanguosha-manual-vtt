@@ -12,7 +12,8 @@ if (errors.length) throw new Error(errors.join('\n'));
 const zip = new JSZip();
 zip.file('0.json', JSON.stringify(game, null, 2));
 const packagedAssets = new Set<string>();
-for (const asset of catalog.assets) {
+const usedAssets = catalog.assets.filter(asset => asset.category !== 'markers-and-reference');
+for (const asset of usedAssets) {
   if (packagedAssets.has(asset.asset)) continue;
   packagedAssets.add(asset.asset);
   zip.file(`assets/${asset.optimizedFile}`, await readFile(resolve('temp', 'optimized-assets', asset.optimizedFile)));
@@ -20,4 +21,4 @@ for (const asset of catalog.assets) {
 const output = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
 await mkdir(resolve('dist'), { recursive: true });
 await writeFile(output, await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' }));
-console.log(`Built ${output} with 0.json, ${catalog.assets.length} cards and ${packagedAssets.size} unique face assets.`);
+console.log(`Built ${output} with 0.json, ${usedAssets.length} asset cards and ${packagedAssets.size} unique face assets.`);

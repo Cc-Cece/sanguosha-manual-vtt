@@ -349,8 +349,8 @@ preventPiles: false
 - [x] 玩家模块标题栏增加「离座」按钮与安全 Routine (`leaveSeatNRoutine`)，支持本座玩家独立离座与房主释放异常座位
 - [x] 导出了单 Seats 及全员 Seat 的清理与重置 Routine，解决离座或断线残留问题
 - [x] 在不破坏 Seat 权限的前提下增加备牌托盘动态显隐（`toggleReserveTrayRoutine`）
-- [x] 将备牌托盘原「标记／参考」槽位及卡牌牌背重命名并转换为「血量」牌堆
-- [x] 在中央区新增通用 `quick-shuffle-zone`（快捷洗牌区）及配套 `quick-shuffle-btn` 按钮，支持任意卡牌一键真随机洗牌
+- [x] 将备牌托盘原「标记／参考」槽位及卡牌升级为真实三国杀「血量」牌组 (`health-deck`)，支持 5/4/3/2/1 勾玉与多面体力切换
+- [x] 将快捷洗牌区升级为 `pileZone` 并在 `quickShuffleRoutine` 中对齐，洗牌后自动坍缩居中**合成整整齐齐的一摞牌**
 - [x] 摸牌堆 (🎴)、手牌区 (🖐️)、标题栏 (👑) 与勋章卡槽完成高对比度图标与古朴暗绿漆木主题视觉美化
 - [x] 新增 `host-control.test.ts` 及 `table-aesthetics.test.ts` 自动化测试套件，并通过上游 validator 校验
 - [x] 遵守规则：每次优化与修改后均自动编译并重新生成 `.vtt` 构建包
@@ -358,4 +358,5 @@ preventPiles: false
 - [ ] 人工确认后再规划 5–10 人布局
 
 后续仍不包含技能、距离、伤害、回合、胜负、计分、反作弊或复杂账号系统。
+
 ```

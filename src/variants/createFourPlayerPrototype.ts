@@ -1,4 +1,5 @@
 import { createAssetDecks } from '../data/assetDecks.js';
+import { createHealthDeck } from '../data/healthCards.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
@@ -25,7 +26,7 @@ function tableWidgets(): Widget[] {
     widget('collect-shuffle', 'button', { parent: 'host-toolbar', x: 559, y: 9, width: 110, height: 36, text: '🔀 收拢洗牌', clickRoutine: collectAndShuffleRoutine }),
     widget('clear-seats', 'button', { parent: 'host-toolbar', x: 675, y: 9, width: 100, height: 36, text: '👤 重置座位', clickRoutine: clearAllSeatsRoutine }),
     widget('reset-table', 'button', { parent: 'host-toolbar', x: 781, y: 9, width: 105, height: 36, text: '🔄 整桌重置', color: '#74322b', clickRoutine: resetTableRoutine }),
-    freeZone('quick-shuffle-zone', '🔀 快捷洗牌区', 575, 408, 135, 182),
+    pileZone('quick-shuffle-zone', '🔀 快捷洗牌区', 575, 408, 135, 182),
     widget('quick-shuffle-btn', 'button', { x: 585, y: 550, width: 115, height: 32, text: '🔀 一键洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, clickRoutine: quickShuffleRoutine }),
     pileZone('draw-pile', '🎴 摸牌堆', 735, 430),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
@@ -48,7 +49,7 @@ function reserveWidgets(): Widget[] {
 }
 
 export function createFourPlayerPrototype(catalog: AssetCatalog): GameFile {
-  const widgets = [...tableWidgets(), ...reserveWidgets(), ...Array.from({ length: 4 }, (_, i) => createPlayerModule(i)).flat(), ...createAssetDecks(catalog)];
+  const widgets = [...tableWidgets(), ...reserveWidgets(), ...Array.from({ length: 4 }, (_, i) => createPlayerModule(i)).flat(), ...createAssetDecks(catalog), ...createHealthDeck()];
   const game: GameFile = { _meta: { version: 17, info: {
     name: '三国杀人工桌面', description: '4 人真实牌面适配版：弱规则、私密手牌、安全 Seat 与自由公共区。', players: '4', mode: 'vs', language: 'zh-CN',
     attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',

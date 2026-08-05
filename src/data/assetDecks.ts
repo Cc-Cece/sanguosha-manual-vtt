@@ -2,15 +2,16 @@ import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js'
 import type { Widget } from '../types/vtt.js';
 import { assetCardFace, cardBack, widget } from '../widgets/factory.js';
 
-const definitions: Record<AssetCategory, { deck: string; holder: string; back: string; enlarge: number }> = {
+const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; back: string; enlarge: number }> = {
   'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', back: '三国杀', enlarge: 2.35 },
   'gameplay-extra': { deck: 'extra-deck', holder: 'extra-reserve', back: '扩展牌', enlarge: 2.35 },
   generals: { deck: 'general-deck', holder: 'general-reserve', back: '武将牌', enlarge: 2.5 },
   identities: { deck: 'identity-deck', holder: 'identity-reserve', back: '身份牌', enlarge: 2.5 },
-  'markers-and-reference': { deck: 'marker-deck', holder: 'marker-reserve', back: '血量牌', enlarge: 2.2 },
 };
 
-function buildDeck(category: AssetCategory, assets: CardAsset[]): Widget[] {
+type DeckCategory = keyof typeof definitions;
+
+function buildDeck(category: DeckCategory, assets: CardAsset[]): Widget[] {
   const definition = definitions[category];
   const cardTypes = Object.fromEntries(assets.map(asset => [`type-${asset.sequence}`, { asset: asset.asset, label: asset.label,
     sourceSequence: asset.sequence, sourceCardId: asset.cardId }]));
@@ -23,5 +24,5 @@ function buildDeck(category: AssetCategory, assets: CardAsset[]): Widget[] {
 }
 
 export function createAssetDecks(catalog: AssetCatalog): Widget[] {
-  return (Object.keys(definitions) as AssetCategory[]).flatMap(category => buildDeck(category, catalog.assets.filter(asset => asset.category === category)));
+  return (Object.keys(definitions) as DeckCategory[]).flatMap(category => buildDeck(category, catalog.assets.filter(asset => asset.category === category)));
 }

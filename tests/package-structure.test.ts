@@ -19,7 +19,7 @@ it('build output contains one variant and all optimized card faces', async () =>
   try {
     const zip = await JSZip.loadAsync(await readFile(path));
     expect(zip.file('0.json')).not.toBeNull();
-    const uniqueAssets = new Set(loadTestCatalog().assets.map(asset => asset.asset));
+    const uniqueAssets = new Set(loadTestCatalog().assets.filter(asset => asset.category !== 'markers-and-reference').map(asset => asset.asset));
     expect(Object.keys(zip.files).filter(name => name.startsWith('assets/') && !name.endsWith('/'))).toHaveLength(uniqueAssets.size);
     const game = JSON.parse(await zip.file('0.json')!.async('string')) as Record<string, any>;
     const assetReferences = new Set<string>();
