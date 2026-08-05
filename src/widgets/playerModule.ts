@@ -1,7 +1,10 @@
 import { PLAYER_MODULE_STAGING_POSITIONS } from '../layouts/playerModuleStaging.js';
-import { safeSeatClickRoutine } from '../routines/seatSafety.js';
-import { createLeaveSeatRoutine } from '../routines/seatSafety.js';
-import { createTogglePerspectiveRoutine } from '../routines/tableActions.js';
+import {
+  createPrivatePeekClickRoutine,
+  createPrivatePeekEnterRoutine,
+  createPrivatePeekLeaveRoutine,
+} from '../routines/privateZone.js';
+import { createLeaveSeatRoutine, createSafeSeatClickRoutine } from '../routines/seatSafety.js';
 import type { Widget } from '../types/vtt.js';
 import { freeZone, label, widget } from './factory.js';
 
@@ -9,7 +12,9 @@ export function createPlayerModule(index: number): Widget[] {
   const n = index + 1;
   const moduleId = `player-module-${n}`;
   const seatId = `seat-${n}`;
+  const playerLabelId = `player-label-${n}`;
   const privateId = `private-zone-${n}`;
+  const privatePeekButtonId = `toggle-perspective-${n}`;
   const blindId = `blind-zone-${n}`;
   const bounds = PLAYER_MODULE_STAGING_POSITIONS[n] || { x: 685, y: 90, width: 430, height: 260 };
   const initialDisplay = n <= 4;
@@ -30,13 +35,16 @@ export function createPlayerModule(index: number): Widget[] {
       width: 75,
       height: 32,
       index,
-      text: '入座',
+      displayEmpty: '＋ 入座',
+      display: 'playerName',
+      tableNickname: '',
       color: '#6d2922',
-      clickRoutine: safeSeatClickRoutine,
+      colorEmpty: '#6d2922',
+      clickRoutine: createSafeSeatClickRoutine(seatId, playerLabelId),
       css: { fontSize: '13px', color: '#ffd0a0', textAlign: 'center', lineHeight: '32px' },
       playerChangeRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }],
     }),
-    label(`player-label-${n}`, `☰ 玩家 ${n}`, 85, 10, 70, moduleId),
+    label(playerLabelId, `☰ 玩家 ${n}`, 85, 10, 70, moduleId),
     widget(`leave-seat-${n}`, 'button', {
       parent: moduleId,
       x: 157,
@@ -48,7 +56,7 @@ export function createPlayerModule(index: number): Widget[] {
       css: { fontSize: '11px', color: '#ffd0a0', borderRadius: '6px', border: '1px solid #9e4438' },
       clickRoutine: createLeaveSeatRoutine(seatId),
     }),
-    widget(`toggle-perspective-${n}`, 'button', {
+    widget(privatePeekButtonId, 'button', {
       parent: moduleId,
       x: 201,
       y: 9,
@@ -56,8 +64,13 @@ export function createPlayerModule(index: number): Widget[] {
       height: 28,
       text: '👁️',
       color: '#1a3038',
+      mobilePeekOpen: false,
+      onlyVisibleForSeat: [seatId],
+      linkedToSeat: [seatId],
       css: { fontSize: '13px', color: '#80d0ff', borderRadius: '6px', border: '1px solid #488098' },
-      clickRoutine: createTogglePerspectiveRoutine(n),
+      enterRoutine: createPrivatePeekEnterRoutine(n),
+      leaveRoutine: createPrivatePeekLeaveRoutine(n),
+      clickRoutine: createPrivatePeekClickRoutine(n),
     }),
     label(`hand-count-title-${n}`, '🃏 手牌', 239, 10, 62, moduleId),
     widget(`hand-count-${n}`, 'label', {
@@ -92,9 +105,16 @@ export function createPlayerModule(index: number): Widget[] {
       layer: 2,
       alignChildren: false,
       preventPiles: false,
-      linkedToSeat: [seatId],
-      onEnter: { activeFace: 0 },
-      onLeave: { activeFace: 0, owner: null },
+      showInactiveFaceToSeat: null,
+      onEnter: {
+        activeFace: 0,
+        clickable: false,
+      },
+      onLeave: {
+        activeFace: 0,
+        clickable: true,
+        owner: null,
+      },
       color: '#0000',
       css: { border: '1px solid #c6a0c7', borderRadius: '7px' },
     }),
