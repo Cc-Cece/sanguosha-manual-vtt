@@ -24,6 +24,20 @@ export const resetTableRoutine = [
   ...arrangeLayoutRoutine,
 ] as const;
 
+export const showReserveTrayRoutine = [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: true }] as const;
+export const hideReserveTrayRoutine = [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: false }] as const;
+
+export const toggleReserveTrayRoutine = [
+  {
+    func: 'IF',
+    operand1: '${PROPERTY display OF reserve-tray}',
+    relation: '==',
+    operand2: true,
+    thenRoutine: [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: false }],
+    elseRoutine: [{ func: 'SET', collection: ['reserve-tray'], property: 'display', value: true }],
+  },
+] as const;
+
 export const updateHandCountsRoutine = [1, 2, 3, 4].flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },

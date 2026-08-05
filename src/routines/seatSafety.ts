@@ -16,7 +16,18 @@ export const safeSeatClickRoutine = [
   ] },
 ] as const;
 
-// Dormant extension point: deliberately not exposed by a button in phase one.
+export const clearSeat1Routine = [{ func: 'SET', collection: ['seat-1'], property: 'player', value: '' }] as const;
+export const clearSeat2Routine = [{ func: 'SET', collection: ['seat-2'], property: 'player', value: '' }] as const;
+export const clearSeat3Routine = [{ func: 'SET', collection: ['seat-3'], property: 'player', value: '' }] as const;
+export const clearSeat4Routine = [{ func: 'SET', collection: ['seat-4'], property: 'player', value: '' }] as const;
+
+export const clearAllSeatsRoutine = [
+  { func: 'INPUT', header: '重置所有玩家座位？', fields: [{ type: 'text', text: '将清理全部 4 个座位的占用玩家，需要玩家重新入座。' }], block: true },
+  { func: 'SET', collection: ['seat-1', 'seat-2', 'seat-3', 'seat-4'], property: 'player', value: '' },
+] as const;
+
+// Extension point for seat resetting
 export const futureHostClearRoutine = [
   { func: 'SET', property: 'player', value: '' },
 ] as const;
+
