@@ -1,3 +1,4 @@
+import { createIdentityCardClickRoutine } from '../routines/identityReveal.js';
 import type { AssetCatalog, AssetCategory, CardAsset } from '../types/assets.js';
 import type { Widget } from '../types/vtt.js';
 import { assetCardFace, cardBack, imageCardBack, widget } from '../widgets/factory.js';
@@ -36,13 +37,18 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
       targetHolder = `extra-row-${row}`;
     }
 
-    return widget(`card-${asset.sequence}`, 'card', {
+    const cardId = `card-${asset.sequence}`;
+    return widget(cardId, 'card', {
       deck: definition.deck,
       cardType: `type-${asset.sequence}`,
       parent: targetHolder,
       x: 0,
       y: 0,
-      activeFace: category === 'gameplay-standard-junzheng-160' ? 0 : 1,
+      activeFace: category === 'gameplay-standard-junzheng-160' || category === 'identities' ? 0 : 1,
+      ...(category === 'identities' ? {
+        identityCard: true,
+        clickRoutine: createIdentityCardClickRoutine(cardId),
+      } : {}),
     });
   });
 
