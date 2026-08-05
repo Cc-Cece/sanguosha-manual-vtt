@@ -58,9 +58,15 @@ function reserveWidgets(): Widget[] {
     widget('reserve-tray', 'basic', { ...RESERVE_TRAY, movable: true, color: '#3a1d18e8',
       css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
     label('reserve-title', '备牌托盘｜不参与常规洗牌', 15, 8, 490, 'reserve-tray'),
-    pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
+    pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', {
+      onEnter: { activeFace: 0, reserveState: 'reserved' },
+      onLeave: { reserveState: 'in-use' },
+    }),
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
-    pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
+    pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', {
+      onEnter: { activeFace: 0, reserveState: 'reserved' },
+      onLeave: { reserveState: 'in-use' },
+    }),
     pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
 
     widget('shuffle-general-reserve-btn', 'button', { parent: 'reserve-tray', x: 18, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleGeneralReserveRoutine }),
@@ -99,7 +105,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         language: 'zh-CN',
         attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
         ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
-        helpText: '房主从顶部工具栏打开牌库编组，按真实分类浏览并点击切换允许或 Ban；确认后仅将选中的武将和扩展牌导入备牌托盘。',
+        helpText: '房主可在游戏中安全更新备牌：仍在托盘中的牌可召回重编，已经离开托盘的牌保持原位，并在归还后处理待移除状态。',
         variant: '4-12 人通用人工桌面',
         bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms',
         image: '/i/game-icons.net/delapouite/round-table.svg',
