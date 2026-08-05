@@ -2,15 +2,15 @@ import { describe, expect, it } from 'vitest';
 import { closeLastSeatRoutine, openNextSeatRoutine, scalePlayerModules100Routine, scalePlayerModules75Routine, scalePlayerModules90Routine } from '../src/routines/playerManagement.js';
 
 describe('host player management routines', () => {
-  it('validates openNextSeatRoutine checks hidden seats 5..12 and sets display true', () => {
-    expect(openNextSeatRoutine).toHaveLength(8);
+  it('validates openNextSeatRoutine checks hidden seats 5..12 in a nested ladder so each click opens exactly 1 seat', () => {
+    expect(openNextSeatRoutine).toHaveLength(1);
     const routineJson = JSON.stringify(openNextSeatRoutine);
     expect(routineJson).toContain('player-module-5');
     expect(routineJson).toContain('player-module-12');
   });
 
-  it('validates closeLastSeatRoutine checks open empty seats 12 down to 5 and sets display false', () => {
-    expect(closeLastSeatRoutine).toHaveLength(8);
+  it('validates closeLastSeatRoutine checks open empty seats 12 down to 5 in a nested ladder so each click closes exactly 1 seat', () => {
+    expect(closeLastSeatRoutine).toHaveLength(1);
     const routineJson = JSON.stringify(closeLastSeatRoutine);
     expect(routineJson).toContain('player-module-12');
     expect(routineJson).toContain('player-module-5');
