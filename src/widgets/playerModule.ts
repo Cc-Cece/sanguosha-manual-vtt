@@ -23,6 +23,7 @@ const seatCss = {
   overflow: 'hidden',
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
+  cursor: 'pointer',
 };
 
 export function createPlayerModule(index: number): Widget[] {
@@ -58,11 +59,13 @@ export function createPlayerModule(index: number): Widget[] {
       width: 416,
       height: 36,
       movable: false,
+      layer: 0,
       color: '#0d211be8',
       css: {
         border: '1px solid #526b5d',
         borderRadius: '8px',
         boxShadow: 'inset 0 1px 0 #ffffff0c',
+        pointerEvents: 'none',
       },
     }),
     widget(seatId, 'seat', {
@@ -71,6 +74,7 @@ export function createPlayerModule(index: number): Widget[] {
       y: 9,
       width: 132,
       height: 30,
+      layer: 3,
       index,
       displayEmpty: '入座',
       display: 'playerName',
@@ -87,6 +91,7 @@ export function createPlayerModule(index: number): Widget[] {
       y: 9,
       width: 48,
       height: 30,
+      layer: 3,
       text: '离座',
       color: '#512923',
       css: {
@@ -104,6 +109,7 @@ export function createPlayerModule(index: number): Widget[] {
       y: 9,
       width: 36,
       height: 30,
+      layer: 3,
       text: '👁️',
       color: '#18333b',
       mobilePeekOpen: false,
@@ -137,6 +143,7 @@ export function createPlayerModule(index: number): Widget[] {
       height: 30,
       text: 0,
       movable: false,
+      layer: 3,
       css: {
         background: '#171820',
         color: '#f5dda3',
