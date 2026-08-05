@@ -1,11 +1,12 @@
 name: Export card assets
 
 on:
-  push:
+  pull_request:
     branches:
-      - chore/organize-card-assets
+      - feature/library-and-deckbuilding-table
     paths:
       - .github/workflows/export-card-assets.yml
+      - assets/cards-webp/**
 
 permissions:
   contents: read
