@@ -25,6 +25,10 @@ if (catalog.backAssets) {
     zip.file(`assets/${back.optimizedFile}`, await readFile(resolve('temp', 'optimized-assets', back.optimizedFile)));
   }
 }
+try {
+  const coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'cover.webp'));
+  zip.file('assets/other/cover.webp', coverBuf);
+} catch (e) {}
 const output = resolve('dist', 'Sanguosha-Manual-4-12P.vtt');
 const outputLegacy = resolve('dist', 'Sanguosha-Manual-4P-Prototype.vtt');
 await mkdir(resolve('dist'), { recursive: true });
