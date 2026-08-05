@@ -29,19 +29,16 @@ if (catalog.backAssets) {
 }
 
 try {
-  const coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'cover.webp'));
-  zip.file('assets/other/cover.webp', coverBuf);
-
-  const testZip = new JSZip();
-  testZip.file('cover.webp', coverBuf);
-  const testBuf = await testZip.generateAsync({ type: 'nodebuffer' });
-  const loaded = await JSZip.loadAsync(testBuf);
-  const coverEntry = loaded.file('cover.webp');
-  const rawEntry = coverEntry as unknown as { _data?: { crc32: number; uncompressedSize: number } };
-  if (rawEntry._data && game._meta?.info) {
-    game._meta.info.image = `/assets/${rawEntry._data.crc32}_${rawEntry._data.uncompressedSize}`;
+  let coverBuf: Buffer;
+  try {
+    coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'cover.webp'));
+  } catch (e) {
+    coverBuf = await readFile(resolve('assets', 'cards-webp', 'other', 'cover.webp'));
   }
-} catch (e) {}
+  zip.file('assets/other/cover.webp', coverBuf);
+} catch (e) {
+  console.warn('Warning: Could not add assets/other/cover.webp to zip:', e);
+}
 
 zip.file('0.json', JSON.stringify(game, null, 2));
 

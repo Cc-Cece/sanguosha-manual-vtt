@@ -27,6 +27,12 @@ try {
     await copyFile(resolve(webpRepoRoot, back.optimizedFile), destPath);
   }
 
+  const coverSrc = resolve(webpRepoRoot, 'other', 'cover.webp');
+  try {
+    await mkdir(resolve(outputRoot, 'other'), { recursive: true });
+    await copyFile(coverSrc, resolve(outputRoot, 'other', 'cover.webp'));
+  } catch (e) {}
+
   await writeFile(catalogPath, JSON.stringify(catalog, null, 2));
   console.log(`Loaded ${catalog.assets.length} card faces and ${catalog.backAssets.length} card backs directly from repository assets/cards-webp.`);
 } catch (err) {
