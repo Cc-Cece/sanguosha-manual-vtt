@@ -154,4 +154,3 @@ export function createPlayerModule(index: number): Widget[] {
     ),
   ];
 }
-
