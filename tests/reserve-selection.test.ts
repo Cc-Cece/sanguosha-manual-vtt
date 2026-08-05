@@ -33,6 +33,8 @@ describe('reserve selection and lifecycle state', () => {
     expect(generalReserve.onLeave).toEqual(expect.objectContaining({ reserveState: 'in-use' }));
     expect(extraReserve.onEnter).toEqual(expect.objectContaining({ activeFace: 0, reserveState: 'reserved' }));
     expect(extraReserve.onLeave).toEqual(expect.objectContaining({ reserveState: 'in-use' }));
+    expect(JSON.stringify(generalReserve.enterRoutine)).toContain('cleanupReturnedPendingCardsRoutine');
+    expect(JSON.stringify(extraReserve.enterRoutine)).toContain('cleanupReturnedPendingCardsRoutine');
   });
 
   it('batch operations change configuration for all states but only restyle draft cards', () => {
