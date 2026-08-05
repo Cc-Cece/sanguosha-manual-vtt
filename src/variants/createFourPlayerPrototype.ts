@@ -2,6 +2,7 @@ import { createAssetDecks } from '../data/assetDecks.js';
 import { createHealthDeck } from '../data/healthCards.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { PERSONAL_HAND, RESERVE_TRAY } from '../layouts/table.js';
+import { shuffleDrawPileRoutine, shuffleExtraReserveRoutine, shuffleGeneralReserveRoutine, shuffleIdentityReserveRoutine, shuffleMarkerReserveRoutine } from '../routines/pileShuffle.js';
 import { handZoneFlipFaceUpRoutine } from '../routines/playerHand.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
@@ -35,6 +36,7 @@ function tableWidgets(): Widget[] {
     pileZone('quick-shuffle-zone', '🔀 快捷洗牌区', 575, 408, 135, 182),
     widget('quick-shuffle-btn', 'button', { x: 585, y: 550, width: 115, height: 32, text: '🔀 一键洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, clickRoutine: quickShuffleRoutine }),
     pileZone('draw-pile', '🎴 摸牌堆', 735, 430),
+    widget('shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleDrawPileRoutine }),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
   ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
@@ -54,6 +56,11 @@ function reserveWidgets(): Widget[] {
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
     pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
     pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
+
+    widget('shuffle-general-reserve-btn', 'button', { parent: 'reserve-tray', x: 18, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleGeneralReserveRoutine }),
+    widget('shuffle-identity-reserve-btn', 'button', { parent: 'reserve-tray', x: 140, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleIdentityReserveRoutine }),
+    widget('shuffle-extra-reserve-btn', 'button', { parent: 'reserve-tray', x: 262, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleExtraReserveRoutine }),
+    widget('shuffle-marker-reserve-btn', 'button', { parent: 'reserve-tray', x: 384, y: 190, width: 118, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleMarkerReserveRoutine }),
   ];
 }
 
