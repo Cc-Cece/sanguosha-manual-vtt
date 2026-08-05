@@ -66,9 +66,10 @@ export function createFourPlayerPrototype(catalog: AssetCatalog): GameFile {
 
   const game: GameFile = {
     _meta: {
-      version: 18,
+      version: 21,
       gameSettings: {
         boardSize: { width: BOARD.width, height: BOARD.height },
+        legacyModes: {},
       },
       info: {
         name: '三国杀人工桌面',
