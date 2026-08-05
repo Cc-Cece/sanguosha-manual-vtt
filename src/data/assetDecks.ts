@@ -50,7 +50,6 @@ function buildDeck(category: DeckCategory, assets: CardAsset[], catalog: AssetCa
       parent: targetHolder,
       x: relX,
       y: relY,
-      movable: false,
       activeFace: category === 'gameplay-standard-junzheng-160' ? 0 : 1,
     });
   });
