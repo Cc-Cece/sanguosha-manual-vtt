@@ -62,7 +62,7 @@ export const toggleHostToolbarRoutine = [
   },
 ] as const;
 
-const DECKBUILDING_WIDGET_IDS = [
+const DECKBUILDING_FRAME_IDS = [
   'reserve-prep-drawer',
   'library-toolbar',
   'library-toolbar-title',
@@ -82,13 +82,6 @@ const DECKBUILDING_WIDGET_IDS = [
   'nav-gen-sp',
   'nav-gen-other',
   'general-library-title',
-  'gen-page-1',
-  'gen-page-2',
-  'gen-page-3',
-  'gen-page-4',
-  'gen-page-5',
-  'extra-composer-title',
-  'extra-card-composer-zone',
   'summary-sidebar',
   'summary-sidebar-title',
   'summary-generals-box',
@@ -104,6 +97,16 @@ const DECKBUILDING_WIDGET_IDS = [
   'next-page-btn',
 ];
 
+const DECKBUILDING_PAGE_IDS = [
+  'gen-page-1',
+  'gen-page-2',
+  'gen-page-3',
+  'gen-page-4',
+  'gen-page-5',
+  'extra-composer-title',
+  'extra-card-composer-zone',
+];
+
 export const toggleLibraryTrayRoutine = [
   {
     func: 'IF',
@@ -111,11 +114,13 @@ export const toggleLibraryTrayRoutine = [
     relation: '==',
     operand2: true,
     thenRoutine: [
-      { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: false },
+      { func: 'SET', collection: [...DECKBUILDING_FRAME_IDS, ...DECKBUILDING_PAGE_IDS], property: 'display', value: false },
       { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '📦 全套备牌' },
     ],
     elseRoutine: [
-      { func: 'SET', collection: DECKBUILDING_WIDGET_IDS, property: 'display', value: true },
+      { func: 'SET', collection: DECKBUILDING_FRAME_IDS, property: 'display', value: true },
+      { func: 'SET', collection: ['gen-page-1'], property: 'display', value: true },
+      { func: 'SET', collection: ['gen-page-2', 'gen-page-3', 'gen-page-4', 'gen-page-5', 'extra-composer-title', 'extra-card-composer-zone'], property: 'display', value: false },
       { func: 'SET', collection: ['toggle-library-table'], property: 'text', value: '🙈 收起备牌' },
     ],
   },
