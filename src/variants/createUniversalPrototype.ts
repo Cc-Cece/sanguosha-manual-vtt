@@ -62,14 +62,14 @@ function reserveWidgets(): Widget[] {
       css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
     label('reserve-title', '备牌托盘｜不参与常规洗牌', 15, 8, 490, 'reserve-tray'),
     pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', {
-      onEnter: { activeFace: 0, reserveState: 'reserved' },
-      onLeave: { reserveState: 'in-use' },
+      onEnter: { activeFace: 0, reserveState: 'reserved', clickable: false },
+      onLeave: { reserveState: 'in-use', clickable: true },
       enterRoutine: cleanupReturnedPendingCardsRoutine,
     }),
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
     pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', {
-      onEnter: { activeFace: 0, reserveState: 'reserved' },
-      onLeave: { reserveState: 'in-use' },
+      onEnter: { activeFace: 0, reserveState: 'reserved', clickable: false },
+      onLeave: { reserveState: 'in-use', clickable: true },
       enterRoutine: cleanupReturnedPendingCardsRoutine,
     }),
     pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
