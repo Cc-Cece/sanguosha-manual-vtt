@@ -1,5 +1,5 @@
 import { PLAYER_MODULES } from '../layouts/table.js';
-import { leaveSeat1Routine, leaveSeat2Routine, leaveSeat3Routine, leaveSeat4Routine, safeSeatClickRoutine } from '../routines/seatSafety.js';
+import { createSafeSeatClickRoutine, leaveSeat1Routine, leaveSeat2Routine, leaveSeat3Routine, leaveSeat4Routine } from '../routines/seatSafety.js';
 import { togglePerspective1Routine, togglePerspective2Routine, togglePerspective3Routine, togglePerspective4Routine } from '../routines/tableActions.js';
 import type { Widget } from '../types/vtt.js';
 import { freeZone, label, widget } from './factory.js';
@@ -11,15 +11,29 @@ export function createPlayerModule(index: number): Widget[] {
   const n = index + 1;
   const moduleId = `player-module-${n}`;
   const seatId = `seat-${n}`;
+  const playerLabelId = `player-label-${n}`;
   const privateId = `private-zone-${n}`;
   const blindId = `blind-zone-${n}`;
   return [
     widget(moduleId, 'basic', { ...PLAYER_MODULES[index], movable: true, color: '#122c25dc', layer: 0,
       css: { border: '3px solid #8a7042', borderRadius: '11px', boxShadow: '0 4px 12px #0008' } }),
-    widget(seatId, 'seat', { parent: moduleId, x: 8, y: 7, width: 75, height: 32, index, text: '入座', color: '#6d2922', clickRoutine: safeSeatClickRoutine,
+    widget(seatId, 'seat', {
+      parent: moduleId,
+      x: 8,
+      y: 7,
+      width: 75,
+      height: 32,
+      index,
+      displayEmpty: '＋ 入座',
+      display: 'playerName',
+      tableNickname: '',
+      color: '#6d2922',
+      colorEmpty: '#6d2922',
+      clickRoutine: createSafeSeatClickRoutine(seatId, playerLabelId),
       css: { fontSize: '13px', color: '#ffd0a0', textAlign: 'center', lineHeight: '32px' },
-      playerChangeRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] }),
-    label(`player-label-${n}`, `☰ 玩家 ${n}`, 85, 10, 70, moduleId),
+      playerChangeRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }],
+    }),
+    label(playerLabelId, `☰ 玩家 ${n}`, 85, 10, 70, moduleId),
     widget(`leave-seat-${n}`, 'button', { parent: moduleId, x: 157, y: 9, width: 42, height: 28, text: '离座',
       color: '#5e2420', css: { fontSize: '11px', color: '#ffd0a0', borderRadius: '6px', border: '1px solid #9e4438' }, clickRoutine: leaveSeatRoutines[index] }),
     widget(`toggle-perspective-${n}`, 'button', { parent: moduleId, x: 201, y: 9, width: 36, height: 28, text: '👁️',
@@ -47,4 +61,3 @@ export function createPlayerModule(index: number): Widget[] {
         css: { background: 'radial-gradient(circle,#713027,#301010)', border: '3px double #c39b54', borderRadius: '6px' } }] })),
   ];
 }
-
