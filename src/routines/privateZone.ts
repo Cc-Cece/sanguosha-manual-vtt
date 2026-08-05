@@ -13,6 +13,8 @@ export const privatePeekButtonIds = Array.from(
 const seatIdFor = (number: number) => `seat-${number}`;
 const privateZoneIdFor = (number: number) => `private-zone-${number}`;
 const privatePeekButtonIdFor = (number: number) => `toggle-perspective-${number}`;
+const privateIdentityCollectionFor = (number: number) => `privateIdentityCards${number}`;
+const privateIdentityCountFor = (number: number) => `privateIdentityCount${number}`;
 
 /**
  * Default privacy state: every client sees only the active face (face 0 / card back).
@@ -59,14 +61,83 @@ const createOwnedSeatGuard = (number: number, allowedRoutine: readonly Record<st
   },
 ] as const;
 
-/** Desktop: entering the eye button reveals the inactive face only to this Seat. */
+const createCollectPrivateIdentityCardsRoutine = (number: number) => [
+  {
+    func: 'SELECT',
+    source: 'all',
+    type: 'card',
+    property: 'parent',
+    relation: '==',
+    value: privateZoneIdFor(number),
+    collection: privateIdentityCollectionFor(number),
+  },
+  {
+    func: 'SELECT',
+    source: privateIdentityCollectionFor(number),
+    type: 'card',
+    property: 'deck',
+    relation: '==',
+    value: 'identity-deck',
+    collection: privateIdentityCollectionFor(number),
+    mode: 'intersect',
+  },
+  {
+    func: 'COUNT',
+    collection: privateIdentityCollectionFor(number),
+    variable: privateIdentityCountFor(number),
+  },
+] as const;
+
+const createOpenPrivatePeekRoutine = (number: number) => [
+  {
+    func: 'SET',
+    collection: [privateZoneIdFor(number)],
+    property: 'showInactiveFaceToSeat',
+    value: [seatIdFor(number)],
+  },
+  {
+    func: 'SET',
+    collection: [privatePeekButtonIdFor(number)],
+    property: 'mobilePeekOpen',
+    value: true,
+  },
+] as const;
+
+const createConfirmPrivateIdentityPeekRoutine = (number: number) => [
+  {
+    func: 'INPUT',
+    header: '查看身份牌？',
+    fields: [
+      {
+        type: 'text',
+        label: '当前可见区域',
+        value: `玩家 ${number} 的私密展示区`,
+      },
+      {
+        type: 'text',
+        label: '确认结果',
+        value: `确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`,
+      },
+    ],
+    block: true,
+  },
+  ...createOpenPrivatePeekRoutine(number),
+] as const;
+
+/**
+ * Desktop hover remains immediate for ordinary private cards. When an identity card is present,
+ * hover deliberately stays covered; the owner must click the eye and confirm the visible scope.
+ */
 export const createPrivatePeekEnterRoutine = (number: number) =>
   createOwnedSeatGuard(number, [
+    ...createCollectPrivateIdentityCardsRoutine(number),
     {
-      func: 'SET',
-      collection: [privateZoneIdFor(number)],
-      property: 'showInactiveFaceToSeat',
-      value: [seatIdFor(number)],
+      func: 'IF',
+      operand1: `\${${privateIdentityCountFor(number)}}`,
+      relation: '==',
+      operand2: 0,
+      thenRoutine: createOpenPrivatePeekRoutine(number),
+      elseRoutine: createResetPrivatePeekRoutine(number),
     },
   ]);
 
@@ -75,9 +146,9 @@ export const createPrivatePeekLeaveRoutine = (number: number) =>
   createResetPrivatePeekRoutine(number);
 
 /**
- * Touch devices: one tap opens the local Seat view and the next tap covers it again.
- * On desktop, a click may set the mobile latch, but mouseleave always clears it, so the
- * face cannot remain exposed after the pointer leaves the eye button.
+ * Touch devices use one tap to open and the next tap to cover. The same click path is also used
+ * on desktop whenever the private zone contains an identity card, so identity viewing can never
+ * bypass the confirmation dialogue.
  */
 export const createPrivatePeekClickRoutine = (number: number) =>
   createOwnedSeatGuard(number, [
@@ -88,17 +159,14 @@ export const createPrivatePeekClickRoutine = (number: number) =>
       operand2: true,
       thenRoutine: createResetPrivatePeekRoutine(number),
       elseRoutine: [
+        ...createCollectPrivateIdentityCardsRoutine(number),
         {
-          func: 'SET',
-          collection: [privateZoneIdFor(number)],
-          property: 'showInactiveFaceToSeat',
-          value: [seatIdFor(number)],
-        },
-        {
-          func: 'SET',
-          collection: [privatePeekButtonIdFor(number)],
-          property: 'mobilePeekOpen',
-          value: true,
+          func: 'IF',
+          operand1: `\${${privateIdentityCountFor(number)}}`,
+          relation: '>',
+          operand2: 0,
+          thenRoutine: createConfirmPrivateIdentityPeekRoutine(number),
+          elseRoutine: createOpenPrivatePeekRoutine(number),
         },
       ],
     },
