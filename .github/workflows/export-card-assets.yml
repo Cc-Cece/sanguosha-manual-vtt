@@ -1,0 +1,28 @@
+name: Export card assets
+
+on:
+  push:
+    branches:
+      - chore/organize-card-assets
+    paths:
+      - .github/workflows/export-card-assets.yml
+
+permissions:
+  contents: read
+
+jobs:
+  export:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Archive card assets
+        run: zip -r card-assets.zip assets/cards-webp
+
+      - name: Upload card assets artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: card-assets
+          path: card-assets.zip
+          retention-days: 1
