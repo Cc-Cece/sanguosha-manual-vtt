@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - feature/library-and-deckbuilding-table
+      - chore/organize-card-assets
     paths:
       - .github/workflows/export-card-assets.yml
       - assets/cards-webp/**
