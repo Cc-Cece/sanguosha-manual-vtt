@@ -4,9 +4,9 @@ import { createFourPlayerPrototype } from '../src/variants/createFourPlayerProto
 import { loadTestCatalog } from './helpers.js';
 
 describe('continuous board dimensions and layout bounds', () => {
-  it('defines valid 3600x1400 continuous board dimensions in gameSettings', () => {
+  it('defines valid 2500x1200 continuous board dimensions in gameSettings', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
-    expect(game._meta?.gameSettings?.boardSize).toEqual({ width: 3600, height: 1400 });
+    expect(game._meta?.gameSettings?.boardSize).toEqual({ width: 2500, height: 1200 });
   });
 
   it('ensures main table, transition corridor, and library table bounds do not overlap', () => {

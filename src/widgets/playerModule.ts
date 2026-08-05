@@ -17,6 +17,7 @@ export function createPlayerModule(index: number): Widget[] {
     widget(moduleId, 'basic', { ...PLAYER_MODULES[index], movable: true, color: '#122c25dc', layer: 0,
       css: { border: '3px solid #8a7042', borderRadius: '11px', boxShadow: '0 4px 12px #0008' } }),
     widget(seatId, 'seat', { parent: moduleId, x: 8, y: 7, width: 75, height: 32, index, text: '入座', color: '#6d2922', clickRoutine: safeSeatClickRoutine,
+      css: { fontSize: '13px', color: '#ffd0a0', textAlign: 'center', lineHeight: '32px' },
       playerChangeRoutine: [{ func: 'CALL', widget: 'table-controller', routine: 'updateHandCountsRoutine' }] }),
     label(`player-label-${n}`, `☰ 玩家 ${n}`, 85, 10, 70, moduleId),
     widget(`leave-seat-${n}`, 'button', { parent: moduleId, x: 157, y: 9, width: 42, height: 28, text: '离座',
