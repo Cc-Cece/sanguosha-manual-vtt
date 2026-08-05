@@ -54,6 +54,9 @@ function tableWidgets(): Widget[] {
 }
 
 function reserveWidgets(): Widget[] {
+  const cleanupReturnedPendingCardsRoutine = [
+    { func: 'CALL', widget: 'reserve-panel-controller', routine: 'cleanupReturnedPendingCardsRoutine' },
+  ];
   return [
     widget('reserve-tray', 'basic', { ...RESERVE_TRAY, movable: true, color: '#3a1d18e8',
       css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
@@ -61,11 +64,13 @@ function reserveWidgets(): Widget[] {
     pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', {
       onEnter: { activeFace: 0, reserveState: 'reserved' },
       onLeave: { reserveState: 'in-use' },
+      enterRoutine: cleanupReturnedPendingCardsRoutine,
     }),
     pileZone('identity-reserve', '身份', 140, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
     pileZone('extra-reserve', '扩展', 262, 42, 100, 145, 'reserve-tray', {
       onEnter: { activeFace: 0, reserveState: 'reserved' },
       onLeave: { reserveState: 'in-use' },
+      enterRoutine: cleanupReturnedPendingCardsRoutine,
     }),
     pileZone('marker-reserve', '血量', 384, 42, 118, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
 
@@ -105,7 +110,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         language: 'zh-CN',
         attribution: '牌面来自用户提供的 Tabletop Simulator 参考包 3765935052；构建时保留来源序号、Card ID 与分类。',
         ruleText: '所有技能、距离、伤害、回合和胜负均由玩家人工裁定。',
-        helpText: '房主可在游戏中安全更新备牌：仍在托盘中的牌可召回重编，已经离开托盘的牌保持原位，并在归还后处理待移除状态。',
+        helpText: '房主可在游戏中安全更新备牌：仍在托盘中的牌可召回重编，已经离开托盘的牌保持原位；取消的使用中牌会在归还托盘时自动退出当前牌组。',
         variant: '4-12 人通用人工桌面',
         bgg: 'https://boardgamegeek.com/boardgame/25053/legends-of-the-three-kingdoms',
         image: '/i/game-icons.net/delapouite/round-table.svg',
