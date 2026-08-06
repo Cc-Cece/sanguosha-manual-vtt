@@ -1,3 +1,4 @@
+import type { AssetCatalog } from '../types/assets.js';
 import type { RoutineStep, Widget } from '../types/vtt.js';
 import { widget } from './factory.js';
 
@@ -10,11 +11,14 @@ export type ShuffleAnimationId =
   | 'extra-reserve'
   | 'marker-reserve';
 
+type ShuffleBackKey = keyof AssetCatalog['backs'];
+
 interface ShuffleAnimationSpec {
   id: ShuffleAnimationId;
   x: number;
   y: number;
   parent?: string;
+  backKey: ShuffleBackKey;
 }
 
 const CARD_WIDTH = 90;
@@ -26,13 +30,13 @@ const SETTLE_DELAY_MS = 220;
 const FADE_DELAY_MS = 120;
 
 const shuffleAnimationSpecs: Record<ShuffleAnimationId, ShuffleAnimationSpec> = {
-  'quick-shuffle': { id: 'quick-shuffle', x: 597, y: 428 },
-  'draw-pile': { id: 'draw-pile', x: 738, y: 436 },
-  'recycle-zone': { id: 'recycle-zone', x: 970, y: 428 },
-  'general-reserve': { id: 'general-reserve', x: 23, y: 48, parent: 'reserve-tray' },
-  'identity-reserve': { id: 'identity-reserve', x: 145, y: 48, parent: 'reserve-tray' },
-  'extra-reserve': { id: 'extra-reserve', x: 267, y: 48, parent: 'reserve-tray' },
-  'marker-reserve': { id: 'marker-reserve', x: 398, y: 48, parent: 'reserve-tray' },
+  'quick-shuffle': { id: 'quick-shuffle', x: 597, y: 428, backKey: 'main' },
+  'draw-pile': { id: 'draw-pile', x: 738, y: 436, backKey: 'main' },
+  'recycle-zone': { id: 'recycle-zone', x: 970, y: 428, backKey: 'main' },
+  'general-reserve': { id: 'general-reserve', x: 23, y: 48, parent: 'reserve-tray', backKey: 'generals' },
+  'identity-reserve': { id: 'identity-reserve', x: 145, y: 48, parent: 'reserve-tray', backKey: 'identities' },
+  'extra-reserve': { id: 'extra-reserve', x: 267, y: 48, parent: 'reserve-tray', backKey: 'main' },
+  'marker-reserve': { id: 'marker-reserve', x: 398, y: 48, parent: 'reserve-tray', backKey: 'main' },
 };
 
 export const SHUFFLE_BUTTON_IDS = [
@@ -61,7 +65,7 @@ function visualCardIds(animationId: ShuffleAnimationId): string[] {
   return Array.from({ length: VISUAL_CARD_COUNT }, (_, index) => visualCardId(animationId, index));
 }
 
-export function createShuffleAnimationWidgets(): Widget[] {
+export function createShuffleAnimationWidgets(backs: AssetCatalog['backs']): Widget[] {
   return Object.values(shuffleAnimationSpecs).flatMap(spec =>
     Array.from({ length: VISUAL_CARD_COUNT }, (_, index) =>
       widget(visualCardId(spec.id, index), 'basic', {
@@ -71,28 +75,27 @@ export function createShuffleAnimationWidgets(): Widget[] {
         z: index,
         width: CARD_WIDTH,
         height: CARD_HEIGHT,
-        text: '杀',
         display: false,
         movable: false,
         movableInEdit: false,
         clickable: false,
         layer: 20,
+        shuffleBackKey: spec.backKey,
         shuffleX: 0,
         shuffleY: 0,
         shuffleRotation: 0,
         shuffleOpacity: 0,
         css: {
           default: {
-            background: 'radial-gradient(circle at 50% 42%,#8b332d 0%,#521712 57%,#2b0908 100%)',
-            border: '3px double #d4ad63',
-            borderRadius: '7px',
+            backgroundColor: 'transparent',
+            backgroundImage: `url("${backs[spec.backKey]}")`,
+            backgroundPosition: 'center',
+            backgroundRepeat: 'no-repeat',
+            backgroundSize: '100% 100%',
+            border: 'none',
+            borderRadius: '6px',
             boxShadow: '0 5px 12px #0008',
-            color: '#efd28c',
-            fontSize: '25px',
-            fontWeight: '700',
-            lineHeight: `${CARD_HEIGHT}px`,
-            textAlign: 'center',
-            textShadow: '0 2px 2px #000',
+            overflow: 'hidden',
             pointerEvents: 'none',
             userSelect: 'none',
             transformOrigin: '50% 92%',

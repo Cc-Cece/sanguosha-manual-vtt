@@ -4,8 +4,8 @@ import type { GameFile, Widget } from '../types/vtt.js';
 import { createShuffleAnimationWidgets } from '../widgets/shuffleAnimation.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from './createUniversalPrototype.js';
 
-function installShuffleAnimation(game: GameFile): GameFile {
-  for (const animationWidget of createShuffleAnimationWidgets()) {
+function installShuffleAnimation(game: GameFile, catalog: AssetCatalog): GameFile {
+  for (const animationWidget of createShuffleAnimationWidgets(catalog.backs)) {
     game[animationWidget.id] = animationWidget;
   }
 
@@ -19,7 +19,7 @@ function installShuffleAnimation(game: GameFile): GameFile {
 }
 
 export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
-  return installShuffleAnimation(createBaseUniversalPrototype(catalog));
+  return installShuffleAnimation(createBaseUniversalPrototype(catalog), catalog);
 }
 
 export const createFourPlayerPrototype = createUniversalPrototype;
