@@ -1,4 +1,5 @@
 import { animatedQuickShuffleRoutine, animatedShuffleRecycleZoneRoutine } from '../routines/animatedShuffle.js';
+import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
@@ -20,7 +21,9 @@ function installShuffleAnimation(game: GameFile, catalog: AssetCatalog): GameFil
   const recycleShuffleButton = game['recycle-shuffle-btn'] as Widget | undefined;
   if (recycleShuffleButton) recycleShuffleButton.clickRoutine = animatedShuffleRecycleZoneRoutine;
 
-  return game;
+  // Animation routines are installed after the base prototype's normalizer has run. Normalize the
+  // newly attached INPUT dialogs and routine syntax without reapplying the non-animated fallback.
+  return normalizeGeneratedRoutines(game);
 }
 
 export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
