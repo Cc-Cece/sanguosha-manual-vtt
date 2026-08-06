@@ -27,8 +27,12 @@ function selectRecycleShuffleCardsSteps(): RoutineStep[] {
     { func: 'SELECT', source: 'recycleZoneCards', type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: 'recycleExtraDeckCards' },
     { func: 'SELECT', source: 'recycleExtraDeckCards', type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: 'recycleInUseExtraCards' },
     { func: 'SELECT', source: 'recycleInUseExtraCards', type: 'card', property: 'reservePendingRemoval', relation: '==', value: false, collection: 'recycleActiveExtraCards' },
-    { func: 'SELECT', source: 'recycleMainDeckCards', type: 'card', collection: 'recycleShuffleAllowedCards' },
-    { func: 'SELECT', source: 'recycleActiveExtraCards', type: 'card', collection: 'recycleShuffleAllowedCards', mode: 'add' },
+
+    // Every SELECT used to assemble the allowed collection keeps an explicit predicate. A SELECT
+    // without property/value defaults to parent == null in VirtualTabletop and would incorrectly
+    // discard every card already parented to recycle-zone.
+    { func: 'SELECT', source: 'recycleZoneCards', type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: 'recycleShuffleAllowedCards' },
+    { func: 'SELECT', source: 'recycleActiveExtraCards', type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: 'recycleShuffleAllowedCards', mode: 'add' },
     { func: 'COUNT', collection: 'recycleShuffleAllowedCards', variable: 'recycleShuffleAllowedCount' },
   );
 }
@@ -59,7 +63,7 @@ export const animatedShuffleRecycleZoneRoutine: RoutineStep[] = [
           fields: [{
             type: 'text',
             label: '结果',
-            value: '已将待回收／待洗牌区中的 ${recycleZoneCount} 张牌全部盖面并真随机洗牌。牌仍留在回收区，不会自动并入摸牌堆。',
+            value: '已将待回收／待洗牌区中的 ${recycleZoneCount} 张牌集中盖面并真随机洗牌。牌仍留在回收区，不会自动并入摸牌堆。',
           }],
           block: false,
         },
@@ -70,7 +74,7 @@ export const animatedShuffleRecycleZoneRoutine: RoutineStep[] = [
         fields: [{
           type: 'text',
           label: '请先检查回收区',
-          value: '回收区共有 ${recycleZoneCount} 张牌，但只有 ${recycleShuffleAllowedCount} 张属于可洗牌的主牌或当前启用扩展牌。\n\n请先移出武将牌、身份牌、血量牌、未启用扩展牌或待退出牌组的扩展牌。此次没有翻面或洗牌。',
+          value: '回收区共有 ${recycleZoneCount} 张牌，但只有 ${recycleShuffleAllowedCount} 张属于可洗牌的主牌或当前启用扩展牌。\n\n请先移出武将牌、身份牌、体力牌、转换技状态牌、未启用扩展牌或待退出牌组的扩展牌。此次没有翻面或洗牌。',
         }],
         block: false,
       }),
