@@ -29,13 +29,16 @@ describe('final packaged runtime integration', () => {
   it('installs the corrected animated recycle routine in the final build without undoing other fixes', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const recycleZone = asRecord(game['recycle-zone']);
+    const recycleRoutine = asRecord(game['recycle-shuffle-btn']).clickRoutine;
 
     expect(recycleZone.alignChildren).toBe(true);
     expect(recycleZone.preventPiles).toBe(true);
     expect(asRecord(game['collect-shuffle']).clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-collect-table-cards']).clickRoutine).toEqual(fixedRequestCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-shuffle-recycle-btn']).clickRoutine).toEqual(fixedRequestShuffleRecycleZoneRoutine);
-    expect(asRecord(game['recycle-shuffle-btn']).clickRoutine).toEqual(animatedShuffleRecycleZoneRoutine);
+    expect(recycleRoutine).toEqual(animatedShuffleRecycleZoneRoutine);
+    expect(JSON.stringify(recycleRoutine)).toContain('"type":"subtitle"');
+    expect(JSON.stringify(recycleRoutine)).not.toContain('"type":"text","label"');
   });
 
   it('uses explicit predicates when the animated routine assembles allowed recycle cards', () => {
