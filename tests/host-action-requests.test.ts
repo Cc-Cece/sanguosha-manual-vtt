@@ -76,7 +76,8 @@ describe('host-approved public action requests', () => {
     expect(requestCollectButton.text).toBe('🔐 请求收拢桌面牌');
     expect(controller.requestState).toBe('idle');
     expect(controller.requestRevision).toBe(0);
-    expect(controller.resetRequestRoutine).toEqual(resetHostActionRequestRoutine);
+    expect(controller.resetRequestRoutine).toBeUndefined();
+    expect(resetButton.clickRoutine).toEqual(resetHostActionRequestRoutine);
     expect(resetButton.onlyVisibleForSeat).toBeUndefined();
     expect(resetButton.parent).toBe('host-toolbar-panel');
   });
