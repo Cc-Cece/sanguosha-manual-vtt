@@ -1,5 +1,9 @@
 import type { AssetCatalog } from '../types/assets.js';
 import type { RoutineStep, Widget } from '../types/vtt.js';
+import {
+  QUICK_SHUFFLE_PANEL_ID,
+  RECYCLE_COLLECT_GROUP_ID,
+} from '../layouts/shufflePanels.js';
 import { widget } from './factory.js';
 
 export type ShuffleAnimationId =
@@ -30,9 +34,9 @@ const SETTLE_DELAY_MS = 220;
 const FADE_DELAY_MS = 120;
 
 const shuffleAnimationSpecs: Record<ShuffleAnimationId, ShuffleAnimationSpec> = {
-  'quick-shuffle': { id: 'quick-shuffle', x: 597, y: 428, backKey: 'main' },
+  'quick-shuffle': { id: 'quick-shuffle', x: 27, y: 48, parent: QUICK_SHUFFLE_PANEL_ID, backKey: 'main' },
   'draw-pile': { id: 'draw-pile', x: 738, y: 436, backKey: 'main' },
-  'recycle-zone': { id: 'recycle-zone', x: 970, y: 428, backKey: 'main' },
+  'recycle-zone': { id: 'recycle-zone', x: 3, y: 6, parent: RECYCLE_COLLECT_GROUP_ID, backKey: 'main' },
   'general-reserve': { id: 'general-reserve', x: 23, y: 48, parent: 'reserve-tray', backKey: 'generals' },
   'identity-reserve': { id: 'identity-reserve', x: 145, y: 48, parent: 'reserve-tray', backKey: 'identities' },
   'extra-reserve': { id: 'extra-reserve', x: 267, y: 48, parent: 'reserve-tray', backKey: 'main' },
