@@ -1,8 +1,20 @@
 import type { RoutineStep } from '../types/vtt.js';
 import {
+  createShuffleAnimationRoutine,
+  lockShuffleControlsRoutine,
+  unlockShuffleControlsRoutine,
+} from '../widgets/shuffleAnimation.js';
+import {
   HOST_ACTION_REQUEST_CONTROLLER_ID,
   HOST_ACTION_REQUEST_RESET_BUTTON_ID,
 } from './hostActionRequests.js';
+
+export const RECYCLE_COLLECT_STACK_ID = 'recycle-collect-stack';
+export const RECYCLE_SHUFFLE_BUFFER_ID = 'recycle-shuffle-buffer';
+
+const RECYCLE_ZONE_ID = 'recycle-zone';
+const DRAW_PILE_ID = 'draw-pile';
+const RECYCLE_SHUFFLE_BUTTON_ID = 'recycle-shuffle-btn';
 
 const routine = (...steps: RoutineStep[]): RoutineStep[] => steps;
 
@@ -34,17 +46,48 @@ function selectLooseCollectableCards(prefix: string): RoutineStep[] {
   );
 }
 
-function selectRecycleZoneCards(prefix: string): RoutineStep[] {
+/**
+ * Selects gameplay cards that are currently inside the free recycle area or its explicit
+ * collection stack. The general area prevents piles, so these two direct-parent selections cover
+ * every card the recycle action is allowed to process without recursively touching other zones.
+ */
+function selectRecycleGameplayCards(prefix: string): RoutineStep[] {
   return routine(
-    { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: 'recycle-zone', collection: `${prefix}ZoneCards` },
-    { func: 'COUNT', collection: `${prefix}ZoneCards`, variable: `${prefix}Count` },
-    { func: 'SELECT', source: `${prefix}ZoneCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}MainCards` },
-    { func: 'SELECT', source: `${prefix}ZoneCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}ExtraCards` },
-    { func: 'SELECT', source: `${prefix}ExtraCards`, type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: `${prefix}InUseExtraCards` },
-    { func: 'SELECT', source: `${prefix}InUseExtraCards`, type: 'card', property: 'reservePendingRemoval', relation: '==', value: false, collection: `${prefix}ActiveExtraCards` },
-    { func: 'SELECT', source: `${prefix}ZoneCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}AllowedCards` },
-    { func: 'SELECT', source: `${prefix}ActiveExtraCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}AllowedCards`, mode: 'add' },
-    { func: 'COUNT', collection: `${prefix}AllowedCards`, variable: `${prefix}AllowedCount` },
+    { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: RECYCLE_ZONE_ID, collection: `${prefix}DirectCards` },
+    { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: RECYCLE_COLLECT_STACK_ID, collection: `${prefix}StackCards` },
+    { func: 'COUNT', collection: `${prefix}DirectCards`, variable: `${prefix}DirectCount` },
+    { func: 'COUNT', collection: `${prefix}StackCards`, variable: `${prefix}StackCount` },
+
+    { func: 'SELECT', source: `${prefix}DirectCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}DirectExtraCards` },
+    { func: 'SELECT', source: `${prefix}DirectExtraCards`, type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: `${prefix}DirectInUseExtraCards` },
+    { func: 'SELECT', source: `${prefix}DirectInUseExtraCards`, type: 'card', property: 'reservePendingRemoval', relation: '==', value: false, collection: `${prefix}DirectActiveExtraCards` },
+
+    { func: 'SELECT', source: `${prefix}StackCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}StackExtraCards` },
+    { func: 'SELECT', source: `${prefix}StackExtraCards`, type: 'card', property: 'reserveState', relation: '==', value: 'in-use', collection: `${prefix}StackInUseExtraCards` },
+    { func: 'SELECT', source: `${prefix}StackInUseExtraCards`, type: 'card', property: 'reservePendingRemoval', relation: '==', value: false, collection: `${prefix}StackActiveExtraCards` },
+
+    { func: 'SELECT', source: `${prefix}DirectCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}GameplayCards` },
+    { func: 'SELECT', source: `${prefix}StackCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}GameplayCards`, mode: 'add' },
+    { func: 'SELECT', source: `${prefix}DirectActiveExtraCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}GameplayCards`, mode: 'add' },
+    { func: 'SELECT', source: `${prefix}StackActiveExtraCards`, type: 'card', property: 'deck', relation: '==', value: 'extra-deck', collection: `${prefix}GameplayCards`, mode: 'add' },
+    { func: 'COUNT', collection: `${prefix}GameplayCards`, variable: `${prefix}GameplayCount` },
+  );
+}
+
+function animateRecycleBufferToDrawPile(prefix: string): RoutineStep[] {
+  return routine(
+    ...lockShuffleControlsRoutine,
+    { func: 'SET', collection: [RECYCLE_SHUFFLE_BUTTON_ID], property: 'text', value: '⏳ 洗牌中…' },
+    { func: 'MOVE', collection: `${prefix}GameplayCards`, to: RECYCLE_SHUFFLE_BUFFER_ID, count: 'all' },
+    { func: 'COUNT', holder: [RECYCLE_SHUFFLE_BUFFER_ID], variable: `${prefix}BufferedCount` },
+    { func: 'FLIP', holder: [RECYCLE_SHUFFLE_BUFFER_ID], face: 0 },
+    ...createShuffleAnimationRoutine('recycle-zone'),
+    { func: 'SHUFFLE', holder: [RECYCLE_SHUFFLE_BUFFER_ID], mode: 'true random' },
+    { func: 'MOVE', from: [RECYCLE_SHUFFLE_BUFFER_ID], to: DRAW_PILE_ID, count: 'all' },
+    { func: 'SET', collection: [RECYCLE_SHUFFLE_BUTTON_ID], property: 'text', value: '🔀 洗牌入摸牌堆' },
+    ...unlockShuffleControlsRoutine,
+    { func: 'SELECT', source: `${prefix}GameplayCards`, type: 'card', property: 'parent', relation: '==', value: DRAW_PILE_ID, collection: `${prefix}MovedToDrawCards` },
+    { func: 'COUNT', collection: `${prefix}MovedToDrawCards`, variable: `${prefix}MovedToDrawCount` },
   );
 }
 
@@ -65,13 +108,13 @@ export const fixedCollectLooseTableCardsRoutine: RoutineStep[] = [
         header: '收拢桌面散牌？',
         fields: [{
           type: 'text',
-          label: '将移动到待回收区',
-          value: '主牌 ${collectMainCount} 张，当前启用的扩展牌 ${collectExtraCount} 张，共 ${collectCount} 张。\n\n不会处理玩家模块、个人手牌、各类 Holder、快捷洗牌区、备牌托盘或牌库编组面板中的牌。请先确认桌面中央没有正在结算或持续生效的卡牌。',
+          label: '将移动到回收区的收拢牌堆',
+          value: '主牌 ${collectMainCount} 张，当前启用的扩展牌 ${collectExtraCount} 张，共 ${collectCount} 张。\n\n只处理桌面顶层且无 owner 的游戏牌。待回收区的自由放置区域、其中已有的其他牌、玩家模块、个人手牌及其他 Holder 均不会被重新排列。',
         }],
         block: true,
       },
-      { func: 'MOVE', collection: 'collectCollectableCards', to: 'recycle-zone', count: 'all' },
-      { func: 'SELECT', source: 'collectCollectableCards', type: 'card', property: 'parent', relation: '==', value: 'recycle-zone', collection: 'collectMovedCards' },
+      { func: 'MOVE', collection: 'collectCollectableCards', to: RECYCLE_COLLECT_STACK_ID, count: 'all' },
+      { func: 'SELECT', source: 'collectCollectableCards', type: 'card', property: 'parent', relation: '==', value: RECYCLE_COLLECT_STACK_ID, collection: 'collectMovedCards' },
       { func: 'COUNT', collection: 'collectMovedCards', variable: 'collectMovedCount' },
       {
         func: 'IF',
@@ -80,7 +123,7 @@ export const fixedCollectLooseTableCardsRoutine: RoutineStep[] = [
         operand2: '${collectCount}',
         thenRoutine: routine(notice(
           '桌面牌已收拢',
-          '已将 ${collectMovedCount} 张牌集中到待回收／待洗牌区。牌面状态保持不变，请检查后再点击回收区的“洗牌”。',
+          '已将 ${collectMovedCount} 张游戏牌移入待回收区左侧的“收拢牌堆”。待回收区其余空间仍可自由摆放，牌面状态保持不变。',
         )),
         elseRoutine: routine({
           func: 'IF',
@@ -89,11 +132,11 @@ export const fixedCollectLooseTableCardsRoutine: RoutineStep[] = [
           operand2: 0,
           thenRoutine: routine(notice(
             '收拢失败',
-            '本次识别到 ${collectCount} 张可收拢牌，但没有任何牌实际进入待回收区。没有执行洗牌或翻面。',
+            '本次识别到 ${collectCount} 张可收拢牌，但没有任何牌实际进入收拢牌堆。没有执行翻面或洗牌。',
           )),
           elseRoutine: routine(notice(
             '部分收拢完成',
-            '本次识别到 ${collectCount} 张可收拢牌，其中 ${collectMovedCount} 张实际进入待回收区。请检查仍留在桌面的卡牌。',
+            '本次识别到 ${collectCount} 张可收拢牌，其中 ${collectMovedCount} 张实际进入收拢牌堆。请检查仍留在桌面的卡牌。',
           )),
         }),
       },
@@ -102,30 +145,43 @@ export const fixedCollectLooseTableCardsRoutine: RoutineStep[] = [
 ];
 
 export const fixedShuffleRecycleZoneRoutine: RoutineStep[] = [
-  ...selectRecycleZoneCards('recycle'),
+  ...selectRecycleGameplayCards('recycle'),
+  { func: 'COUNT', holder: [RECYCLE_SHUFFLE_BUFFER_ID], variable: 'recycleStaleBufferCount' },
   {
     func: 'IF',
-    operand1: '${recycleCount}',
-    relation: '==',
+    operand1: '${recycleStaleBufferCount}',
+    relation: '>',
     operand2: 0,
-    thenRoutine: routine(notice('待回收区为空', '待回收／待洗牌区中没有卡牌。')),
+    thenRoutine: routine(notice(
+      '临时洗牌区存在遗留牌',
+      '检测到上一次操作中断后遗留的临时牌。为避免把未知牌混入摸牌堆，本次没有移动、翻面或洗牌。请执行整桌重置后重试。',
+    )),
     elseRoutine: routine({
       func: 'IF',
-      operand1: '${recycleAllowedCount}',
+      operand1: '${recycleGameplayCount}',
       relation: '==',
-      operand2: '${recycleCount}',
-      thenRoutine: routine(
-        { func: 'FLIP', holder: ['recycle-zone'], face: 0 },
-        { func: 'SHUFFLE', holder: ['recycle-zone'], mode: 'true random' },
-        notice(
-          '回收区洗牌完成',
-          '已将待回收／待洗牌区中的 ${recycleCount} 张牌集中盖面并真随机洗牌。牌仍留在回收区，不会自动并入摸牌堆。',
-        ),
-      ),
-      elseRoutine: routine(notice(
-        '无法洗牌',
-        '回收区共有 ${recycleCount} 张牌，但只有 ${recycleAllowedCount} 张属于可洗牌的主牌或当前启用扩展牌。\n\n请先移出武将牌、身份牌、体力牌、转换技状态牌、未启用扩展牌或待退出牌组的扩展牌。此次没有翻面或洗牌。',
+      operand2: 0,
+      thenRoutine: routine(notice(
+        '没有可洗牌的游戏牌',
+        '待回收／待洗牌区中没有主牌，也没有当前启用且非待移除的扩展牌。区域内的武将、身份、体力、转换技状态牌及其他牌均保持原位置和牌面。',
       )),
+      elseRoutine: routine(
+        ...animateRecycleBufferToDrawPile('recycle'),
+        {
+          func: 'IF',
+          operand1: '${recycleMovedToDrawCount}',
+          relation: '==',
+          operand2: '${recycleGameplayCount}',
+          thenRoutine: routine(notice(
+            '洗牌并入摸牌堆完成',
+            '已将待回收区中的 ${recycleMovedToDrawCount} 张游戏牌盖面、播放洗牌动画、真随机打乱，并叠放到现有摸牌堆。区域内其他类型的牌没有移动、翻面或重新排列。',
+          )),
+          elseRoutine: routine(notice(
+            '部分牌已进入摸牌堆',
+            '本次识别到 ${recycleGameplayCount} 张可处理游戏牌，其中 ${recycleMovedToDrawCount} 张实际进入摸牌堆。待回收区中的其他类型牌仍保持原位置，请检查临时洗牌区和摸牌堆。',
+          )),
+        },
+      ),
     }),
   },
 ];
@@ -272,8 +328,8 @@ function executeApprovedCollect(): RoutineStep[] {
       operand2: 0,
       thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
       elseRoutine: routine(
-        { func: 'MOVE', collection: 'approvedCollectCollectableCards', to: 'recycle-zone', count: 'all' },
-        { func: 'SELECT', source: 'approvedCollectCollectableCards', type: 'card', property: 'parent', relation: '==', value: 'recycle-zone', collection: 'approvedCollectMovedCards' },
+        { func: 'MOVE', collection: 'approvedCollectCollectableCards', to: RECYCLE_COLLECT_STACK_ID, count: 'all' },
+        { func: 'SELECT', source: 'approvedCollectCollectableCards', type: 'card', property: 'parent', relation: '==', value: RECYCLE_COLLECT_STACK_ID, collection: 'approvedCollectMovedCards' },
         { func: 'COUNT', collection: 'approvedCollectMovedCards', variable: 'approvedCollectMovedCount' },
         {
           func: 'IF',
@@ -290,31 +346,31 @@ function executeApprovedCollect(): RoutineStep[] {
 
 function executeApprovedRecycleShuffle(): RoutineStep[] {
   return routine(
-    ...selectRecycleZoneCards('approvedRecycle'),
+    ...selectRecycleGameplayCards('approvedRecycle'),
+    { func: 'COUNT', holder: [RECYCLE_SHUFFLE_BUFFER_ID], variable: 'approvedRecycleStaleBufferCount' },
     {
       func: 'IF',
-      operand1: '${approvedRecycleCount}',
-      relation: '==',
+      operand1: '${approvedRecycleStaleBufferCount}',
+      relation: '>',
       operand2: 0,
-      thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+      thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'invalid', requestExecutionCount: 0 } }),
       elseRoutine: routine({
         func: 'IF',
-        operand1: '${approvedRecycleAllowedCount}',
+        operand1: '${approvedRecycleGameplayCount}',
         relation: '==',
-        operand2: '${approvedRecycleCount}',
-        thenRoutine: routine(
-          { func: 'FLIP', holder: ['recycle-zone'], face: 0 },
-          { func: 'SHUFFLE', holder: ['recycle-zone'], mode: 'true random' },
-          { func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedRecycleCount}' } },
-        ),
-        elseRoutine: routine({
-          func: 'VAR',
-          variables: {
-            requestExecutionStatus: 'invalid',
-            requestExecutionCount: '${approvedRecycleCount}',
-            requestAllowedCount: '${approvedRecycleAllowedCount}',
+        operand2: 0,
+        thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+        elseRoutine: routine(
+          ...animateRecycleBufferToDrawPile('approvedRecycle'),
+          {
+            func: 'IF',
+            operand1: '${approvedRecycleMovedToDrawCount}',
+            relation: '>',
+            operand2: 0,
+            thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedRecycleMovedToDrawCount}' } }),
+            elseRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
           },
-        }),
+        ),
       }),
     },
   );
@@ -325,22 +381,22 @@ export const fixedRequestCollectLooseTableCardsRoutine = createApprovalRoutine({
   target: '桌面顶层散落游戏牌',
   prepare: selectLooseCollectableCards('requestCollect'),
   countVariable: 'requestCollectCount',
-  impact: '当前可收拢主牌 ${requestCollectMainCount} 张、启用扩展牌 ${requestCollectExtraCount} 张，共 ${requestCollectCount} 张。\n\n同意后会重新检查桌面，只把顶层、无 owner 的主牌和启用扩展牌集中移入待回收区。',
+  impact: '当前可收拢主牌 ${requestCollectMainCount} 张、启用扩展牌 ${requestCollectExtraCount} 张，共 ${requestCollectCount} 张。\n\n同意后会重新检查，只把顶层、无 owner 的游戏牌移入待回收区左侧的收拢牌堆；待回收区其余自由空间和已有牌不会被重新排列。',
   execute: executeApprovedCollect(),
-  success: '已将 ${requestExecutionCount} 张桌面散牌集中到待回收／待洗牌区。',
-  empty: '房主批准后桌面状态发生变化，或卡牌未能实际进入待回收区，因此没有完成收拢。',
+  success: '已将 ${requestExecutionCount} 张桌面散牌移入待回收区的收拢牌堆。',
+  empty: '房主批准后桌面状态发生变化，或卡牌未能实际进入收拢牌堆，因此没有完成收拢。',
 });
 
 export const fixedRequestShuffleRecycleZoneRoutine = createApprovalRoutine({
-  action: '洗牌：待回收区',
-  target: '待回收／待洗牌区',
-  prepare: selectRecycleZoneCards('requestRecycle'),
-  countVariable: 'requestRecycleCount',
-  impact: '当前共有 ${requestRecycleCount} 张牌，其中 ${requestRecycleAllowedCount} 张通过牌型安全检查。\n\n同意后会重新检查；只有全部为主牌或启用且非待移除的扩展牌时，才会集中盖面并真随机洗牌。',
+  action: '洗牌并入摸牌堆',
+  target: '待回收／待洗牌区中的游戏牌',
+  prepare: selectRecycleGameplayCards('requestRecycle'),
+  countVariable: 'requestRecycleGameplayCount',
+  impact: '当前可处理游戏牌 ${requestRecycleGameplayCount} 张。\n\n同意后会重新检查，只提取主牌和当前启用且非待移除的扩展牌，播放洗牌动画、盖面并真随机打乱后叠放到摸牌堆；区域内其他类型牌保持原位置和牌面。',
   execute: executeApprovedRecycleShuffle(),
-  success: '已将待回收／待洗牌区中的 ${requestExecutionCount} 张牌集中盖面并真随机洗牌；牌仍留在回收区。',
-  empty: '房主批准后待回收区已经为空，因此没有执行洗牌。',
-  invalid: '待回收区当前共有 ${requestExecutionCount} 张牌，但只有 ${requestAllowedCount} 张通过安全检查。请先移出异常牌。此次没有翻面或洗牌。',
+  success: '已将 ${requestExecutionCount} 张游戏牌洗牌并叠放到摸牌堆；待回收区中的其他牌保持原位置。',
+  empty: '房主批准后待回收区已没有可处理的主牌或启用扩展牌，因此没有执行洗牌。',
+  invalid: '临时洗牌区存在上一次中断操作遗留的牌。为避免混牌，本次没有执行；请整桌重置后重试。',
 });
 
 type PlainRecord = Record<string, unknown>;
@@ -351,36 +407,54 @@ function asRecord(value: unknown): PlainRecord | null {
     : null;
 }
 
-/**
- * Applies the corrected runtime routines after the table is assembled. Keeping this finalization
- * step centralized also protects generated files from the legacy routines still retained for
- * source compatibility.
- */
+/** Applies the free-area recycle semantics and current runtime routines after table assembly. */
 export function applyRecycleZoneRuntimeFixes<T>(game: T): T {
   const root = asRecord(game);
   if (!root) return game;
 
-  const recycleZone = asRecord(root['recycle-zone']);
+  const recycleZone = asRecord(root[RECYCLE_ZONE_ID]);
   if (recycleZone) {
-    recycleZone.alignChildren = true;
+    recycleZone.alignChildren = false;
     recycleZone.preventPiles = true;
     recycleZone.stackOffsetX = 0;
     recycleZone.stackOffsetY = 0;
-    recycleZone.dropOffsetX = 90;
-    recycleZone.dropOffsetY = 28;
+    recycleZone.dropOffsetX = 0;
+    recycleZone.dropOffsetY = 0;
+  }
+
+  const collectStack = asRecord(root[RECYCLE_COLLECT_STACK_ID]);
+  if (collectStack) {
+    collectStack.alignChildren = true;
+    collectStack.preventPiles = true;
+    collectStack.stackOffsetX = 0;
+    collectStack.stackOffsetY = 0;
+  }
+
+  const shuffleBuffer = asRecord(root[RECYCLE_SHUFFLE_BUFFER_ID]);
+  if (shuffleBuffer) {
+    shuffleBuffer.alignChildren = true;
+    shuffleBuffer.preventPiles = true;
+    shuffleBuffer.stackOffsetX = 0;
+    shuffleBuffer.stackOffsetY = 0;
   }
 
   const collectButton = asRecord(root['collect-shuffle']);
   if (collectButton) collectButton.clickRoutine = fixedCollectLooseTableCardsRoutine;
 
-  const recycleShuffleButton = asRecord(root['recycle-shuffle-btn']);
-  if (recycleShuffleButton) recycleShuffleButton.clickRoutine = fixedShuffleRecycleZoneRoutine;
+  const recycleShuffleButton = asRecord(root[RECYCLE_SHUFFLE_BUTTON_ID]);
+  if (recycleShuffleButton) {
+    recycleShuffleButton.text = '🔀 洗牌入摸牌堆';
+    recycleShuffleButton.clickRoutine = fixedShuffleRecycleZoneRoutine;
+  }
 
   const requestCollectButton = asRecord(root['request-collect-table-cards']);
   if (requestCollectButton) requestCollectButton.clickRoutine = fixedRequestCollectLooseTableCardsRoutine;
 
   const requestRecycleShuffleButton = asRecord(root['request-shuffle-recycle-btn']);
-  if (requestRecycleShuffleButton) requestRecycleShuffleButton.clickRoutine = fixedRequestShuffleRecycleZoneRoutine;
+  if (requestRecycleShuffleButton) {
+    requestRecycleShuffleButton.text = '🔐 请求洗牌入堆';
+    requestRecycleShuffleButton.clickRoutine = fixedRequestShuffleRecycleZoneRoutine;
+  }
 
   return game;
 }

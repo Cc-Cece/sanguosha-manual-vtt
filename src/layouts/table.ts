@@ -10,5 +10,5 @@ export const PLAYER_MODULES: readonly Bounds[] = [
   { x: 30, y: 390, ...MODULE_SIZE },
 ];
 export const CENTRAL_SAFE_ZONE: Bounds = { x: 590, y: 350, width: 620, height: 410 };
-export const RESERVE_TRAY: Bounds = { x: 30, y: 760, width: 750, height: 220 };
+export const RESERVE_TRAY: Bounds = { x: 30, y: 760, width: 630, height: 220 };
 export const PERSONAL_HAND: Bounds = { x: 350, y: 1040, width: 1100, height: 135 };

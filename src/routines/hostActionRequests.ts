@@ -1,4 +1,5 @@
 import type { RoutineStep } from '../types/vtt.js';
+import { createAnimatedShuffleSteps, type ShuffleAnimationId } from '../widgets/shuffleAnimation.js';
 
 export const HOST_ACTION_REQUEST_CONTROLLER_ID = 'host-action-request-controller';
 export const HOST_ACTION_REQUEST_RESET_BUTTON_ID = 'host-action-request-reset';
@@ -301,10 +302,14 @@ export const requestShuffleRecycleZoneRoutine = createHostApprovalRequestRoutine
   executeSteps: approvedRecycleShuffleSteps(),
   successText: '已将待回收／待洗牌区中的 ${requestExecutionCount} 张牌全部盖面并真随机洗牌；牌仍留在回收区。',
   emptyText: '房主批准后待回收区已经为空，因此没有执行洗牌。',
-  invalidText: '待回收区当前共有 ${requestExecutionCount} 张牌，但只有 ${requestAllowedCount} 张通过安全检查。请先移出武将、身份、血量、未启用扩展牌或待移除扩展牌。此次没有翻面或洗牌。',
+  invalidText: '待回收区当前共有 ${requestExecutionCount} 张牌，但只有 ${requestAllowedCount} 张通过安全检查。请先移出武将、身份、体力、未启用扩展牌或待移除扩展牌。此次没有翻面或洗牌。',
 });
 
-function approvedHolderShuffleSteps(holderId: string): RoutineStep[] {
+function approvedHolderShuffleSteps(
+  holderId: string,
+  animationId: ShuffleAnimationId,
+  buttonId: string,
+): RoutineStep[] {
   return routine(
     { func: 'COUNT', holder: [holderId], variable: 'approvedHolderCount' },
     {
@@ -314,32 +319,61 @@ function approvedHolderShuffleSteps(holderId: string): RoutineStep[] {
       operand2: 0,
       thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
       elseRoutine: routine(
-        { func: 'FLIP', holder: [holderId], face: 0 },
-        { func: 'SHUFFLE', holder: [holderId], mode: 'true random' },
+        ...createAnimatedShuffleSteps(holderId, animationId, buttonId),
         { func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedHolderCount}' } },
       ),
     },
   );
 }
 
-export function createRequestPileShuffleRoutine(holderId: string, targetLabel: string): RoutineStep[] {
+export function createRequestPileShuffleRoutine(
+  holderId: string,
+  targetLabel: string,
+  animationId: ShuffleAnimationId,
+  buttonId: string,
+): RoutineStep[] {
   return createHostApprovalRequestRoutine({
     actionLabel: `洗牌：${targetLabel}`,
     targetLabel,
     prepareSteps: routine({ func: 'COUNT', holder: [holderId], variable: 'requestTargetCount' }),
     requestableCountVariable: 'requestTargetCount',
-    impactText: `当前共有 ${'${requestTargetCount}'} 张牌。\n\n同意后会重新统计，并将“${targetLabel}”内当时存在的全部卡牌盖面并真随机洗牌；不会从其他区域召回卡牌。`,
-    executeSteps: approvedHolderShuffleSteps(holderId),
+    impactText: `当前共有 ${'${requestTargetCount}'} 张牌。\n\n同意后会重新统计，并将“${targetLabel}”内当时存在的全部卡牌盖面、播放洗牌动画并真随机洗牌；不会从其他区域召回卡牌。`,
+    executeSteps: approvedHolderShuffleSteps(holderId, animationId, buttonId),
     successText: `已将“${targetLabel}”中的 ${'${requestExecutionCount}'} 张牌全部盖面并真随机洗牌。`,
     emptyText: `房主批准后“${targetLabel}”已经为空，因此没有执行洗牌。`,
   });
 }
 
-export const requestShuffleDrawPileRoutine = createRequestPileShuffleRoutine('draw-pile', '摸牌堆');
-export const requestShuffleGeneralReserveRoutine = createRequestPileShuffleRoutine('general-reserve', '武将备牌');
-export const requestShuffleIdentityReserveRoutine = createRequestPileShuffleRoutine('identity-reserve', '身份备牌');
-export const requestShuffleExtraReserveRoutine = createRequestPileShuffleRoutine('extra-reserve', '扩展备牌');
-export const requestShuffleMarkerReserveRoutine = createRequestPileShuffleRoutine('marker-reserve', '血量牌');
+export const requestShuffleDrawPileRoutine = createRequestPileShuffleRoutine(
+  'draw-pile',
+  '摸牌堆',
+  'draw-pile',
+  'shuffle-draw-pile-btn',
+);
+export const requestShuffleGeneralReserveRoutine = createRequestPileShuffleRoutine(
+  'general-reserve',
+  '武将备牌',
+  'general-reserve',
+  'shuffle-general-reserve-btn',
+);
+export const requestShuffleIdentityReserveRoutine = createRequestPileShuffleRoutine(
+  'identity-reserve',
+  '身份备牌',
+  'identity-reserve',
+  'shuffle-identity-reserve-btn',
+);
+export const requestShuffleExtraReserveRoutine = createRequestPileShuffleRoutine(
+  'extra-reserve',
+  '扩展备牌',
+  'extra-reserve',
+  'shuffle-extra-reserve-btn',
+);
+export const requestShuffleMarkerReserveRoutine = createRequestPileShuffleRoutine(
+  'marker-reserve',
+  '体力牌',
+  'marker-reserve',
+  'shuffle-marker-reserve-btn',
+);
 
 export const resetHostActionRequestRoutine: RoutineStep[] = [
   { func: 'GET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestState', variable: 'resetRequestState' },

@@ -21,14 +21,15 @@ describe('shuffle animation', () => {
     expect(new Set(widgets.map(widget => widget.id)).size).toBe(42);
     expect(widgets.every(widget => widget.display === false)).toBe(true);
     expect(widgets.every(widget => widget.clickable === false)).toBe(true);
+    expect(widgets.every(widget => widget.layer === 90)).toBe(true);
   });
 
-  it('uses the matching real card back for each shuffle surface', () => {
+  it('uses valid CSS property names and the matching real card back', () => {
     const widgets = createShuffleAnimationWidgets(backs);
     const backgroundImageOf = (id: string): string => {
       const target = widgets.find(widget => widget.id === id);
-      const css = target?.css as { default?: { backgroundImage?: string } } | undefined;
-      return css?.default?.backgroundImage ?? '';
+      const css = target?.css as { default?: Record<string, string> } | undefined;
+      return css?.default?.['background-image'] ?? '';
     };
 
     expect(backgroundImageOf('shuffle-animation-general-reserve-1')).toBe('url("/assets/test-generals")');
@@ -38,6 +39,13 @@ describe('shuffle animation', () => {
     expect(backgroundImageOf('shuffle-animation-recycle-zone-1')).toBe('url("/assets/test-main")');
     expect(backgroundImageOf('shuffle-animation-extra-reserve-1')).toBe('url("/assets/test-main")');
     expect(backgroundImageOf('shuffle-animation-marker-reserve-1')).toBe('url("/assets/test-main")');
+
+    const first = widgets[0];
+    const css = first.css as { default?: Record<string, string>; inline?: Record<string, string> };
+    expect(css.default).toHaveProperty('background-size', '100% 100%');
+    expect(css.default).toHaveProperty('border-radius', '6px');
+    expect(css.default).toHaveProperty('will-change');
+    expect(css.inline).toHaveProperty('translate', '${PROPERTY shuffleX}px ${PROPERTY shuffleY}px');
   });
 
   it('animates with delays and hides the proxy cards after settling', () => {

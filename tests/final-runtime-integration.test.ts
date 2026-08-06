@@ -4,6 +4,8 @@ import {
   fixedCollectLooseTableCardsRoutine,
   fixedRequestCollectLooseTableCardsRoutine,
   fixedRequestShuffleRecycleZoneRoutine,
+  RECYCLE_COLLECT_STACK_ID,
+  RECYCLE_SHUFFLE_BUFFER_ID,
 } from '../src/routines/recycleZoneRuntime.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from '../src/variants/createUniversalPrototype.js';
@@ -13,41 +15,49 @@ import { loadTestCatalog } from './helpers.js';
 const asRecord = (value: unknown): Record<string, unknown> => value as Record<string, unknown>;
 
 describe('final packaged runtime integration', () => {
-  it('keeps the safe recycle runtime in the base prototype', () => {
+  it('keeps the free recycle runtime in the base prototype', () => {
     const game = createBaseUniversalPrototype(loadTestCatalog());
     const recycleZone = asRecord(game['recycle-zone']);
 
-    expect(recycleZone.alignChildren).toBe(true);
+    expect(recycleZone.alignChildren).toBe(false);
     expect(recycleZone.preventPiles).toBe(true);
-    expect(recycleZone.dropOffsetX).toBe(90);
-    expect(recycleZone.dropOffsetY).toBe(28);
+    expect(recycleZone.dropOffsetX).toBe(0);
+    expect(recycleZone.dropOffsetY).toBe(0);
+    expect(asRecord(game[RECYCLE_COLLECT_STACK_ID])).toMatchObject({ parent: 'recycle-zone', alignChildren: true });
+    expect(asRecord(game[RECYCLE_SHUFFLE_BUFFER_ID])).toMatchObject({ display: false, alignChildren: true });
     expect(asRecord(game['collect-shuffle']).clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-collect-table-cards']).clickRoutine).toEqual(fixedRequestCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-shuffle-recycle-btn']).clickRoutine).toEqual(fixedRequestShuffleRecycleZoneRoutine);
   });
 
-  it('installs the corrected animated recycle routine in the final build without undoing other fixes', () => {
+  it('installs visible animation widgets without undoing recycle fixes', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const recycleZone = asRecord(game['recycle-zone']);
     const recycleRoutine = asRecord(game['recycle-shuffle-btn']).clickRoutine;
+    const animationCard = asRecord(game['shuffle-animation-recycle-zone-1']);
 
-    expect(recycleZone.alignChildren).toBe(true);
+    expect(recycleZone.alignChildren).toBe(false);
     expect(recycleZone.preventPiles).toBe(true);
     expect(asRecord(game['collect-shuffle']).clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-collect-table-cards']).clickRoutine).toEqual(fixedRequestCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-shuffle-recycle-btn']).clickRoutine).toEqual(fixedRequestShuffleRecycleZoneRoutine);
     expect(recycleRoutine).toEqual(animatedShuffleRecycleZoneRoutine);
+    expect(JSON.stringify(recycleRoutine)).toContain('"func":"DELAY"');
+    expect(animationCard).toMatchObject({ display: false, clickable: false, layer: 90 });
     expect(JSON.stringify(recycleRoutine)).toContain('"type":"subtitle"');
     expect(JSON.stringify(recycleRoutine)).not.toContain('"type":"text","label"');
   });
 
-  it('uses explicit predicates when the animated routine assembles allowed recycle cards', () => {
+  it('extracts only valid gameplay cards and leaves other recycle-area cards untouched', () => {
     const serialized = JSON.stringify(animatedShuffleRecycleZoneRoutine);
 
-    expect(serialized).toContain('"property":"deck","relation":"==","value":"main-deck","collection":"recycleShuffleAllowedCards"');
-    expect(serialized).toContain('"property":"deck","relation":"==","value":"extra-deck","collection":"recycleShuffleAllowedCards","mode":"add"');
-    expect(serialized).not.toContain('"source":"recycleMainDeckCards","type":"card","collection":"recycleShuffleAllowedCards"');
-    expect(serialized).toContain('转换技状态牌');
+    expect(serialized).toContain('"property":"parent","relation":"==","value":"recycle-zone","collection":"recycleDirectCards"');
+    expect(serialized).toContain(`"property":"parent","relation":"==","value":"${RECYCLE_COLLECT_STACK_ID}","collection":"recycleStackCards"`);
+    expect(serialized).toContain('"property":"deck","relation":"==","value":"main-deck","collection":"recycleGameplayCards"');
+    expect(serialized).toContain('"property":"deck","relation":"==","value":"extra-deck","collection":"recycleGameplayCards","mode":"add"');
+    expect(serialized).toContain(`"to":"${RECYCLE_SHUFFLE_BUFFER_ID}"`);
+    expect(serialized).toContain('"to":"draw-pile"');
+    expect(serialized).not.toContain('"holder":["recycle-zone"],"mode":"true random"');
   });
 
   it('locks ordinary-player request controls during every shuffle animation', () => {

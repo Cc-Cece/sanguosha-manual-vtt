@@ -20,6 +20,7 @@ import {
 import { normalizeInputDialogs } from '../routines/inputDialog.js';
 import { shuffleDrawPileRoutine, shuffleExtraReserveRoutine, shuffleGeneralReserveRoutine, shuffleIdentityReserveRoutine, shuffleMarkerReserveRoutine } from '../routines/pileShuffle.js';
 import { handZoneFlipFaceUpRoutine } from '../routines/playerHand.js';
+import { RECYCLE_COLLECT_STACK_ID, RECYCLE_SHUFFLE_BUFFER_ID } from '../routines/recycleZoneRuntime.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
 import { arrangeLayoutRoutine, collectLooseTableCardsRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, shuffleRecycleZoneRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
@@ -105,11 +106,35 @@ function tableWidgets(): Widget[] {
     pileZone('draw-pile', '🎴 摸牌堆', 735, 430),
     widget('shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleDrawPileRoutine }),
     widget('request-shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔐 请求洗牌', color: '#29463d', css: { borderRadius: '6px', fontSize: '11px', border: '1px solid #6f9687' }, onlyVisibleForSeat: PUBLIC_REQUEST_SEAT_IDS, linkedToSeat: PUBLIC_REQUEST_SEAT_IDS, movable: false, clickRoutine: requestShuffleDrawPileRoutine }),
-    freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
-    widget('recycle-shuffle-btn', 'button', { x: 957, y: 550, width: 115, height: 32, text: '🔀 洗牌', color: '#2b5746', layer: 3,
-      css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleRecycleZoneRoutine }),
-    widget('request-shuffle-recycle-btn', 'button', { x: 957, y: 550, width: 115, height: 32, text: '🔐 请求洗牌', color: '#29463d', layer: 3,
-      css: { borderRadius: '6px', fontSize: '11px', border: '1px solid #6f9687' }, onlyVisibleForSeat: PUBLIC_REQUEST_SEAT_IDS, linkedToSeat: PUBLIC_REQUEST_SEAT_IDS, movable: false, clickRoutine: requestShuffleRecycleZoneRoutine }),
+
+    freeZone('recycle-zone', '↻ 待回收／待洗牌区｜自由摆放', 880, 408, 270, 182, undefined, {
+      preventPiles: true,
+      dropOffsetX: 0,
+      dropOffsetY: 0,
+    }),
+    pileZone(RECYCLE_COLLECT_STACK_ID, '收拢牌堆', 8, 34, 96, 138, 'recycle-zone', {
+      preventPiles: true,
+      color: '#172a25dd',
+    }),
+    widget(RECYCLE_SHUFFLE_BUFFER_ID, 'holder', {
+      x: 970,
+      y: 430,
+      width: 96,
+      height: 138,
+      display: false,
+      movable: false,
+      movableInEdit: false,
+      dropTarget: null,
+      alignChildren: true,
+      preventPiles: true,
+      stackOffsetX: 0,
+      stackOffsetY: 0,
+      text: '',
+    }),
+    widget('recycle-shuffle-btn', 'button', { x: 942, y: 550, width: 145, height: 32, text: '🔀 洗牌入摸牌堆', color: '#2b5746', layer: 3,
+      css: { borderRadius: '6px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleRecycleZoneRoutine }),
+    widget('request-shuffle-recycle-btn', 'button', { x: 942, y: 550, width: 145, height: 32, text: '🔐 请求洗牌入堆', color: '#29463d', layer: 3,
+      css: { borderRadius: '6px', fontSize: '10px', border: '1px solid #6f9687' }, onlyVisibleForSeat: PUBLIC_REQUEST_SEAT_IDS, linkedToSeat: PUBLIC_REQUEST_SEAT_IDS, movable: false, clickRoutine: requestShuffleRecycleZoneRoutine }),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
   ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
     enterRoutine: [
@@ -126,7 +151,7 @@ function reserveWidgets(): Widget[] {
   return [
     widget('reserve-tray', 'basic', { ...RESERVE_TRAY, movable: true, color: '#3a1d18e8',
       css: { border: '4px double #b68c50', borderRadius: '12px', boxShadow: '0 5px 14px #0009' } }),
-    label('reserve-title', '备牌托盘｜武将 · 身份 · 扩展 · 状态标记', 15, 8, 720, 'reserve-tray'),
+    label('reserve-title', '备牌托盘｜武将 · 身份 · 扩展 · 状态标记', 15, 8, 600, 'reserve-tray'),
     pileZone('general-reserve', '武将', 18, 42, 100, 145, 'reserve-tray', {
       onEnter: { activeFace: 0, reserveState: 'reserved', clickable: false },
       onLeave: { reserveState: 'in-use', clickable: true },
@@ -139,11 +164,7 @@ function reserveWidgets(): Widget[] {
       enterRoutine: cleanupReturnedPendingCardsRoutine,
     }),
     pileZone('marker-reserve', '体力', 384, 42, 100, 145, 'reserve-tray', { onEnter: { activeFace: 0 } }),
-    pileZone('conversion-a-reserve', '转换 A', 506, 42, 100, 145, 'reserve-tray', {
-      onEnter: { activeFace: 0, clickable: false },
-      onLeave: { activeFace: 1, clickable: true },
-    }),
-    pileZone('conversion-b-reserve', '转换 B', 628, 42, 100, 145, 'reserve-tray', {
+    pileZone('conversion-state-reserve', '转换技', 506, 42, 100, 145, 'reserve-tray', {
       onEnter: { activeFace: 0, clickable: false },
       onLeave: { activeFace: 1, clickable: true },
     }),
@@ -156,12 +177,12 @@ function reserveWidgets(): Widget[] {
     widget('request-shuffle-extra-reserve-btn', 'button', { parent: 'reserve-tray', x: 262, y: 190, width: 100, height: 25, text: '🔐 请求洗牌', color: '#29463d', css: { borderRadius: '5px', fontSize: '10px', border: '1px solid #6f9687' }, onlyVisibleForSeat: PUBLIC_REQUEST_SEAT_IDS, linkedToSeat: PUBLIC_REQUEST_SEAT_IDS, movable: false, clickRoutine: requestShuffleExtraReserveRoutine }),
     widget('shuffle-marker-reserve-btn', 'button', { parent: 'reserve-tray', x: 384, y: 190, width: 100, height: 25, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '5px', fontSize: '11px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleMarkerReserveRoutine }),
     widget('request-shuffle-marker-reserve-btn', 'button', { parent: 'reserve-tray', x: 384, y: 190, width: 100, height: 25, text: '🔐 请求洗牌', color: '#29463d', css: { borderRadius: '5px', fontSize: '10px', border: '1px solid #6f9687' }, onlyVisibleForSeat: PUBLIC_REQUEST_SEAT_IDS, linkedToSeat: PUBLIC_REQUEST_SEAT_IDS, movable: false, clickRoutine: requestShuffleMarkerReserveRoutine }),
-    label('conversion-state-help', '取出默认“阳”｜点击状态牌切换阴阳', 506, 190, 222, 'reserve-tray', {
+    label('conversion-state-help', '取出为阳｜点击切换', 506, 190, 100, 'reserve-tray', {
       height: 25,
       css: {
         background: '#211d2bd9',
         color: '#d8d0e7',
-        fontSize: '10px',
+        fontSize: '9px',
         lineHeight: '23px',
         textAlign: 'center',
         fontWeight: '600',
@@ -200,9 +221,9 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         mode: 'vs',
         language: 'zh-CN',
         variant: '4-12人通用人工桌面 ｜ 全套卡牌库与备牌托盘系统',
-        description: '支持 4–12 人自由拓展的通用三国杀人工桌面跑团系统。内置 538 张完整高清真实卡牌（包含标准包、风/火/林/山包、一将成名、SP 及多扩展武将，基本牌、军争与扩展牌）、24 张转换技阴阳状态牌及 12 套独立玩家控制模块。具备【全套备牌面板】分类筛选与一键精准导入、【备牌托盘】盖面抽洗、独立私密展示区与手牌数实时同步。弱规则强自由度，完美契合标准场、军争场、国战、自定义身份与团队战。',
-        ruleText: '【弱规则·强自由·强可见性】\n1. 所有角色技能、武将体力上限、攻击距离、锦囊结算、回合阶段及胜负判定，均由本桌玩家人工协商裁定；\n2. 摸牌堆洗牌与摸牌由主桌自动化 Routine 保障，手牌数量由玩家模块自动统计；\n3. 卡牌在私密展示区与个人手牌区保持原生视角隔离，防偷窥与翻牌提示，保证跑团体验绝对公正。',
-        helpText: '【快捷操作指南】\n1. 房主操作：顶部工具栏点击「👥 玩家管理」可按需增加/关闭席位（4–12席），或一键设置 75%/90%/100% 全局缩放；\n2. 公共操作请求：2–12 号座位可看到「🔐 请求」按钮。普通玩家提交收拢或洗牌请求后，只有 1 号座位房主勾选同意并提交，操作才会执行；同一时间只保留一个待处理请求，异常时房主可点击「🧹 请求复位」；\n3. 牌库编组：点击「📚 牌库编组」展开全套备牌面板，支持按标准/风/火/林/山/一将/SP/其他扩展逐分类预览，点击卡牌切换 [允许/Ban]，确认后仅将勾选牌盖面导入备牌托盘；\n4. 桌面清理：点击「↻ 收拢桌面牌」只会把桌面顶层散落的主牌和当前启用扩展牌移入待回收区，不碰玩家模块、手牌和任何 Holder；检查无误后点击回收区「🔀 洗牌」，只将该区卡牌盖面并随机，且不会自动并入摸牌堆；\n5. 状态标记：备牌托盘右侧提供体力牌和转换技 A/B 状态牌。转换技牌从托盘取出时默认显示“阳”，放到玩家公开区后点击可在“阳/阴”之间切换，放回对应托盘会重新盖面；\n6. 托盘洗牌：备牌托盘下设武将/身份/扩展/体力 4 个专属洗牌按钮；普通玩家可向房主申请执行。转换技状态牌不需要洗牌；\n7. 个人手牌：将卡牌移入右下角「🖐️ 我的手牌」即自动对其他玩家隐藏具体牌面，模块仅显示手牌数。',
+        description: '支持 4–12 人自由拓展的通用三国杀人工桌面跑团系统。内置 538 张完整高清真实卡牌（包含标准包、风/火/林/山包、一将成名、SP 及多扩展武将，基本牌、军争与扩展牌）、12 张转换技阴阳状态牌及 12 套独立玩家控制模块。具备【全套备牌面板】分类筛选与一键精准导入、【备牌托盘】盖面抽洗、独立私密展示区与手牌数实时同步。弱规则强自由度，适合标准场、军争场、国战、自定义身份与团队战。',
+        ruleText: '【弱规则·强自由·强可见性】\n1. 所有角色技能、武将体力上限、攻击距离、锦囊结算、回合阶段及胜负判定，均由本桌玩家人工协商裁定；\n2. 摸牌堆洗牌与摸牌由主桌自动化 Routine 保障，手牌数量由玩家模块自动统计；\n3. 卡牌在私密展示区与个人手牌区保持原生视角隔离，防偷窥与翻牌提示。',
+        helpText: '【快捷操作指南】\n1. 房主操作：顶部工具栏点击「👥 玩家管理」可按需增加/关闭席位（4–12席），或一键设置 75%/90%/100% 全局缩放；\n2. 公共操作请求：2–12 号座位可看到「🔐 请求」按钮。普通玩家提交收拢或洗牌请求后，只有 1 号座位房主勾选同意并提交，操作才会执行；同一时间只保留一个待处理请求，异常时房主可点击「🧹 请求复位」；\n3. 牌库编组：点击「📚 牌库编组」展开全套备牌面板，支持按标准/风/火/林/山/一将/SP/其他扩展逐分类预览，点击卡牌切换 [允许/Ban]，确认后仅将勾选牌盖面导入备牌托盘；\n4. 桌面清理：点击「↻ 收拢桌面牌」只把桌面顶层散落的主牌和当前启用扩展牌移入待回收区左侧的收拢牌堆。待回收区其余空间可自由摆放；点击「🔀 洗牌入摸牌堆」只提取其中的主牌和有效扩展牌，播放动画并真随机洗牌后叠放到摸牌堆，其他牌保持原位置；\n5. 状态标记：备牌托盘右侧提供体力牌和一套通用转换技状态牌。转换技牌取出时默认显示“阳”，点击可在“阳/阴”之间切换，放回托盘会重新盖面；\n6. 托盘洗牌：备牌托盘下设武将/身份/扩展/体力 4 个专属洗牌按钮；普通玩家可向房主申请执行。转换技状态牌不需要洗牌；\n7. 个人手牌：将卡牌移入右下角「🖐️ 我的手牌」即自动对其他玩家隐藏具体牌面，模块仅显示手牌数。',
         attribution: '卡牌图源基于 Tabletop Simulator 3765935052 参考包深度清洗与二次加工；构建时按分类重构目录树并嵌入高性能 WebP 贴图。',
         bgg: 'https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9B%BD%E6%9D%80',
         image: '/assets/other/cover.webp',
