@@ -24,7 +24,7 @@ export const RECYCLE_ZONE_OFFSET = {
 
 export const RECYCLE_COLLECT_GROUP_DEFAULT_POSITION = {
   x: 8,
-  y: 28,
+  y: 8,
 } as const;
 
 export interface RecycleAreaSize {
