@@ -1,32 +1,24 @@
 import type { RoutineStep } from '../types/vtt.js';
+import {
+  arrangeLayoutRoutine,
+  decreaseRecycleAreaRoutine,
+  increaseRecycleAreaRoutine,
+  lockLayoutRoutine,
+  unlockLayoutRoutine,
+} from './layoutControls.js';
 import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 import {
   fixedCollectLooseTableCardsRoutine,
   fixedShuffleRecycleZoneRoutine,
 } from './recycleZoneRuntime.js';
 
-const moduleIds = Array.from({ length: 12 }, (_, i) => `player-module-${i + 1}`).concat(['reserve-tray']);
-const setupIds = ['player-management-panel', 'reserve-prep-drawer'];
-
-export const lockLayoutRoutine = [
-  { func: 'SET', collection: moduleIds, property: 'movable', value: false },
-  { func: 'SET', collection: setupIds, property: 'movable', value: false },
-] as const;
-
-export const unlockLayoutRoutine = [
-  { func: 'SET', collection: moduleIds, property: 'movable', value: true },
-  { func: 'SET', collection: setupIds, property: 'movable', value: true },
-] as const;
-
-export const arrangeLayoutRoutine = [
-  ...Array.from({ length: 12 }, (_, i) => ({
-    func: 'MOVEXY',
-    collection: [`player-module-${i + 1}`],
-    x: 40 + (i % 4) * 440,
-    y: 90 + Math.floor(i / 4) * 270,
-  })),
-  { func: 'MOVEXY', collection: ['reserve-tray'], x: 640, y: 900 },
-] as const;
+export {
+  arrangeLayoutRoutine,
+  decreaseRecycleAreaRoutine,
+  increaseRecycleAreaRoutine,
+  lockLayoutRoutine,
+  unlockLayoutRoutine,
+} from './layoutControls.js';
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
