@@ -85,17 +85,11 @@ function normalizeInputStep(step: PlainRecord): void {
 }
 
 /**
- * Finalizes every generated game object before packaging:
- * - installs the safe recycle-zone runtime routines;
- * - upgrades legacy routine references to the current VirtualTabletop schema;
- * - normalizes every INPUT dialog, including deeply nested IF branches and controller routines.
- *
- * Only fields inside INPUT.fields are converted from legacy text fields, so legitimate card-face
- * objects such as { type: 'text', value: '牌背' } remain unchanged.
+ * Normalizes routine syntax and INPUT dialogs without installing feature-specific runtime fixes.
+ * Final wrapper builders can call this after adding routines or widgets to an already finalized
+ * base game.
  */
-export function normalizeInputDialogs<T>(value: T): T {
-  applyRecycleZoneRuntimeFixes(value);
-
+export function normalizeGeneratedRoutines<T>(value: T): T {
   const visited = new WeakSet<object>();
 
   const visit = (current: unknown): void => {
@@ -116,4 +110,18 @@ export function normalizeInputDialogs<T>(value: T): T {
 
   visit(value);
   return value;
+}
+
+/**
+ * Finalizes every generated base game object before packaging:
+ * - installs the safe recycle-zone runtime routines;
+ * - upgrades legacy routine references to the current VirtualTabletop schema;
+ * - normalizes every INPUT dialog, including deeply nested IF branches and controller routines.
+ *
+ * Only fields inside INPUT.fields are converted from legacy text fields, so legitimate card-face
+ * objects such as { type: 'text', value: '牌背' } remain unchanged.
+ */
+export function normalizeInputDialogs<T>(value: T): T {
+  applyRecycleZoneRuntimeFixes(value);
+  return normalizeGeneratedRoutines(value);
 }
