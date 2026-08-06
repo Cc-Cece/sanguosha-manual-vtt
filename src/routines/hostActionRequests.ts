@@ -4,7 +4,8 @@ export const HOST_ACTION_REQUEST_CONTROLLER_ID = 'host-action-request-controller
 export const HOST_ACTION_REQUEST_RESET_BUTTON_ID = 'host-action-request-reset';
 export const PUBLIC_REQUEST_SEAT_IDS = Array.from({ length: 11 }, (_, index) => `seat-${index + 2}`);
 
-const steps = (...items: RoutineStep[]): RoutineStep[] => items;
+const routine = (...items: RoutineStep[]): RoutineStep[] => items;
+const variableRef = (name: string): string => '${' + name + '}';
 
 const localNotice = (header: string, value: string): RoutineStep => ({
   func: 'INPUT',
@@ -16,7 +17,7 @@ const localNotice = (header: string, value: string): RoutineStep => ({
   block: false,
 });
 
-const clearPendingRequestSteps = (): RoutineStep[] => steps(
+const clearPendingRequestSteps = (): RoutineStep[] => routine(
   { func: 'SET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestState', value: 'idle' },
   { func: 'SET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestAction', value: '' },
   { func: 'SET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestTarget', value: '' },
@@ -33,11 +34,6 @@ const pendingRequestNotice = (): RoutineStep => localNotice(
 const noHostNotice = (): RoutineStep => localNotice(
   '无法提交请求',
   '当前 1 号座位没有玩家。请等待房主进入 1 号座位后再提交。',
-);
-
-const notSeatedNotice = (): RoutineStep => localNotice(
-  '无法提交请求',
-  '只有已入座的普通玩家可以提交房主操作请求。',
 );
 
 const staleRequestNotice = (): RoutineStep => localNotice(
@@ -58,29 +54,28 @@ interface HostApprovalRequestDefinition {
 }
 
 function executionFeedbackSteps(definition: HostApprovalRequestDefinition): RoutineStep[] {
-  const invalidText = definition.invalidText ?? definition.emptyText;
-  return steps({
+  return routine({
     func: 'IF',
     operand1: '${requestExecutionStatus}',
     relation: '==',
     operand2: 'success',
-    thenRoutine: steps(localNotice('房主已同意并执行', definition.successText)),
-    elseRoutine: steps({
+    thenRoutine: routine(localNotice('房主已同意并执行', definition.successText)),
+    elseRoutine: routine({
       func: 'IF',
       operand1: '${requestExecutionStatus}',
       relation: '==',
       operand2: 'invalid',
-      thenRoutine: steps(localNotice('房主已同意，但操作被安全检查阻止', invalidText)),
-      elseRoutine: steps(localNotice('房主已同意，但没有执行', definition.emptyText)),
+      thenRoutine: routine(localNotice(
+        '房主已同意，但操作被安全检查阻止',
+        definition.invalidText ?? definition.emptyText,
+      )),
+      elseRoutine: routine(localNotice('房主已同意，但没有执行', definition.emptyText)),
     }),
   });
 }
 
-function currentRequestGuardSteps(
-  definition: HostApprovalRequestDefinition,
-  currentRequestRoutine: RoutineStep[],
-): RoutineStep[] {
-  return steps(
+function currentRequestGuardSteps(currentRequestRoutine: RoutineStep[]): RoutineStep[] {
+  return routine(
     { func: 'GET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestState', variable: 'currentRequestState' },
     { func: 'GET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestRevision', variable: 'currentRequestRevision' },
     {
@@ -88,29 +83,29 @@ function currentRequestGuardSteps(
       operand1: '${currentRequestState}',
       relation: '==',
       operand2: 'pending',
-      thenRoutine: steps({
+      thenRoutine: routine({
         func: 'IF',
         operand1: '${currentRequestRevision}',
         relation: '==',
         operand2: '${requestRevision}',
         thenRoutine: currentRequestRoutine,
-        elseRoutine: steps(staleRequestNotice()),
+        elseRoutine: routine(staleRequestNotice()),
       }),
-      elseRoutine: steps(staleRequestNotice()),
+      elseRoutine: routine(staleRequestNotice()),
     },
   );
 }
 
 function createHostApprovalRequestRoutine(definition: HostApprovalRequestDefinition): RoutineStep[] {
-  const approvalAndExecution = steps(
+  const approvalAndExecution = routine(
     ...definition.prepareSteps,
     {
       func: 'IF',
-      operand1: `\${${definition.requestableCountVariable}}`,
+      operand1: variableRef(definition.requestableCountVariable),
       relation: '==',
       operand2: 0,
-      thenRoutine: steps(localNotice('当前没有可处理的牌', definition.emptyText)),
-      elseRoutine: steps(
+      thenRoutine: routine(localNotice('当前没有可处理的牌', definition.emptyText)),
+      elseRoutine: routine(
         { func: 'SET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestRevision', relation: '+', value: 1 },
         { func: 'GET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestRevision', variable: 'requestRevision' },
         { func: 'SET', collection: [HOST_ACTION_REQUEST_CONTROLLER_ID], property: 'requestState', value: 'pending' },
@@ -138,17 +133,17 @@ function createHostApprovalRequestRoutine(definition: HostApprovalRequestDefinit
           ],
           block: false,
         },
-        ...currentRequestGuardSteps(definition, steps({
+        ...currentRequestGuardSteps(routine({
           func: 'IF',
           operand1: '${hostApproved}',
           relation: '==',
           operand2: true,
-          thenRoutine: steps(
+          thenRoutine: routine(
             ...definition.executeSteps,
             ...clearPendingRequestSteps(),
             ...executionFeedbackSteps(definition),
           ),
-          elseRoutine: steps(
+          elseRoutine: routine(
             ...clearPendingRequestSteps(),
             localNotice('房主已拒绝请求', `房主拒绝了你的“${definition.actionLabel}”请求，未执行任何操作。`),
           ),
@@ -157,38 +152,38 @@ function createHostApprovalRequestRoutine(definition: HostApprovalRequestDefinit
     },
   );
 
-  return steps({
+  return routine({
     func: 'IF',
     operand1: '${seatID}',
     relation: '==',
     operand2: null,
-    thenRoutine: steps(notSeatedNotice()),
-    elseRoutine: steps({
+    thenRoutine: routine(localNotice('无法提交请求', '只有已入座的普通玩家可以提交房主操作请求。')),
+    elseRoutine: routine({
       func: 'IF',
       operand1: '${seatID}',
       relation: '==',
       operand2: 'seat-1',
-      thenRoutine: steps(localNotice('无需提交请求', '房主可以直接使用对应的房主操作按钮。')),
-      elseRoutine: steps(
+      thenRoutine: routine(localNotice('无需提交请求', '房主可以直接使用对应的房主操作按钮。')),
+      elseRoutine: routine(
         { func: 'GET', collection: ['seat-1'], property: 'player', variable: 'hostPlayer' },
         {
           func: 'IF',
           operand1: '${hostPlayer}',
           relation: '==',
           operand2: null,
-          thenRoutine: steps(noHostNotice()),
-          elseRoutine: steps({
+          thenRoutine: routine(noHostNotice()),
+          elseRoutine: routine({
             func: 'IF',
             operand1: '${hostPlayer}',
             relation: '==',
             operand2: '',
-            thenRoutine: steps(noHostNotice()),
-            elseRoutine: steps({
+            thenRoutine: routine(noHostNotice()),
+            elseRoutine: routine({
               func: 'IF',
               operand1: '${PROPERTY requestState OF host-action-request-controller}',
               relation: '==',
               operand2: 'pending',
-              thenRoutine: steps(pendingRequestNotice()),
+              thenRoutine: routine(pendingRequestNotice()),
               elseRoutine: approvalAndExecution,
             }),
           }),
@@ -199,7 +194,7 @@ function createHostApprovalRequestRoutine(definition: HostApprovalRequestDefinit
 }
 
 function looseCollectableSelectionSteps(prefix: string): RoutineStep[] {
-  return steps(
+  return routine(
     { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: null, collection: `${prefix}LooseTableCards` },
     { func: 'SELECT', source: `${prefix}LooseTableCards`, type: 'card', property: 'owner', relation: '==', value: null, collection: `${prefix}LooseUnownedTableCards` },
     { func: 'SELECT', source: `${prefix}LooseUnownedTableCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}MainDeckCards` },
@@ -215,15 +210,15 @@ function looseCollectableSelectionSteps(prefix: string): RoutineStep[] {
 }
 
 function approvedCollectExecutionSteps(): RoutineStep[] {
-  return steps(
+  return routine(
     ...looseCollectableSelectionSteps('approvedCollect'),
     {
       func: 'IF',
       operand1: '${approvedCollectCount}',
       relation: '==',
       operand2: 0,
-      thenRoutine: steps({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
-      elseRoutine: steps(
+      thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+      elseRoutine: routine(
         { func: 'MOVE', collection: 'approvedCollectCollectableCards', to: 'recycle-zone', count: 'all' },
         { func: 'SELECT', source: 'approvedCollectCollectableCards', type: 'card', property: 'parent', relation: '==', value: 'recycle-zone', collection: 'approvedCollectedRecycleCards' },
         { func: 'COUNT', collection: 'approvedCollectedRecycleCards', variable: 'approvedCollectedRecycleCount' },
@@ -232,8 +227,8 @@ function approvedCollectExecutionSteps(): RoutineStep[] {
           operand1: '${approvedCollectedRecycleCount}',
           relation: '==',
           operand2: 0,
-          thenRoutine: steps({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
-          elseRoutine: steps({ func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedCollectedRecycleCount}' } }),
+          thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+          elseRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedCollectedRecycleCount}' } }),
         },
       ),
     },
@@ -252,7 +247,7 @@ export const requestCollectLooseTableCardsRoutine = createHostApprovalRequestRou
 });
 
 function recycleValidationSteps(prefix: string): RoutineStep[] {
-  return steps(
+  return routine(
     { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: 'recycle-zone', collection: `${prefix}ZoneCards` },
     { func: 'COUNT', collection: `${prefix}ZoneCards`, variable: `${prefix}Count` },
     { func: 'SELECT', source: `${prefix}ZoneCards`, type: 'card', property: 'deck', relation: '==', value: 'main-deck', collection: `${prefix}MainDeckCards` },
@@ -266,25 +261,25 @@ function recycleValidationSteps(prefix: string): RoutineStep[] {
 }
 
 function approvedRecycleShuffleSteps(): RoutineStep[] {
-  return steps(
+  return routine(
     ...recycleValidationSteps('approvedRecycle'),
     {
       func: 'IF',
       operand1: '${approvedRecycleCount}',
       relation: '==',
       operand2: 0,
-      thenRoutine: steps({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
-      elseRoutine: steps({
+      thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+      elseRoutine: routine({
         func: 'IF',
         operand1: '${approvedRecycleAllowedCount}',
         relation: '==',
         operand2: '${approvedRecycleCount}',
-        thenRoutine: steps(
+        thenRoutine: routine(
           { func: 'FLIP', holder: ['recycle-zone'], face: 0 },
           { func: 'SHUFFLE', holder: ['recycle-zone'], mode: 'true random' },
           { func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedRecycleCount}' } },
         ),
-        elseRoutine: steps({
+        elseRoutine: routine({
           func: 'VAR',
           variables: {
             requestExecutionStatus: 'invalid',
@@ -310,15 +305,15 @@ export const requestShuffleRecycleZoneRoutine = createHostApprovalRequestRoutine
 });
 
 function approvedHolderShuffleSteps(holderId: string): RoutineStep[] {
-  return steps(
+  return routine(
     { func: 'COUNT', holder: [holderId], variable: 'approvedHolderCount' },
     {
       func: 'IF',
       operand1: '${approvedHolderCount}',
       relation: '==',
       operand2: 0,
-      thenRoutine: steps({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
-      elseRoutine: steps(
+      thenRoutine: routine({ func: 'VAR', variables: { requestExecutionStatus: 'empty', requestExecutionCount: 0 } }),
+      elseRoutine: routine(
         { func: 'FLIP', holder: [holderId], face: 0 },
         { func: 'SHUFFLE', holder: [holderId], mode: 'true random' },
         { func: 'VAR', variables: { requestExecutionStatus: 'success', requestExecutionCount: '${approvedHolderCount}' } },
@@ -331,11 +326,11 @@ export function createRequestPileShuffleRoutine(holderId: string, targetLabel: s
   return createHostApprovalRequestRoutine({
     actionLabel: `洗牌：${targetLabel}`,
     targetLabel,
-    prepareSteps: steps({ func: 'COUNT', holder: [holderId], variable: 'requestTargetCount' }),
+    prepareSteps: routine({ func: 'COUNT', holder: [holderId], variable: 'requestTargetCount' }),
     requestableCountVariable: 'requestTargetCount',
-    impactText: `当前共有 \${requestTargetCount} 张牌。\n\n同意后会重新统计，并将“${targetLabel}”内当时存在的全部卡牌盖面并真随机洗牌；不会从其他区域召回卡牌。`,
+    impactText: `当前共有 ${'${requestTargetCount}'} 张牌。\n\n同意后会重新统计，并将“${targetLabel}”内当时存在的全部卡牌盖面并真随机洗牌；不会从其他区域召回卡牌。`,
     executeSteps: approvedHolderShuffleSteps(holderId),
-    successText: `已将“${targetLabel}”中的 \${requestExecutionCount} 张牌全部盖面并真随机洗牌。`,
+    successText: `已将“${targetLabel}”中的 ${'${requestExecutionCount}'} 张牌全部盖面并真随机洗牌。`,
     emptyText: `房主批准后“${targetLabel}”已经为空，因此没有执行洗牌。`,
   });
 }
@@ -353,10 +348,10 @@ export const resetHostActionRequestRoutine: RoutineStep[] = [
     operand1: '${resetRequestState}',
     relation: '==',
     operand2: 'pending',
-    thenRoutine: steps(
+    thenRoutine: routine(
       ...clearPendingRequestSteps(),
       localNotice('请求状态已复位', '待处理请求已被清除。即使旧审批对话框之后被提交，也会因为请求版本失效而拒绝执行。'),
     ),
-    elseRoutine: steps(localNotice('当前没有待处理请求', '请求控制器处于空闲状态，无需复位。')),
+    elseRoutine: routine(localNotice('当前没有待处理请求', '请求控制器处于空闲状态，无需复位。')),
   },
 ];
