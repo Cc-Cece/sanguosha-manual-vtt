@@ -1,3 +1,5 @@
+import { applyRecycleZoneRuntimeFixes } from './recycleZoneRuntime.js';
+
 type PlainRecord = Record<string, unknown>;
 
 function isRecord(value: unknown): value is PlainRecord {
@@ -62,6 +64,8 @@ function normalizeInputStep(step: PlainRecord): void {
  * legitimate card-face objects such as { type: 'text', value: '牌背' } remain unchanged.
  */
 export function normalizeInputDialogs<T>(value: T): T {
+  applyRecycleZoneRuntimeFixes(value);
+
   const visited = new WeakSet<object>();
 
   const visit = (current: unknown): void => {
