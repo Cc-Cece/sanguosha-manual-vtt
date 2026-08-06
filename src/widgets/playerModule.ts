@@ -1,5 +1,9 @@
 import { PLAYER_MODULE_STAGING_POSITIONS } from '../layouts/playerModuleStaging.js';
 import {
+  advancePlayPhaseRoutine,
+  createSetPlayPhaseRoutine,
+} from '../routines/playPhaseMarker.js';
+import {
   createPrivatePeekClickRoutine,
   createPrivatePeekEnterRoutine,
   createPrivatePeekLeaveRoutine,
@@ -24,6 +28,15 @@ const seatCss = {
   whiteSpace: 'nowrap',
   textOverflow: 'ellipsis',
   cursor: 'pointer',
+};
+
+const playPhaseButtonCss = {
+  fontSize: '11px',
+  color: '#ffe9b0',
+  borderRadius: '6px',
+  border: '1px solid #c9a24b',
+  boxShadow: 'inset 0 1px 0 #ffffff10',
+  fontWeight: '700',
 };
 
 export function createPlayerModule(index: number): Widget[] {
@@ -52,6 +65,23 @@ export function createPlayerModule(index: number): Widget[] {
         transformOrigin: 'top left',
       },
     }),
+    widget(`play-phase-frame-${n}`, 'basic', {
+      parent: moduleId,
+      x: 0,
+      y: 0,
+      width: 430,
+      height: 260,
+      display: false,
+      movable: false,
+      layer: 1,
+      color: '#0000',
+      css: {
+        border: '3px solid #e8b84a',
+        borderRadius: '11px',
+        boxShadow: '0 0 14px #e8b84a66',
+        pointerEvents: 'none',
+      },
+    }),
     widget(`player-header-${n}`, 'basic', {
       parent: moduleId,
       x: 7,
@@ -72,7 +102,7 @@ export function createPlayerModule(index: number): Widget[] {
       parent: moduleId,
       x: 10,
       y: 9,
-      width: 132,
+      width: 120,
       height: 30,
       layer: 3,
       index,
@@ -87,9 +117,9 @@ export function createPlayerModule(index: number): Widget[] {
     }),
     widget(`leave-seat-${n}`, 'button', {
       parent: moduleId,
-      x: 148,
+      x: 134,
       y: 9,
-      width: 48,
+      width: 42,
       height: 30,
       layer: 3,
       text: '离座',
@@ -105,9 +135,9 @@ export function createPlayerModule(index: number): Widget[] {
     }),
     widget(privatePeekButtonId, 'button', {
       parent: moduleId,
-      x: 202,
+      x: 180,
       y: 9,
-      width: 36,
+      width: 32,
       height: 30,
       layer: 3,
       text: '👁️',
@@ -126,20 +156,44 @@ export function createPlayerModule(index: number): Widget[] {
       leaveRoutine: createPrivatePeekLeaveRoutine(n),
       clickRoutine: createPrivatePeekClickRoutine(n),
     }),
-    label(`hand-count-title-${n}`, '🃏 手牌', 247, 12, 55, moduleId, {
+    widget(`set-play-phase-${n}`, 'button', {
+      parent: moduleId,
+      x: 216,
+      y: 9,
+      width: 40,
+      height: 30,
+      layer: 3,
+      text: '出牌',
+      color: '#4a3a18',
+      css: playPhaseButtonCss,
+      clickRoutine: createSetPlayPhaseRoutine(n),
+    }),
+    widget(`advance-play-phase-${n}`, 'button', {
+      parent: moduleId,
+      x: 260,
+      y: 9,
+      width: 52,
+      height: 30,
+      layer: 3,
+      text: '下一位',
+      color: '#3a3420',
+      css: playPhaseButtonCss,
+      clickRoutine: advancePlayPhaseRoutine,
+    }),
+    label(`hand-count-title-${n}`, '🃏', 316, 12, 28, moduleId, {
       height: 22,
       css: {
         color: '#d8c89f',
-        fontSize: '11px',
+        fontSize: '12px',
         textAlign: 'center',
         fontWeight: '600',
       },
     }),
     widget(`hand-count-${n}`, 'label', {
       parent: moduleId,
-      x: 305,
+      x: 346,
       y: 9,
-      width: 58,
+      width: 52,
       height: 30,
       text: 0,
       movable: false,
@@ -154,6 +208,29 @@ export function createPlayerModule(index: number): Widget[] {
         border: '1px solid #9b804e',
         borderRadius: '7px',
         boxShadow: 'inset 0 1px 5px #0008',
+      },
+    }),
+    widget(`play-phase-badge-${n}`, 'label', {
+      parent: moduleId,
+      x: 12,
+      y: 46,
+      width: 72,
+      height: 20,
+      text: '出牌中',
+      display: false,
+      movable: false,
+      layer: 4,
+      css: {
+        background: '#5c4010ee',
+        color: '#ffe7a0',
+        fontSize: '12px',
+        lineHeight: '18px',
+        textAlign: 'center',
+        fontWeight: '700',
+        border: '1px solid #e8b84a',
+        borderRadius: '6px',
+        boxShadow: '0 1px 6px #0008',
+        pointerEvents: 'none',
       },
     }),
     freeZone(
