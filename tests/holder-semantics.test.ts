@@ -1,4 +1,5 @@
 import { expect, it } from 'vitest';
+import type { Widget } from '../src/types/vtt.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
@@ -22,8 +23,10 @@ it('uses distinct native holder semantics for piles, the stacked recycle target,
 
 it('keeps desktop collection separate from recycle-zone-only shuffle', () => {
   const game = createFourPlayerPrototype(loadTestCatalog());
-  const collectRoutine = JSON.stringify(game['collect-shuffle']?.clickRoutine);
-  const recycleShuffleRoutine = JSON.stringify(game['recycle-shuffle-btn']?.clickRoutine);
+  const collectButton = game['collect-shuffle'] as Widget;
+  const recycleShuffleButton = game['recycle-shuffle-btn'] as Widget;
+  const collectRoutine = JSON.stringify(collectButton.clickRoutine);
+  const recycleShuffleRoutine = JSON.stringify(recycleShuffleButton.clickRoutine);
 
   expect(collectRoutine).toContain('"property":"parent","relation":"==","value":null');
   expect(collectRoutine).toContain('"func":"MOVE","collection":"collectCollectableCards","to":"recycle-zone"');
