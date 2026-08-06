@@ -9,7 +9,7 @@ export const QUICK_SHUFFLE_PANEL = {
   x: 565,
   y: 380,
   width: 145,
-  height: 244,
+  height: 248,
 } as const;
 
 export const RECYCLE_PANEL_POSITION = {
