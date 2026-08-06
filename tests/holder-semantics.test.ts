@@ -1,15 +1,27 @@
 import { expect, it } from 'vitest';
 import type { Widget } from '../src/types/vtt.js';
+import {
+  QUICK_SHUFFLE_PANEL_ID,
+  RECYCLE_COLLECT_GROUP_ID,
+  RECYCLE_PANEL_ID,
+} from '../src/layouts/shufflePanels.js';
 import { RECYCLE_COLLECT_STACK_ID, RECYCLE_SHUFFLE_BUFFER_ID } from '../src/routines/recycleZoneRuntime.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
-it('uses distinct native holder semantics for piles, the free recycle area and the hand', () => {
+it('uses movable panel groups while keeping draw pile and hand fixed', () => {
   const game = createFourPlayerPrototype(loadTestCatalog());
   for (const id of ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'])
     expect(game[id]).toMatchObject({ alignChildren: true, preventPiles: false, stackOffsetX: 0, stackOffsetY: 0 });
 
+  expect(game[QUICK_SHUFFLE_PANEL_ID]).toMatchObject({ movable: true });
+  expect(game['quick-shuffle-zone']).toMatchObject({ parent: QUICK_SHUFFLE_PANEL_ID, movable: false });
+  expect(game['quick-shuffle-btn']).toMatchObject({ parent: QUICK_SHUFFLE_PANEL_ID, movable: false });
+
+  expect(game[RECYCLE_PANEL_ID]).toMatchObject({ movable: true, recycleSizePercent: 100 });
   expect(game['recycle-zone']).toMatchObject({
+    parent: RECYCLE_PANEL_ID,
+    movable: false,
     alignChildren: false,
     preventPiles: true,
     stackOffsetX: 0,
@@ -17,8 +29,14 @@ it('uses distinct native holder semantics for piles, the free recycle area and t
     dropOffsetX: 0,
     dropOffsetY: 0,
   });
-  expect(game[RECYCLE_COLLECT_STACK_ID]).toMatchObject({
+  expect(game[RECYCLE_COLLECT_GROUP_ID]).toMatchObject({
     parent: 'recycle-zone',
+    movable: true,
+    fixedParent: true,
+  });
+  expect(game[RECYCLE_COLLECT_STACK_ID]).toMatchObject({
+    parent: RECYCLE_COLLECT_GROUP_ID,
+    movable: false,
     alignChildren: true,
     preventPiles: true,
     stackOffsetX: 0,
@@ -29,9 +47,10 @@ it('uses distinct native holder semantics for piles, the free recycle area and t
     alignChildren: true,
     preventPiles: true,
   });
+  expect(game['draw-pile']).toMatchObject({ movable: false });
+  expect(game['personal-hand']).toMatchObject({ movable: false, alignChildren: true, preventPiles: true, childrenPerOwner: true, stackOffsetY: 0 });
   expect(game['public-zone-1']).toMatchObject({ alignChildren: false, preventPiles: false });
   expect(game['private-zone-1']).toMatchObject({ alignChildren: false, preventPiles: true });
-  expect(game['personal-hand']).toMatchObject({ alignChildren: true, preventPiles: true, childrenPerOwner: true, stackOffsetY: 0 });
 });
 
 it('keeps desktop collection separate from selective recycle-to-draw shuffle', () => {
