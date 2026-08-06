@@ -1,16 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import {
   PUBLIC_REQUEST_SEAT_IDS,
-  requestCollectLooseTableCardsRoutine,
   requestShuffleDrawPileRoutine,
-  requestShuffleRecycleZoneRoutine,
   resetHostActionRequestRoutine,
 } from '../src/routines/hostActionRequests.js';
+import { RECYCLE_COLLECT_STACK_ID, RECYCLE_SHUFFLE_BUFFER_ID } from '../src/routines/recycleZoneRuntime.js';
 import { createUniversalPrototype } from '../src/variants/createUniversalPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
 describe('host-approved public action requests', () => {
-  it('routes a seated ordinary player request to the seat-1 player', () => {
+  it('routes a seated ordinary player request to seat 1 and plays the normal pile animation', () => {
     const serialized = JSON.stringify(requestShuffleDrawPileRoutine);
 
     expect(serialized).toContain('"collection":["seat-1"],"property":"player","variable":"hostPlayer"');
@@ -22,38 +21,45 @@ describe('host-approved public action requests', () => {
     expect(serialized).toContain('"requestRevision","relation":"+","value":1');
     expect(serialized).toContain('"operand1":"${currentRequestRevision}"');
     expect(serialized).toContain('"func":"FLIP","holder":["draw-pile"],"face":0');
+    expect(serialized).toContain('"func":"DELAY"');
     expect(serialized).toContain('"func":"SHUFFLE","holder":["draw-pile"],"mode":"true random"');
     expect(serialized).not.toContain('"func":"RECALL"');
 
     const approvalIndex = serialized.indexOf('"operand1":"${hostApproved}"');
+    const animationIndex = serialized.indexOf('"func":"DELAY"');
     const shuffleIndex = serialized.indexOf('"func":"SHUFFLE"');
     expect(approvalIndex).toBeGreaterThan(-1);
-    expect(shuffleIndex).toBeGreaterThan(approvalIndex);
+    expect(animationIndex).toBeGreaterThan(approvalIndex);
+    expect(shuffleIndex).toBeGreaterThan(animationIndex);
   });
 
-  it('revalidates table collection after approval and never combines it with shuffle', () => {
-    const serialized = JSON.stringify(requestCollectLooseTableCardsRoutine);
+  it('uses the finalized collection request and never combines collection with shuffle', () => {
+    const game = createUniversalPrototype(loadTestCatalog());
+    const serialized = JSON.stringify((game['request-collect-table-cards'] as Record<string, unknown>).clickRoutine);
 
     expect(serialized.match(/"property":"parent","relation":"==","value":null/g)?.length).toBeGreaterThanOrEqual(2);
     expect(serialized.match(/"property":"owner","relation":"==","value":null/g)?.length).toBeGreaterThanOrEqual(2);
     expect(serialized).toContain('"property":"reservePendingRemoval","relation":"==","value":false');
-    expect(serialized).toContain('"func":"MOVE","collection":"approvedCollectCollectableCards","to":"recycle-zone"');
+    expect(serialized).toContain(`"func":"MOVE","collection":"approvedCollectCollectableCards","to":"${RECYCLE_COLLECT_STACK_ID}"`);
     expect(serialized).not.toContain('"func":"FLIP"');
     expect(serialized).not.toContain('"func":"SHUFFLE"');
     expect(serialized).not.toContain('"func":"RECALL"');
   });
 
-  it('revalidates recycle-zone card types before an approved shuffle', () => {
-    const serialized = JSON.stringify(requestShuffleRecycleZoneRoutine);
+  it('revalidates recycle game cards and sends only them through the animated buffer', () => {
+    const game = createUniversalPrototype(loadTestCatalog());
+    const serialized = JSON.stringify((game['request-shuffle-recycle-btn'] as Record<string, unknown>).clickRoutine);
 
     expect(serialized.match(/"property":"parent","relation":"==","value":"recycle-zone"/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(serialized).toContain(`"property":"parent","relation":"==","value":"${RECYCLE_COLLECT_STACK_ID}"`);
     expect(serialized).toContain('"property":"deck","relation":"==","value":"main-deck"');
     expect(serialized).toContain('"property":"deck","relation":"==","value":"extra-deck"');
     expect(serialized).toContain('"property":"reserveState","relation":"==","value":"in-use"');
     expect(serialized).toContain('"property":"reservePendingRemoval","relation":"==","value":false');
-    expect(serialized).toContain('"requestExecutionStatus":"invalid"');
-    expect(serialized).toContain('此次没有翻面或洗牌');
-    expect(serialized).not.toContain('"to":"draw-pile"');
+    expect(serialized).toContain(`"to":"${RECYCLE_SHUFFLE_BUFFER_ID}"`);
+    expect(serialized).toContain('"func":"DELAY"');
+    expect(serialized).toContain('"to":"draw-pile"');
+    expect(serialized).not.toContain('"func":"SHUFFLE","holder":["recycle-zone"]');
   });
 
   it('exposes direct host buttons and overlapping request buttons to the correct seats', () => {
@@ -71,7 +77,9 @@ describe('host-approved public action requests', () => {
     expect(requestDrawButton.onlyVisibleForSeat).toEqual(PUBLIC_REQUEST_SEAT_IDS);
     expect(requestDrawButton.text).toBe('🔐 请求洗牌');
     expect(hostRecycleButton.onlyVisibleForSeat).toEqual(['seat-1']);
+    expect(hostRecycleButton.text).toBe('🔀 洗牌入摸牌堆');
     expect(requestRecycleButton.onlyVisibleForSeat).toEqual(PUBLIC_REQUEST_SEAT_IDS);
+    expect(requestRecycleButton.text).toBe('🔐 请求洗牌入堆');
     expect(requestToolbar.onlyVisibleForSeat).toEqual(PUBLIC_REQUEST_SEAT_IDS);
     expect(requestCollectButton.text).toBe('🔐 请求收拢桌面牌');
     expect(controller.requestState).toBe('idle');
@@ -82,7 +90,7 @@ describe('host-approved public action requests', () => {
     expect(resetButton.parent).toBe('host-toolbar-panel');
   });
 
-  it('keeps reserve request buttons limited to ordinary seated players', () => {
+  it('keeps reserve request buttons limited to ordinary seated players and animated after approval', () => {
     const game = createUniversalPrototype(loadTestCatalog());
     const requestIds = [
       'request-shuffle-general-reserve-btn',
@@ -97,6 +105,7 @@ describe('host-approved public action requests', () => {
       expect(button.onlyVisibleForSeat).toEqual(PUBLIC_REQUEST_SEAT_IDS);
       expect(button.linkedToSeat).toEqual(PUBLIC_REQUEST_SEAT_IDS);
       expect(button.text).toBe('🔐 请求洗牌');
+      expect(JSON.stringify(button.clickRoutine)).toContain('"func":"DELAY"');
     }
   });
 
