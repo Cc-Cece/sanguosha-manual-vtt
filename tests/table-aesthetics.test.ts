@@ -10,6 +10,7 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     const widgets = widgetsOf(game);
 
     const leaveRoutines = [leaveSeat1Routine, leaveSeat2Routine, leaveSeat3Routine, leaveSeat4Routine];
+    expect(leaveRoutines).toHaveLength(4);
 
     for (let i = 1; i <= 4; i++) {
       const btn = widgets.find(w => w.id === `leave-seat-${i}`);
@@ -62,10 +63,13 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(shuffleBtn).toBeDefined();
     const shuffleRoutineStr = JSON.stringify(shuffleBtn?.clickRoutine);
     expect(shuffleRoutineStr).toContain('quick-shuffle-zone');
-    expect(shuffleRoutineStr).toContain('洗牌完成');
+    expect(shuffleRoutineStr).toContain('⏳ 洗牌中…');
+    expect(shuffleRoutineStr).toContain('"func":"SHUFFLE"');
+    expect(shuffleRoutineStr).toContain('"mode":"true random"');
+    expect(shuffleRoutineStr).toContain('🔀 一键洗牌');
 
     const markerReserve = widgets.find(w => w.id === 'marker-reserve');
-    expect(markerReserve?.text).toBe('血量');
+    expect(markerReserve?.text).toBe('体力');
 
     const healthDeck = widgets.find(w => w.id === 'health-deck');
     expect(healthDeck).toBeDefined();
@@ -95,4 +99,3 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     }
   });
 });
-

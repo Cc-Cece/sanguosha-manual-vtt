@@ -34,7 +34,7 @@ describe('reserve-card face interaction across lifecycle states', () => {
 
     expect(managedCard).toBeDefined();
     const routine = JSON.stringify(managedCard.clickRoutine);
-    expect(routine).toContain('"property":"reserveState"');
+    expect(routine).toContain('${PROPERTY reserveState}');
     expect(routine).toContain('"operand2":"draft"');
     expect(routine).toContain('reserveSelected');
     expect(routine).toContain('"operand2":"in-use"');
