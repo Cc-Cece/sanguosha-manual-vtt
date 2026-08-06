@@ -1,42 +1,18 @@
-# Sanguosha Manual VirtualTabletop
+# 三国杀人工 VirtualTabletop（4 人 Phase 1.1）
 
-An initialization scaffold for a future `.vtt` game package importable into [ArnoldSmith86/virtualtabletop](https://github.com/ArnoldSmith86/virtualtabletop). The project will use cards, characters, identity-mode terminology, and interaction ideas from [libnoname/noname](https://github.com/libnoname/noname) as reference material.
+这是弱规则、强同步和强私密可见性的 4 人联网桌面。它不自动处理技能、距离、伤害、回合或胜负。
 
-This is deliberately not an automated rules engine. VirtualTabletop will provide rooms, synchronization, seats, private hands, cards, and tabletop state; players will discuss rules through external voice chat and manually perform and resolve actions. The backend and package must not decide whether a Sanguosha action is legal.
-
-## Status
-
-**Initialization complete; P0 has not started.** No cards, characters, identities, routines, layouts, formal `0.json`, playable package, or rules have been implemented. The expected future artifact is `dist/*.vtt`.
-
-## Read-only upstream references
-
-- `../virtualtabletop` — upstream platform and `.vtt` format reference.
-- `../noname-main` — read-only data and interaction reference.
-
-Never modify these directories or install dependencies inside them. New work belongs only in this repository.
-
-## Recommended development workflow
-
-1. Work from typed, separable sources under `src/` and keep assets under `assets/`.
-2. Keep data, layouts, widgets, routines, variants, and assets independently maintainable.
-3. Validate source and Widget ID uniqueness before packaging.
-4. Generate VirtualTabletop-compatible JSON and `.vtt` artifacts into `dist/` only through future build tooling.
-
-## Commands
-
-```text
+```powershell
 pnpm install
-pnpm validate
-pnpm test
-pnpm build
 pnpm check
 ```
 
-The current build and validation commands are initialization placeholders; `build` does not create a `.vtt` package.
+构建环境需要可从 `PATH` 调用的 FFmpeg，用于生成 WebP 牌面缓存。
 
-## License, sources, and current use
+构建会只读加载相邻参考目录中的 552 张牌面，生成：
 
-Project code is provisionally licensed under GPL-3.0; see `LICENSE`. VirtualTabletop (`ArnoldSmith86/virtualtabletop`) and noname (`libnoname/noname`) remain upstream platform/reference projects. Any future direct code copy must preserve its source, copyright notices, and applicable license.
+`dist/Sanguosha-Manual-4P-Prototype.vtt`
 
-Images, card faces, character artwork, fonts, and audio must not be presumed GPL-licensed. Their provenance and permission must be assessed and recorded separately. This project is currently intended only for non-commercial testing in private games among friends.
+包内包含一个 `0.json` 和经过网页压缩的牌面资产。设计与来源见 [架构](docs/architecture.md)、[牌面来源](docs/asset-sources.md)、[参考映射](docs/reference-structure-map.md) 和 [阶段计划](docs/development-plan.md)。
 
+当前只生成 4 人版本。导入本地 VirtualTabletop 后，应使用两个玩家会话和一个观察者会话完成计划书中保留的人工隐私／同步验收。
