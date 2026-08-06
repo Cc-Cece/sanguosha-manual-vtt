@@ -1,7 +1,9 @@
 import type { RoutineStep, Widget } from '../types/vtt.js';
 import { cardBack, widget } from '../widgets/factory.js';
 
-export const CONVERSION_STATE_COPIES_PER_SLOT = 12;
+export const CONVERSION_STATE_COPIES = 12;
+/** Compatibility alias retained for callers that used the former A/B slot constant. */
+export const CONVERSION_STATE_COPIES_PER_SLOT = CONVERSION_STATE_COPIES;
 
 const toggleConversionStateRoutine: RoutineStep[] = [
   {
@@ -24,7 +26,7 @@ const toggleConversionStateRoutine: RoutineStep[] = [
   },
 ];
 
-function conversionStateFace(slot: 'A' | 'B', state: '阳' | '阴') {
+function conversionStateFace(state: '阳' | '阴') {
   const isYang = state === '阳';
   const accent = isYang ? '#f3b43f' : '#8797d8';
   const symbol = isYang ? '☀' : '☾';
@@ -40,7 +42,7 @@ function conversionStateFace(slot: 'A' | 'B', state: '阳' | '阴') {
         y: 8,
         width: 80,
         height: 22,
-        value: `转换技 ${slot}`,
+        value: '转换技',
         color: '#f5ead1',
         fontSize: 12,
         textAlign: 'center',
@@ -90,41 +92,34 @@ function conversionStateFace(slot: 'A' | 'B', state: '阳' | '阴') {
   };
 }
 
-function createConversionSlotDeck(slot: 'A' | 'B', holder: string): Widget[] {
-  const slotKey = slot.toLowerCase();
-  const deckId = `conversion-${slotKey}-deck`;
-  const cardType = `conversion-${slotKey}`;
+export function createConversionStateDecks(): Widget[] {
+  const deckId = 'conversion-state-deck';
+  const holderId = 'conversion-state-reserve';
+  const cardType = 'conversion-state';
   const deck = widget(deckId, 'deck', {
-    parent: holder,
+    parent: holderId,
     cardDefaults: { width: 90, height: 126, enlarge: 4.6 },
     faceTemplates: [
-      cardBack(`转换技 ${slot}`),
-      conversionStateFace(slot, '阳'),
-      conversionStateFace(slot, '阴'),
+      cardBack('转换技'),
+      conversionStateFace('阳'),
+      conversionStateFace('阴'),
     ],
     cardTypes: {
-      [cardType]: { label: `转换技 ${slot} 状态牌` },
+      [cardType]: { label: '转换技阴阳状态牌' },
     },
   });
 
-  const cards = Array.from({ length: CONVERSION_STATE_COPIES_PER_SLOT }, (_, index) =>
-    widget(`conversion-${slotKey}-card-${index + 1}`, 'card', {
+  const cards = Array.from({ length: CONVERSION_STATE_COPIES }, (_, index) =>
+    widget(`conversion-state-card-${index + 1}`, 'card', {
       deck: deckId,
       cardType,
-      parent: holder,
+      parent: holderId,
       activeFace: 0,
       clickable: false,
-      conversionStateSlot: slot,
+      conversionStateMarker: true,
       clickRoutine: toggleConversionStateRoutine,
     }),
   );
 
   return [deck, ...cards];
-}
-
-export function createConversionStateDecks(): Widget[] {
-  return [
-    ...createConversionSlotDeck('A', 'conversion-a-reserve'),
-    ...createConversionSlotDeck('B', 'conversion-b-reserve'),
-  ];
 }
