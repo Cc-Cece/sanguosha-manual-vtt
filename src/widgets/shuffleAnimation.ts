@@ -36,7 +36,7 @@ const FADE_DELAY_MS = 120;
 const shuffleAnimationSpecs: Record<ShuffleAnimationId, ShuffleAnimationSpec> = {
   'quick-shuffle': { id: 'quick-shuffle', x: 27, y: 48, parent: QUICK_SHUFFLE_PANEL_ID, backKey: 'main' },
   'draw-pile': { id: 'draw-pile', x: 738, y: 436, backKey: 'main' },
-  'recycle-zone': { id: 'recycle-zone', x: 3, y: 6, parent: RECYCLE_COLLECT_GROUP_ID, backKey: 'main' },
+  'recycle-zone': { id: 'recycle-zone', x: 10, y: 30, parent: RECYCLE_COLLECT_GROUP_ID, backKey: 'main' },
   'general-reserve': { id: 'general-reserve', x: 23, y: 48, parent: 'reserve-tray', backKey: 'generals' },
   'identity-reserve': { id: 'identity-reserve', x: 145, y: 48, parent: 'reserve-tray', backKey: 'identities' },
   'extra-reserve': { id: 'extra-reserve', x: 267, y: 48, parent: 'reserve-tray', backKey: 'main' },
