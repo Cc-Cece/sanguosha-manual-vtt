@@ -39,6 +39,11 @@ const shuffleAnimationSpecs: Record<ShuffleAnimationId, ShuffleAnimationSpec> = 
   'marker-reserve': { id: 'marker-reserve', x: 398, y: 48, parent: 'reserve-tray', backKey: 'main' },
 };
 
+/**
+ * Controls that can mutate a pile or enqueue a host-approved mutation. Locking both the host
+ * buttons and the ordinary-player request buttons prevents a second operation from being queued
+ * while the synchronized animation is still running.
+ */
 export const SHUFFLE_BUTTON_IDS = [
   'quick-shuffle-btn',
   'shuffle-draw-pile-btn',
@@ -47,6 +52,14 @@ export const SHUFFLE_BUTTON_IDS = [
   'shuffle-identity-reserve-btn',
   'shuffle-extra-reserve-btn',
   'shuffle-marker-reserve-btn',
+  'collect-shuffle',
+  'request-collect-table-cards',
+  'request-shuffle-draw-pile-btn',
+  'request-shuffle-recycle-btn',
+  'request-shuffle-general-reserve-btn',
+  'request-shuffle-identity-reserve-btn',
+  'request-shuffle-extra-reserve-btn',
+  'request-shuffle-marker-reserve-btn',
 ] as const;
 
 export const lockShuffleControlsRoutine: RoutineStep[] = [
