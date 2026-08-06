@@ -1,4 +1,8 @@
 import { describe, expect, it } from 'vitest';
+import {
+  QUICK_SHUFFLE_PANEL_ID,
+  RECYCLE_COLLECT_GROUP_ID,
+} from '../src/layouts/shufflePanels.js';
 import { shuffleDrawPileRoutine } from '../src/routines/pileShuffle.js';
 import {
   createAnimatedShuffleSteps,
@@ -22,6 +26,8 @@ describe('shuffle animation', () => {
     expect(widgets.every(widget => widget.display === false)).toBe(true);
     expect(widgets.every(widget => widget.clickable === false)).toBe(true);
     expect(widgets.every(widget => widget.layer === 90)).toBe(true);
+    expect(widgets.find(widget => widget.id === 'shuffle-animation-quick-shuffle-1')?.parent).toBe(QUICK_SHUFFLE_PANEL_ID);
+    expect(widgets.find(widget => widget.id === 'shuffle-animation-recycle-zone-1')?.parent).toBe(RECYCLE_COLLECT_GROUP_ID);
   });
 
   it('uses valid CSS property names and the matching real card back', () => {
