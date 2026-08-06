@@ -8,7 +8,7 @@ import { normalizeInputDialogs } from '../routines/inputDialog.js';
 import { shuffleDrawPileRoutine, shuffleExtraReserveRoutine, shuffleGeneralReserveRoutine, shuffleIdentityReserveRoutine, shuffleMarkerReserveRoutine } from '../routines/pileShuffle.js';
 import { handZoneFlipFaceUpRoutine } from '../routines/playerHand.js';
 import { clearAllSeatsRoutine } from '../routines/seatSafety.js';
-import { arrangeLayoutRoutine, collectAndShuffleRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
+import { arrangeLayoutRoutine, collectLooseTableCardsRoutine, lockLayoutRoutine, quickShuffleRoutine, resetTableRoutine, shuffleRecycleZoneRoutine, toggleHostToolbarRoutine, toggleLibraryTrayRoutine, toggleReserveTrayRoutine, unlockLayoutRoutine, updateHandCountsRoutine } from '../routines/tableActions.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
 import { createCandidateWidgets } from '../widgets/candidateZone.js';
@@ -35,7 +35,7 @@ function tableWidgets(): Widget[] {
     widget('toggle-player-mgmt-btn', 'button', { parent: 'host-toolbar-panel', x: 337, y: 9, width: 115, height: 36, text: '👥 玩家管理', color: '#254448', clickRoutine: togglePlayerMgmtPanelRoutine }),
     widget('toggle-tray', 'button', { parent: 'host-toolbar-panel', x: 458, y: 9, width: 105, height: 36, text: '📦 备牌托盘', clickRoutine: toggleReserveTrayRoutine }),
     widget('toggle-library-table', 'button', { parent: 'host-toolbar-panel', x: 569, y: 9, width: 105, height: 36, text: '📚 牌库编组', color: '#254448', clickRoutine: toggleLibraryTrayRoutine }),
-    widget('collect-shuffle', 'button', { parent: 'host-toolbar-panel', x: 680, y: 9, width: 105, height: 36, text: '🔀 收拢洗牌', clickRoutine: collectAndShuffleRoutine }),
+    widget('collect-shuffle', 'button', { parent: 'host-toolbar-panel', x: 680, y: 9, width: 105, height: 36, text: '↻ 收拢桌面牌', clickRoutine: collectLooseTableCardsRoutine }),
     widget('clear-seats', 'button', { parent: 'host-toolbar-panel', x: 791, y: 9, width: 105, height: 36, text: '👤 重置座位', clickRoutine: clearAllSeatsRoutine }),
     widget('reset-table', 'button', { parent: 'host-toolbar-panel', x: 902, y: 9, width: 105, height: 36, text: '🔄 整桌重置', color: '#74322b', clickRoutine: resetTableRoutine }),
 
@@ -44,6 +44,8 @@ function tableWidgets(): Widget[] {
     pileZone('draw-pile', '🎴 摸牌堆', 735, 430),
     widget('shuffle-draw-pile-btn', 'button', { x: 735, y: 580, width: 110, height: 32, text: '🔀 洗牌', color: '#2b5746', css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleDrawPileRoutine }),
     freeZone('recycle-zone', '↻ 待回收／待洗牌区', 880, 408, 270, 182),
+    widget('recycle-shuffle-btn', 'button', { x: 957, y: 550, width: 115, height: 32, text: '🔀 洗牌', color: '#2b5746', layer: 3,
+      css: { borderRadius: '6px', fontSize: '12px', border: '1px solid #789b83' }, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'], movable: false, clickRoutine: shuffleRecycleZoneRoutine }),
     handZone('personal-hand', '🖐️ 我的手牌｜其他玩家只看到模块中的数量', PERSONAL_HAND.x, PERSONAL_HAND.y, PERSONAL_HAND.width, PERSONAL_HAND.height),
   ].map(item => item.id === 'personal-hand' ? { ...item, onlyVisibleForSeat: allSeats, linkedToSeat: allSeats,
     enterRoutine: [
@@ -110,7 +112,7 @@ export function createUniversalPrototype(catalog: AssetCatalog): GameFile {
         variant: '4-12人通用人工桌面 ｜ 全套卡牌库与备牌托盘系统',
         description: '支持 4–12 人自由拓展的通用三国杀人工桌面跑团系统。内置 538 张完整高清真实卡牌（包含标准包、风/火/林/山包、一将成名、SP 及多扩展武将，基本牌、军争与扩展牌）及 12 套独立玩家控制模块。具备【全套备牌面板】分类筛选与一键精准导入、【备牌托盘】盖面抽洗、独立私密展示区与手牌数实时同步。弱规则强自由度，完美契合标准场、军争场、国战、自定义身份与团队战。',
         ruleText: '【弱规则·强自由·强可见性】\n1. 所有角色技能、武将体力上限、攻击距离、锦囊结算、回合阶段及胜负判定，均由本桌玩家人工协商裁定；\n2. 摸牌堆洗牌与摸牌由主桌自动化 Routine 保障，手牌数量由玩家模块自动统计；\n3. 卡牌在私密展示区与个人手牌区保持原生视角隔离，防偷窥与翻牌提示，保证跑团体验绝对公正。',
-        helpText: '【快捷操作指南】\n1. 房主操作：顶部工具栏点击「👥 玩家管理」可按需增加/关闭席位（4–12席），或一键设置 75%/90%/100% 全局缩放；\n2. 牌库编组：点击「📚 牌库编组」展开全套备牌面板，支持按标准/风/火/林/山/一将/SP/其他扩展逐分类预览，点击卡牌切换 [允许/Ban]，确认后仅将勾选牌盖面导入备牌托盘；\n3. 托盘洗牌：备牌托盘下设有武将/身份/扩展/血量 4 个专属洗牌按钮，洗牌静默无弹窗；\n4. 个人手牌：将卡牌移入右下角「🖐️ 我的手牌」即自动对其他玩家隐藏具体牌面，模块仅显示手牌数。',
+        helpText: '【快捷操作指南】\n1. 房主操作：顶部工具栏点击「👥 玩家管理」可按需增加/关闭席位（4–12席），或一键设置 75%/90%/100% 全局缩放；\n2. 牌库编组：点击「📚 牌库编组」展开全套备牌面板，支持按标准/风/火/林/山/一将/SP/其他扩展逐分类预览，点击卡牌切换 [允许/Ban]，确认后仅将勾选牌盖面导入备牌托盘；\n3. 桌面清理：点击「↻ 收拢桌面牌」只会把桌面顶层散落的主牌和当前启用扩展牌移入待回收区，不碰玩家模块、手牌和任何 Holder；检查无误后点击回收区「🔀 洗牌」，只将该区卡牌盖面并随机，且不会自动并入摸牌堆；\n4. 托盘洗牌：备牌托盘下设有武将/身份/扩展/血量 4 个专属洗牌按钮，洗牌静默无弹窗；\n5. 个人手牌：将卡牌移入右下角「🖐️ 我的手牌」即自动对其他玩家隐藏具体牌面，模块仅显示手牌数。',
         attribution: '卡牌图源基于 Tabletop Simulator 3765935052 参考包深度清洗与二次加工；构建时按分类重构目录树并嵌入高性能 WebP 贴图。',
         bgg: 'https://zh.wikipedia.org/wiki/%E4%B8%89%E5%9B%BD%E6%9D%80',
         image: '/assets/other/cover.webp',
