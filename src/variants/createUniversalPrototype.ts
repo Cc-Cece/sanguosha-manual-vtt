@@ -49,7 +49,6 @@ function tableWidgets(): Widget[] {
       requestTarget: '',
       requesterName: '',
       requesterSeat: '',
-      resetRequestRoutine: resetHostActionRequestRoutine,
     }),
     widget('host-toolbar', 'basic', { x: 260, y: 14, width: 1280, height: 56, movable: false, onlyVisibleForSeat: ['seat-1'], linkedToSeat: ['seat-1'],
       color: '#20252be8', css: { border: '2px double #b5965b', borderRadius: '10px', boxShadow: '0 4px 14px #000a' } }),
