@@ -29,9 +29,32 @@ export const arrangeLayoutRoutine = [
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
   ...resetAllPrivatePeeksRoutine,
-  { func: 'RECALL', holder: ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'], owned: true, inHolder: true },
+  {
+    func: 'RECALL',
+    holder: [
+      'draw-pile',
+      'general-reserve',
+      'identity-reserve',
+      'extra-reserve',
+      'marker-reserve',
+      'conversion-a-reserve',
+      'conversion-b-reserve',
+    ],
+    owned: true,
+    inHolder: true,
+  },
   { func: 'CALL', widget: 'reserve-panel-controller', routine: 'fullTableResetRoutine' },
-  { func: 'FLIP', holder: ['draw-pile', 'identity-reserve', 'marker-reserve'], face: 0 },
+  {
+    func: 'FLIP',
+    holder: [
+      'draw-pile',
+      'identity-reserve',
+      'marker-reserve',
+      'conversion-a-reserve',
+      'conversion-b-reserve',
+    ],
+    face: 0,
+  },
   { func: 'SHUFFLE', holder: ['draw-pile', 'identity-reserve'], mode: 'true random' },
   ...arrangeLayoutRoutine,
 ] as const;
@@ -119,7 +142,7 @@ function selectRecycleShuffleCardsSteps(): RoutineStep[] {
 
 /**
  * Flip and randomize only the cards already inside recycle-zone.
- * The operation is blocked when the zone contains generals, identities, health cards,
+ * The operation is blocked when the zone contains generals, identities, marker cards,
  * disabled/pending-removal extras, or any other unexpected card type.
  */
 export const shuffleRecycleZoneRoutine: RoutineStep[] = [
@@ -156,7 +179,7 @@ export const shuffleRecycleZoneRoutine: RoutineStep[] = [
         fields: [{
           type: 'text',
           label: '请先检查回收区',
-          value: '回收区共有 ${recycleZoneCount} 张牌，但只有 ${recycleShuffleAllowedCount} 张属于可洗牌的主牌或当前启用扩展牌。\n\n请先移出武将牌、身份牌、血量牌、未启用扩展牌或待退出牌组的扩展牌。此次没有翻面或洗牌。',
+          value: '回收区共有 ${recycleZoneCount} 张牌，但只有 ${recycleShuffleAllowedCount} 张属于可洗牌的主牌或当前启用扩展牌。\n\n请先移出武将牌、身份牌、体力牌、转换技状态牌、未启用扩展牌或待退出牌组的扩展牌。此次没有翻面或洗牌。',
         }],
         block: false,
       }),
