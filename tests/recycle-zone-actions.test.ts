@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { RECYCLE_COLLECT_GROUP_ID } from '../src/layouts/shufflePanels.js';
 import {
   fixedCollectLooseTableCardsRoutine,
   fixedRequestCollectLooseTableCardsRoutine,
@@ -47,9 +48,10 @@ describe('free recycle area and selective shuffle-to-draw', () => {
     expect(serialized).not.toContain('"func":"RECALL"');
   });
 
-  it('patches the generated recycle zone as a free area with separate stack and buffer', () => {
+  it('patches the generated recycle zone as a free area with a movable stack group and hidden buffer', () => {
     const game = createUniversalPrototype(loadTestCatalog());
     const recycleZone = game['recycle-zone'] as Record<string, unknown>;
+    const collectGroup = game[RECYCLE_COLLECT_GROUP_ID] as Record<string, unknown>;
     const collectStack = game[RECYCLE_COLLECT_STACK_ID] as Record<string, unknown>;
     const shuffleBuffer = game[RECYCLE_SHUFFLE_BUFFER_ID] as Record<string, unknown>;
     const collectButton = game['collect-shuffle'] as Record<string, unknown>;
@@ -61,7 +63,8 @@ describe('free recycle area and selective shuffle-to-draw', () => {
     expect(recycleZone.preventPiles).toBe(true);
     expect(recycleZone.dropOffsetX).toBe(0);
     expect(recycleZone.dropOffsetY).toBe(0);
-    expect(collectStack).toMatchObject({ parent: 'recycle-zone', alignChildren: true, preventPiles: true });
+    expect(collectGroup).toMatchObject({ parent: 'recycle-zone', movable: true, fixedParent: true });
+    expect(collectStack).toMatchObject({ parent: RECYCLE_COLLECT_GROUP_ID, alignChildren: true, preventPiles: true });
     expect(shuffleBuffer).toMatchObject({ display: false, alignChildren: true, preventPiles: true });
 
     expect(collectButton.clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
