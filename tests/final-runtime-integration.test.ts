@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import {
+  QUICK_SHUFFLE_PANEL_ID,
+  RECYCLE_COLLECT_GROUP_ID,
+  RECYCLE_PANEL_ID,
+} from '../src/layouts/shufflePanels.js';
 import { animatedShuffleRecycleZoneRoutine } from '../src/routines/animatedShuffle.js';
 import {
   fixedCollectLooseTableCardsRoutine,
@@ -15,35 +20,43 @@ import { loadTestCatalog } from './helpers.js';
 const asRecord = (value: unknown): Record<string, unknown> => value as Record<string, unknown>;
 
 describe('final packaged runtime integration', () => {
-  it('keeps the free recycle runtime in the base prototype', () => {
+  it('keeps the free recycle runtime inside a movable panel in the base prototype', () => {
     const game = createBaseUniversalPrototype(loadTestCatalog());
+    const recyclePanel = asRecord(game[RECYCLE_PANEL_ID]);
     const recycleZone = asRecord(game['recycle-zone']);
+    const collectGroup = asRecord(game[RECYCLE_COLLECT_GROUP_ID]);
 
+    expect(recyclePanel).toMatchObject({ movable: true, recycleSizePercent: 100 });
+    expect(recycleZone).toMatchObject({ parent: RECYCLE_PANEL_ID, movable: false });
     expect(recycleZone.alignChildren).toBe(false);
     expect(recycleZone.preventPiles).toBe(true);
     expect(recycleZone.dropOffsetX).toBe(0);
     expect(recycleZone.dropOffsetY).toBe(0);
-    expect(asRecord(game[RECYCLE_COLLECT_STACK_ID])).toMatchObject({ parent: 'recycle-zone', alignChildren: true });
+    expect(collectGroup).toMatchObject({ parent: 'recycle-zone', movable: true, fixedParent: true });
+    expect(asRecord(game[RECYCLE_COLLECT_STACK_ID])).toMatchObject({ parent: RECYCLE_COLLECT_GROUP_ID, alignChildren: true });
     expect(asRecord(game[RECYCLE_SHUFFLE_BUFFER_ID])).toMatchObject({ display: false, alignChildren: true });
     expect(asRecord(game['collect-shuffle']).clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-collect-table-cards']).clickRoutine).toEqual(fixedRequestCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-shuffle-recycle-btn']).clickRoutine).toEqual(fixedRequestShuffleRecycleZoneRoutine);
   });
 
-  it('installs visible animation widgets without undoing recycle fixes', () => {
+  it('installs panel-relative animation widgets without undoing recycle fixes', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const recycleZone = asRecord(game['recycle-zone']);
     const recycleRoutine = asRecord(game['recycle-shuffle-btn']).clickRoutine;
-    const animationCard = asRecord(game['shuffle-animation-recycle-zone-1']);
+    const recycleAnimationCard = asRecord(game['shuffle-animation-recycle-zone-1']);
+    const quickAnimationCard = asRecord(game['shuffle-animation-quick-shuffle-1']);
 
     expect(recycleZone.alignChildren).toBe(false);
     expect(recycleZone.preventPiles).toBe(true);
+    expect(asRecord(game[QUICK_SHUFFLE_PANEL_ID])).toMatchObject({ movable: true });
     expect(asRecord(game['collect-shuffle']).clickRoutine).toEqual(fixedCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-collect-table-cards']).clickRoutine).toEqual(fixedRequestCollectLooseTableCardsRoutine);
     expect(asRecord(game['request-shuffle-recycle-btn']).clickRoutine).toEqual(fixedRequestShuffleRecycleZoneRoutine);
     expect(recycleRoutine).toEqual(animatedShuffleRecycleZoneRoutine);
     expect(JSON.stringify(recycleRoutine)).toContain('"func":"DELAY"');
-    expect(animationCard).toMatchObject({ display: false, clickable: false, layer: 90 });
+    expect(recycleAnimationCard).toMatchObject({ parent: RECYCLE_COLLECT_GROUP_ID, display: false, clickable: false, layer: 90 });
+    expect(quickAnimationCard).toMatchObject({ parent: QUICK_SHUFFLE_PANEL_ID, display: false, clickable: false, layer: 90 });
     expect(JSON.stringify(recycleRoutine)).toContain('"type":"subtitle"');
     expect(JSON.stringify(recycleRoutine)).not.toContain('"type":"text","label"');
   });
@@ -73,13 +86,16 @@ describe('final packaged runtime integration', () => {
     ]));
   });
 
-  it('normalizes legacy widget references and MOVEXY syntax in the generated game', () => {
+  it('normalizes widget references while keeping movable panel layout operations valid', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const lockRoutine = asRecord(game['lock-layout']).clickRoutine;
     const arrangeRoutine = asRecord(game['arrange-layout']).clickRoutine as Record<string, unknown>[];
 
     expect(JSON.stringify(lockRoutine)).toContain('player-mgmt-panel');
     expect(JSON.stringify(lockRoutine)).not.toContain('player-management-panel');
+    expect(JSON.stringify(lockRoutine)).toContain(QUICK_SHUFFLE_PANEL_ID);
+    expect(JSON.stringify(lockRoutine)).toContain(RECYCLE_PANEL_ID);
+    expect(JSON.stringify(lockRoutine)).toContain(RECYCLE_COLLECT_GROUP_ID);
     expect(arrangeRoutine.every(step => step.func !== 'MOVEXY' || ('from' in step && !('collection' in step)))).toBe(true);
   });
 });
