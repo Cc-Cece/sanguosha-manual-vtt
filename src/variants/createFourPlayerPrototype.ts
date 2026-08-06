@@ -1,4 +1,4 @@
-import { animatedQuickShuffleRoutine, animatedShuffleRecycleZoneRoutine } from '../routines/animatedShuffle.js';
+import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import type { AssetCatalog } from '../types/assets.js';
@@ -7,10 +7,6 @@ import { createShuffleAnimationWidgets } from '../widgets/shuffleAnimation.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from './createUniversalPrototype.js';
 
 function installShuffleAnimation(game: GameFile, catalog: AssetCatalog): GameFile {
-  // The base prototype already applies these fixes during finalization. Reapply them defensively
-  // before installing animation wrappers so alternate builders cannot reintroduce legacy routines.
-  applyRecycleZoneRuntimeFixes(game);
-
   for (const animationWidget of createShuffleAnimationWidgets(catalog.backs)) {
     game[animationWidget.id] = animationWidget;
   }
@@ -18,11 +14,11 @@ function installShuffleAnimation(game: GameFile, catalog: AssetCatalog): GameFil
   const quickShuffleButton = game['quick-shuffle-btn'] as Widget | undefined;
   if (quickShuffleButton) quickShuffleButton.clickRoutine = animatedQuickShuffleRoutine;
 
-  const recycleShuffleButton = game['recycle-shuffle-btn'] as Widget | undefined;
-  if (recycleShuffleButton) recycleShuffleButton.clickRoutine = animatedShuffleRecycleZoneRoutine;
+  // Reapply after the animation widgets exist. This installs the free-area recycle behavior and
+  // the animated recycle-to-draw-pile routines for both host and approved-player operations.
+  applyRecycleZoneRuntimeFixes(game);
 
-  // Animation routines are installed after the base prototype's normalizer has run. Normalize the
-  // newly attached INPUT dialogs and routine syntax without reapplying the non-animated fallback.
+  // Animation routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
 }
 
