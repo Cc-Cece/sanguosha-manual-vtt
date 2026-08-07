@@ -1,9 +1,4 @@
 import { PLAYER_MODULE_STAGING_POSITIONS } from '../layouts/playerModuleStaging.js';
-import {
-  createPrivatePeekClickRoutine,
-  createPrivatePeekEnterRoutine,
-  createPrivatePeekLeaveRoutine,
-} from '../routines/privateZone.js';
 import { createLeaveSeatRoutine, createSafeSeatClickRoutine } from '../routines/seatSafety.js';
 import type { Widget } from '../types/vtt.js';
 import { freeZone, label, widget } from './factory.js';
@@ -31,8 +26,7 @@ export function createPlayerModule(index: number): Widget[] {
   const moduleId = `player-module-${n}`;
   const seatId = `seat-${n}`;
   const playerLabelId = `player-label-${n}`;
-  const privateId = `private-zone-${n}`;
-  const privatePeekButtonId = `toggle-perspective-${n}`;
+  const faceDownId = `private-zone-${n}`;
   const blindId = `blind-zone-${n}`;
   const bounds = PLAYER_MODULE_STAGING_POSITIONS[n] || { x: 685, y: 90, width: 430, height: 260 };
   const initialDisplay = n <= 4;
@@ -103,30 +97,7 @@ export function createPlayerModule(index: number): Widget[] {
       },
       clickRoutine: createLeaveSeatRoutine(seatId),
     }),
-    widget(privatePeekButtonId, 'button', {
-      parent: moduleId,
-      x: 202,
-      y: 9,
-      width: 36,
-      height: 30,
-      layer: 3,
-      text: '👁️',
-      color: '#18333b',
-      mobilePeekOpen: false,
-      onlyVisibleForSeat: [seatId],
-      linkedToSeat: [seatId],
-      css: {
-        fontSize: '13px',
-        color: '#9cddf2',
-        borderRadius: '7px',
-        border: '1px solid #4c8394',
-        boxShadow: 'inset 0 1px 0 #ffffff0d',
-      },
-      enterRoutine: createPrivatePeekEnterRoutine(n),
-      leaveRoutine: createPrivatePeekLeaveRoutine(n),
-      clickRoutine: createPrivatePeekClickRoutine(n),
-    }),
-    label(`hand-count-title-${n}`, '🃏 手牌', 247, 12, 55, moduleId, {
+    label(`hand-count-title-${n}`, '🃏 手牌', 220, 12, 70, moduleId, {
       height: 22,
       css: {
         color: '#d8c89f',
@@ -137,9 +108,9 @@ export function createPlayerModule(index: number): Widget[] {
     }),
     widget(`hand-count-${n}`, 'label', {
       parent: moduleId,
-      x: 305,
+      x: 294,
       y: 9,
-      width: 58,
+      width: 69,
       height: 30,
       text: 0,
       movable: false,
@@ -189,7 +160,7 @@ export function createPlayerModule(index: number): Widget[] {
         boxShadow: 'inset 0 0 12px #0007',
       },
     }),
-    label(`private-label-${n}`, '私密展示区', 309, 55, 108, moduleId, {
+    label(`private-label-${n}`, '暗置牌区', 309, 55, 108, moduleId, {
       height: 22,
       css: {
         color: '#d5bad6',
@@ -198,13 +169,14 @@ export function createPlayerModule(index: number): Widget[] {
         fontWeight: '600',
       },
     }),
-    widget(privateId, 'holder', {
+    widget(faceDownId, 'holder', {
       parent: moduleId,
       x: 310,
       y: 80,
       width: 106,
       height: 126,
-      text: '',
+      text: '始终盖面\n查看请移入手牌',
+      textColor: '#c7aec8aa',
       layer: 2,
       alignChildren: false,
       preventPiles: true,
