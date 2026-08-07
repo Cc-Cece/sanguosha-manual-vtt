@@ -1,4 +1,4 @@
-import type { RoutineStep } from '../types/vtt.js';
+import type { GameFile, RoutineStep } from '../types/vtt.js';
 
 export const MAX_PLAY_PHASE_SEATS = 12;
 
@@ -187,3 +187,26 @@ export const advancePlayPhaseRoutine: RoutineStep[] = [
     ],
   },
 ];
+
+type PlainRecord = Record<string, unknown>;
+
+function isRecord(value: unknown): value is PlainRecord {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+/** Finalizes controller state and appends play-phase help after other runtime metadata patches. */
+export function applyPlayPhaseMarkerRuntime<T extends GameFile>(game: T): T {
+  const root = game as unknown as PlainRecord;
+  const controller = root['table-controller'];
+  if (isRecord(controller) && typeof controller.activePlaySeat !== 'string') {
+    controller.activePlaySeat = '';
+  }
+
+  const meta = isRecord(root._meta) ? root._meta : null;
+  const info = meta && isRecord(meta.info) ? meta.info : null;
+  if (info && typeof info.helpText === 'string' && !info.helpText.includes('出牌标识：')) {
+    info.helpText += '\n10. 出牌标识：每个玩家模块标题栏有「出牌」「下一位」。点「出牌」将该模块标为「出牌中」（全员可见高亮）；点「下一位」按席位顺序自动切到下一个已开启的模块。仅为同步用的人工标识，不自动结算回合。';
+  }
+
+  return game;
+}
