@@ -37,8 +37,18 @@ export interface GameInfo {
   image: string;
 }
 
+export type VoiceMode = 'auto' | 'p2p' | 'sfu';
+
+export interface VoiceSettings {
+  enabled?: boolean;
+  defaultMode?: VoiceMode;
+  p2pMaxParticipants?: number;
+  hostSeat?: string;
+}
+
 export interface GameSettings {
   boardSize?: { width: number; height: number };
+  voice?: VoiceSettings;
   [key: string]: unknown;
 }
 
