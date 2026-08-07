@@ -76,6 +76,29 @@ describe('global INPUT dialog normalization', () => {
     expect(sample.face.objects[0]).toEqual({ type: 'text', value: '牌背' });
   });
 
+  it('preserves explicit cancel controls on non-blocking confirmation dialogs', () => {
+    const sample = {
+      routine: [
+        {
+          func: 'INPUT',
+          header: '公开身份牌？',
+          fields: [{ type: 'subtitle', text: '确认后将公开身份。' }],
+          block: false,
+          confirmButtonText: '确认公开',
+          cancelButtonText: '取消',
+          cancelButtonIcon: 'close',
+        },
+      ],
+    };
+
+    normalizeInputDialogs(sample);
+
+    const [input] = collectInputSteps(sample);
+    expect(input.confirmButtonText).toBe('确认公开');
+    expect(input.cancelButtonText).toBe('取消');
+    expect(input.cancelButtonIcon).toBe('close');
+  });
+
   it('removes every legacy text field from the generated game file', () => {
     const game = createUniversalPrototype(loadTestCatalog());
     const inputs = collectInputSteps(game);
@@ -85,10 +108,7 @@ describe('global INPUT dialog normalization', () => {
       const fields = Array.isArray(input.fields) ? input.fields : [];
       expect(fields.some(field => isRecord(field) && field.type === 'text')).toBe(false);
       expect(typeof input.confirmButtonText).toBe('string');
-      if (input.block === false) {
-        expect(input.cancelButtonText).toBeNull();
-        expect(input.cancelButtonIcon).toBeNull();
-      } else {
+      if (input.cancelButtonText !== null && input.cancelButtonText !== undefined) {
         expect(typeof input.cancelButtonText).toBe('string');
       }
     }
