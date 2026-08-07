@@ -1,4 +1,9 @@
 import { describe, expect, it } from 'vitest';
+import {
+  RECYCLE_SIZE_DOWN_BUTTON_ID,
+  RECYCLE_SIZE_LABEL_ID,
+  RECYCLE_SIZE_UP_BUTTON_ID,
+} from '../src/layouts/shufflePanels.js';
 import { LAYOUT_EDIT_CONTROL_IDS } from '../src/routines/layoutEditModeRuntime.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
@@ -26,7 +31,7 @@ describe('host layout edit mode', () => {
 
     expect(game['component-scale-bar-player-module-1']).toBeDefined();
     expect(game['global-card-scale-panel']).toBeDefined();
-    expect(game['recycle-size-down']).toBeDefined();
+    expect(game[RECYCLE_SIZE_DOWN_BUTTON_ID]).toBeDefined();
   });
 
   it('hides every B-class edit control after completing the layout', () => {
@@ -72,9 +77,9 @@ describe('host layout edit mode', () => {
       'component-scale-bar-player-module-1',
       'component-scale-bar-draw-pile-panel',
       'global-card-scale-panel',
-      'recycle-size-down',
-      'recycle-size-label',
-      'recycle-size-up',
+      RECYCLE_SIZE_DOWN_BUTTON_ID,
+      RECYCLE_SIZE_LABEL_ID,
+      RECYCLE_SIZE_UP_BUTTON_ID,
       'draw-pile-panel-title',
       'quick-shuffle-panel-title',
       'recycle-panel-title',
