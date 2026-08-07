@@ -6,6 +6,7 @@ import {
   lockLayoutRoutine,
   unlockLayoutRoutine,
 } from './layoutControls.js';
+import { clearPlayPhaseRoutine } from './playPhaseMarker.js';
 import {
   fixedCollectLooseTableCardsRoutine,
   fixedShuffleRecycleZoneRoutine,
@@ -21,6 +22,7 @@ export {
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
+  ...clearPlayPhaseRoutine,
   {
     func: 'RECALL',
     holder: [
