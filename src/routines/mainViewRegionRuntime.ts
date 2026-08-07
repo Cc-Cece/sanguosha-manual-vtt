@@ -103,7 +103,7 @@ export function applyMainViewRegionRuntime<T extends GameFile>(game: T): T {
       fontWeight: '700',
       textAlign: 'center',
       lineHeight: '38px',
-      transformOrigin: 'top left',
+      'transform-origin': 'top left',
     },
   });
 
