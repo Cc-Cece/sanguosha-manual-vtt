@@ -3,6 +3,8 @@ import { dialogText, dialogTitle } from './inputDialog.js';
 const MAX_PLAYER_COUNT = 12;
 
 const faceDownZoneIdFor = (number: number) => `private-zone-${number}`;
+const privateHandIdFor = (number: number) => `personal-hand-seat-${number}`;
+const publicHandBackIdFor = (number: number) => `public-hand-back-seat-${number}`;
 
 const revealInHandRoutine = (cardId: string) => [
   { func: 'FLIP', collection: [cardId], face: 1 },
@@ -23,6 +25,30 @@ const confirmPublicRevealRoutine = (cardId: string) => [
   { func: 'FLIP', collection: [cardId], face: 1 },
 ] as const;
 
+const createPrivateHandBranch = (cardId: string, number: number): Record<string, unknown> => ({
+  func: 'IF',
+  operand1: `\${PROPERTY parent OF ${cardId}}`,
+  relation: '==',
+  operand2: privateHandIdFor(number),
+  thenRoutine: revealInHandRoutine(cardId),
+  elseRoutine: number < MAX_PLAYER_COUNT
+    ? [createPrivateHandBranch(cardId, number + 1)]
+    : confirmPublicRevealRoutine(cardId),
+});
+
+const createPublicHandBackBranch = (cardId: string, number: number): Record<string, unknown> => ({
+  func: 'IF',
+  operand1: `\${PROPERTY parent OF ${cardId}}`,
+  relation: '==',
+  operand2: publicHandBackIdFor(number),
+  // Public hand-back holders force all cards to the back and disable card clicking. This empty
+  // branch also protects against stale click events during a drag/network update.
+  thenRoutine: [],
+  elseRoutine: number < MAX_PLAYER_COUNT
+    ? [createPublicHandBackBranch(cardId, number + 1)]
+    : [createPrivateHandBranch(cardId, 1)],
+});
+
 const createFaceDownZoneBranch = (cardId: string, number: number): Record<string, unknown> => ({
   func: 'IF',
   operand1: `\${PROPERTY parent OF ${cardId}}`,
@@ -33,16 +59,7 @@ const createFaceDownZoneBranch = (cardId: string, number: number): Record<string
   thenRoutine: [],
   elseRoutine: number < MAX_PLAYER_COUNT
     ? [createFaceDownZoneBranch(cardId, number + 1)]
-    : [
-        {
-          func: 'IF',
-          operand1: `\${PROPERTY parent OF ${cardId}}`,
-          relation: '==',
-          operand2: 'personal-hand',
-          thenRoutine: revealInHandRoutine(cardId),
-          elseRoutine: confirmPublicRevealRoutine(cardId),
-        },
-      ],
+    : [createPublicHandBackBranch(cardId, 1)],
 });
 
 const createCoveredContextBranch = (cardId: string): Record<string, unknown> => ({
@@ -56,10 +73,11 @@ const createCoveredContextBranch = (cardId: string): Record<string, unknown> => 
 });
 
 /**
- * Identity cards have four explicit contexts:
- * - the identity reserve and face-down zones never reveal them;
- * - the owning personal hand toggles them privately without a dialog;
- * - every public or unmarked area requires a local, non-blocking confirmation before reveal.
+ * Identity cards have explicit privacy contexts:
+ * - the identity reserve, permanent face-down zones and temporary public hand-back holders never
+ *   reveal them;
+ * - any seat-scoped personal hand toggles them privately without a dialog;
+ * - every other public or unmarked area requires a local, non-blocking confirmation before reveal.
  *
  * Front-to-back is always immediate because covering information is safe.
  */
