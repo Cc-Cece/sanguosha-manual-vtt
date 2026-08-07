@@ -1,3 +1,4 @@
+import { BOARD } from '../layouts/continuousBoard.js';
 import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.js';
 import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState.js';
@@ -9,7 +10,22 @@ import { applyMovableDrawPilePanel } from '../widgets/drawPilePanel.js';
 import { createShuffleAnimationWidgets } from '../widgets/shuffleAnimation.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from './createUniversalPrototype.js';
 
+function applyExpandedBoardBackground(game: GameFile): void {
+  const background = game['table-background'] as Widget | undefined;
+  if (!background) return;
+
+  // Only the tablecloth grows with the board. Existing gameplay widgets, the library panel and
+  // their coordinates stay untouched so the larger 3:2 board is additional navigable workspace
+  // rather than a scaled or rearranged version of the current table.
+  background.x = 0;
+  background.y = 0;
+  background.width = BOARD.width;
+  background.height = BOARD.height;
+}
+
 function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
+  applyExpandedBoardBackground(game);
+
   for (const animationWidget of createShuffleAnimationWidgets(catalog.backs)) {
     game[animationWidget.id] = animationWidget;
   }
