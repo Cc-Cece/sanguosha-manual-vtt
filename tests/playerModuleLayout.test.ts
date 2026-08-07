@@ -39,7 +39,8 @@ describe('player module visual hierarchy', () => {
     expect(Number(leaveButton.layer)).toBeGreaterThan(Number(header.layer));
     expect(Number(handCount.layer)).toBeGreaterThan(Number(header.layer));
     expect(widgets.find(widget => widget.id === 'toggle-perspective-1')).toBeUndefined();
-    expect(headerCss.pointerEvents).toBe('none');
+    expect(headerCss['pointer-events']).toBe('none');
+    expect(headerCss.pointerEvents).toBeUndefined();
     expect((seat.css as Record<string, unknown>).cursor).toBe('pointer');
   });
 
