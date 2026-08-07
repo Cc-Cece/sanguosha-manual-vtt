@@ -15,6 +15,8 @@ import { applyMovableDrawPilePanel } from '../widgets/drawPilePanel.js';
 import { createShuffleAnimationWidgets } from '../widgets/shuffleAnimation.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from './createUniversalPrototype.js';
 
+const ADMIN_CONSOLE_CONFIG_ID = 'admin-console-config';
+
 function applyExpandedBoardBackground(game: GameFile): void {
   const background = game['table-background'] as Widget | undefined;
   if (!background) return;
@@ -28,8 +30,19 @@ function applyExpandedBoardBackground(game: GameFile): void {
   background.height = BOARD.height;
 }
 
-function applyAdminPanelMetadata(game: GameFile): void {
-  game._meta.info.adminPanels = ADMIN_PANELS.map(panel => ({ ...panel }));
+function applyAdminConsoleConfig(game: GameFile): void {
+  game[ADMIN_CONSOLE_CONFIG_ID] = {
+    id: ADMIN_CONSOLE_CONFIG_ID,
+    type: 'basic',
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    display: false,
+    movable: false,
+    clickable: false,
+    adminPanels: ADMIN_PANELS.map(panel => ({ ...panel })),
+  };
 }
 
 function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
@@ -73,9 +86,9 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // player-private controls remain available.
   applyLayoutEditModeRuntime(game);
 
-  // The game package declares what the generic VTT admin console may inspect. It does not inject
-  // executable admin code or alter the tabletop UI.
-  applyAdminPanelMetadata(game);
+  // Expose declarative inspection intent through normal room state. The generic VTT admin page
+  // renders it; the game package does not inject executable admin code or alter the tabletop UI.
+  applyAdminConsoleConfig(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
