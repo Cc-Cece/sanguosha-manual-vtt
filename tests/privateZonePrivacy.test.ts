@@ -61,9 +61,9 @@ describe('permanent face-down zone privacy', () => {
     expect(resetAllPrivatePeeksRoutine).toEqual([]);
   });
 
-  it('installs the identity hand-exit guard and updated instructions in the final game', () => {
+  it('installs the identity hand-exit guard and updated instructions on every final private hand', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
-    const hand = game['personal-hand'] as Record<string, unknown>;
+    const hand = game['personal-hand-seat-1'] as Record<string, unknown>;
     const leaveObjects = collectObjects(hand.leaveRoutine);
     const info = (game._meta as Record<string, unknown>).info as Record<string, unknown>;
 
@@ -82,6 +82,7 @@ describe('permanent face-down zone privacy', () => {
     expect(String(info.ruleText)).toContain('暗置牌区中的牌始终盖面');
     expect(String(info.helpText)).toContain('身份牌进入手牌后保持盖面');
     expect(String(info.helpText)).toContain('暗置牌区始终只显示牌背');
+    expect(String(info.helpText)).toContain('展示牌背');
     expect(String(info.description)).not.toContain('独立私密展示区');
   });
 });
