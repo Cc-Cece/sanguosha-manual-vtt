@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import { createAssetDecks } from '../src/data/assetDecks.js';
 import { createIdentityCardClickRoutine } from '../src/routines/identityReveal.js';
-import { handZoneFlipFaceUpRoutine } from '../src/routines/playerHand.js';
-import { createPrivatePeekClickRoutine, createPrivatePeekEnterRoutine } from '../src/routines/privateZone.js';
+import {
+  handZoneCoverLeavingIdentityRoutine,
+  handZoneFlipFaceUpRoutine,
+} from '../src/routines/playerHand.js';
 import type { AssetCatalog } from '../src/types/assets.js';
 import type { ReserveModel } from '../src/types/reserveLibrary.js';
 
@@ -50,7 +52,7 @@ const identityCatalog: AssetCatalog = {
   backAssets: [],
 };
 
-describe('identity reveal confirmation', () => {
+describe('identity reveal contexts', () => {
   it('creates every identity card covered and attaches the guarded click routine', () => {
     const widgets = createAssetDecks(identityCatalog, emptyReserveModel);
     const identity = widgets.find(widget => widget.id === 'card-1');
@@ -59,43 +61,84 @@ describe('identity reveal confirmation', () => {
     expect(Array.isArray(identity?.clickRoutine)).toBe(true);
   });
 
-  it('requires confirmation before a public back-to-front flip and covers directly', () => {
+  it('requires only a local non-blocking confirmation before public reveal', () => {
     const objects = collectObjects(createIdentityCardClickRoutine('card-identity'));
-    expect(objects).toContainEqual(expect.objectContaining({ func: 'IF', operand1: '${PROPERTY activeFace OF card-identity}', operand2: 0 }));
-    expect(objects).toContainEqual(expect.objectContaining({ func: 'INPUT', header: '公开身份牌？', block: true }));
-    expect(objects).toContainEqual(expect.objectContaining({ func: 'FLIP', collection: ['card-identity'], face: 1 }));
-    expect(objects).toContainEqual(expect.objectContaining({ func: 'FLIP', collection: ['card-identity'], face: 0 }));
-  });
-
-  it('uses Seat-local private viewing instead of changing the shared face in a private zone', () => {
-    const routine = createIdentityCardClickRoutine('card-private');
-    const privateBranch = collectObjects(routine).find(object => object.func === 'IF' && object.operand2 === 'private-zone-3');
-    const branchObjects = collectObjects(privateBranch?.thenRoutine);
-    expect(branchObjects).toContainEqual(expect.objectContaining({ func: 'INPUT', header: '查看身份牌？', block: true }));
-    expect(branchObjects).toContainEqual(expect.objectContaining({
-      func: 'SET', collection: ['private-zone-3'], property: 'showInactiveFaceToSeat', value: ['seat-3'],
-    }));
-    expect(branchObjects.some(object => object.func === 'FLIP' && object.face === 1)).toBe(false);
-  });
-
-  it('does not let desktop hover bypass confirmation when an identity is present', () => {
-    const enterObjects = collectObjects(createPrivatePeekEnterRoutine(4));
-    const clickObjects = collectObjects(createPrivatePeekClickRoutine(4));
-    expect(enterObjects).toContainEqual(expect.objectContaining({
-      func: 'SELECT', property: 'deck', value: 'identity-deck', mode: 'intersect',
-    }));
-    expect(enterObjects.some(object => object.func === 'INPUT')).toBe(false);
-    expect(clickObjects).toContainEqual(expect.objectContaining({ func: 'INPUT', header: '查看身份牌？', block: true }));
-    expect(clickObjects).toContainEqual(expect.objectContaining({
-      func: 'SET', collection: ['private-zone-4'], property: 'showInactiveFaceToSeat', value: ['seat-4'],
-    }));
-  });
-
-  it('excludes identity cards from automatic personal-hand face-up behavior', () => {
-    const objects = collectObjects(handZoneFlipFaceUpRoutine);
     expect(objects).toContainEqual(expect.objectContaining({
-      func: 'SELECT', source: 'ordinaryHandCards', property: 'deck', relation: '!=', value: 'identity-deck', mode: 'intersect',
+      func: 'IF',
+      operand1: '${PROPERTY activeFace OF card-identity}',
+      operand2: 0,
     }));
-    expect(objects.some(object => object.func === 'FLIP' && object.holder === 'personal-hand')).toBe(false);
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'INPUT',
+      header: '公开身份牌？',
+      block: false,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'FLIP',
+      collection: ['card-identity'],
+      face: 1,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'FLIP',
+      collection: ['card-identity'],
+      face: 0,
+    }));
+  });
+
+  it('keeps the identity reserve and every permanent face-down zone inert', () => {
+    const routine = createIdentityCardClickRoutine('card-private');
+    const objects = collectObjects(routine);
+    const reserveBranch = objects.find(object =>
+      object.func === 'IF' && object.operand2 === 'identity-reserve');
+    const privateBranch = objects.find(object =>
+      object.func === 'IF' && object.operand2 === 'private-zone-3');
+
+    expect(reserveBranch?.thenRoutine).toEqual([]);
+    expect(privateBranch?.thenRoutine).toEqual([]);
+    expect(collectObjects(reserveBranch?.thenRoutine).some(object =>
+      object.func === 'INPUT' || object.func === 'FLIP')).toBe(false);
+    expect(collectObjects(privateBranch?.thenRoutine).some(object =>
+      object.func === 'INPUT' || object.func === 'FLIP')).toBe(false);
+  });
+
+  it('reveals directly and without a dialog inside the personal hand', () => {
+    const routine = createIdentityCardClickRoutine('card-hand');
+    const handBranch = collectObjects(routine).find(object =>
+      object.func === 'IF' && object.operand2 === 'personal-hand');
+    const handObjects = collectObjects(handBranch?.thenRoutine);
+
+    expect(handObjects).toContainEqual(expect.objectContaining({
+      func: 'FLIP',
+      collection: ['card-hand'],
+      face: 1,
+    }));
+    expect(handObjects.some(object => object.func === 'INPUT')).toBe(false);
+  });
+
+  it('keeps identities covered on hand entry and covers only identities on hand exit', () => {
+    const enterObjects = collectObjects(handZoneFlipFaceUpRoutine);
+    const leaveObjects = collectObjects(handZoneCoverLeavingIdentityRoutine);
+
+    expect(enterObjects).toContainEqual(expect.objectContaining({
+      func: 'SELECT',
+      source: 'ordinaryHandCards',
+      property: 'deck',
+      relation: '!=',
+      value: 'identity-deck',
+      mode: 'intersect',
+    }));
+    expect(leaveObjects).toContainEqual(expect.objectContaining({
+      func: 'SELECT',
+      source: 'child',
+      property: 'deck',
+      relation: '==',
+      value: 'identity-deck',
+      collection: 'leavingIdentityCards',
+    }));
+    expect(leaveObjects).toContainEqual(expect.objectContaining({
+      func: 'FLIP',
+      collection: 'leavingIdentityCards',
+      face: 0,
+    }));
   });
 });
