@@ -1,5 +1,10 @@
 export type WidgetType = 'basic' | 'button' | 'card' | 'deck' | 'holder' | 'label' | 'seat';
 
+export interface ClientActivityIndicator {
+  source: string;
+  playerWidget: string;
+}
+
 export interface Widget {
   id: string;
   type: WidgetType;
@@ -11,6 +16,7 @@ export interface Widget {
   parent?: string;
   deck?: string;
   cardType?: string;
+  clientActivityIndicator?: ClientActivityIndicator;
   [property: string]: unknown;
 }
 
