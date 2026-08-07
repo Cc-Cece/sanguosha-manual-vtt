@@ -1,4 +1,5 @@
 import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
+import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState.js';
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import type { AssetCatalog } from '../types/assets.js';
@@ -18,6 +19,9 @@ function installShuffleAnimation(game: GameFile, catalog: AssetCatalog): GameFil
   // The draw pile remains a fixed child holder, while its panel, controls and animation proxies
   // move as one layout unit when the host unlocks the table layout.
   applyMovableDrawPilePanel(game);
+
+  // Install the four-state display lifecycle after all general cards and reset controllers exist.
+  applyGeneralDisplayStateRuntime(game);
 
   // Reapply after the animation widgets exist. This installs the free-area recycle behavior and
   // the animated recycle-to-draw-pile routines for both host and approved-player operations.
