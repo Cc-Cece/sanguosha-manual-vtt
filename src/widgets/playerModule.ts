@@ -34,6 +34,15 @@ const playPhaseButtonCss = {
   fontWeight: '700',
 };
 
+const voiceSpeakingFrameCss = {
+  background: 'transparent',
+  border: '2px solid #55dacb',
+  borderRadius: '8px',
+  boxShadow: 'inset 0 0 14px #55dacb55,0 0 18px #55dacb66',
+  opacity: '0.95',
+  'pointer-events': 'none',
+};
+
 export function createPlayerModule(index: number): Widget[] {
   const n = index + 1;
   const moduleId = `player-module-${n}`;
@@ -76,6 +85,24 @@ export function createPlayerModule(index: number): Widget[] {
         boxShadow: '0 0 14px #e8b84a66',
         'pointer-events': 'none',
       },
+    }),
+    widget(`voice-speaking-frame-${n}`, 'basic', {
+      parent: moduleId,
+      x: 4,
+      y: 4,
+      width: 422,
+      height: 252,
+      display: false,
+      movable: false,
+      movableInEdit: false,
+      clickable: false,
+      layer: 2,
+      color: '#0000',
+      clientActivityIndicator: {
+        source: 'voice.speaking',
+        playerWidget: seatId,
+      },
+      css: voiceSpeakingFrameCss,
     }),
     widget(`player-header-${n}`, 'basic', {
       parent: moduleId,
