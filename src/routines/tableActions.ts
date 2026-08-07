@@ -6,7 +6,6 @@ import {
   lockLayoutRoutine,
   unlockLayoutRoutine,
 } from './layoutControls.js';
-import { createPrivatePeekClickRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
 import {
   fixedCollectLooseTableCardsRoutine,
   fixedShuffleRecycleZoneRoutine,
@@ -22,7 +21,6 @@ export {
 
 export const resetTableRoutine = [
   { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
-  ...resetAllPrivatePeeksRoutine,
   {
     func: 'RECALL',
     holder: [
@@ -107,13 +105,8 @@ export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);
 
-/**
- * Compatibility alias for older imports. It no longer changes shared display state and never
- * grants the host access to another Seat's private face.
- */
-export const createTogglePerspectiveRoutine = (number: number) =>
-  createPrivatePeekClickRoutine(number);
-
+/** Deprecated compatibility exports. Perspective peeking no longer exists. */
+export const createTogglePerspectiveRoutine = (_number: number) => [] as const;
 export const togglePerspective1Routine = createTogglePerspectiveRoutine(1);
 export const togglePerspective2Routine = createTogglePerspectiveRoutine(2);
 export const togglePerspective3Routine = createTogglePerspectiveRoutine(3);

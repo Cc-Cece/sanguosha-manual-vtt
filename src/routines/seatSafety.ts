@@ -1,5 +1,3 @@
-import { createResetPrivatePeekRoutine, resetAllPrivatePeeksRoutine } from './privateZone.js';
-
 const EMPTY_SEAT_COLOR = '#8c7043';
 const MAX_PLAYER_COUNT = 12;
 
@@ -37,7 +35,6 @@ const createResetSeatDisplayRoutine = (seatId: string, playerLabelId: string, pl
   { func: 'SET', collection: [seatId], property: 'display', value: 'playerName' },
   { func: 'SET', collection: [seatId], property: 'color', value: EMPTY_SEAT_COLOR },
   { func: 'LABEL', label: [playerLabelId], value: `${playerNumber}` },
-  ...createResetPrivatePeekRoutine(playerNumber),
 ] as const;
 
 /**
@@ -166,7 +163,7 @@ export const clearAllSeatsRoutine = [
   {
     func: 'INPUT',
     header: '重置所有玩家座位？',
-    fields: [{ type: 'text', text: `将清理全部 ${MAX_PLAYER_COUNT} 个座位、桌内昵称和私密查看状态，需要玩家重新入座。` }],
+    fields: [{ type: 'text', text: `将清理全部 ${MAX_PLAYER_COUNT} 个座位和桌内昵称，需要玩家重新入座。` }],
     block: true,
   },
   { func: 'SET', collection: seatIds, property: 'player', value: '' },
@@ -178,7 +175,6 @@ export const clearAllSeatsRoutine = [
     label: [`player-label-${index + 1}`],
     value: `${index + 1}`,
   })),
-  ...resetAllPrivatePeeksRoutine,
 ] as const;
 
 // Extension point for future host-driven clearing of a selected Seat collection.
