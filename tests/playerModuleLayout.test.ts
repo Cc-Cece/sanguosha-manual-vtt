@@ -32,12 +32,13 @@ describe('player module visual hierarchy', () => {
     const header = widgetById('player-header-1');
     const seat = widgetById('seat-1');
     const leaveButton = widgetById('leave-seat-1');
-    const peekButton = widgetById('toggle-perspective-1');
+    const handCount = widgetById('hand-count-1');
     const headerCss = header.css as Record<string, unknown>;
 
     expect(Number(seat.layer)).toBeGreaterThan(Number(header.layer));
     expect(Number(leaveButton.layer)).toBeGreaterThan(Number(header.layer));
-    expect(Number(peekButton.layer)).toBeGreaterThan(Number(header.layer));
+    expect(Number(handCount.layer)).toBeGreaterThan(Number(header.layer));
+    expect(widgets.find(widget => widget.id === 'toggle-perspective-1')).toBeUndefined();
     expect(headerCss.pointerEvents).toBe('none');
     expect((seat.css as Record<string, unknown>).cursor).toBe('pointer');
   });
@@ -51,19 +52,22 @@ describe('player module visual hierarchy', () => {
     expect(Number(badge.y)).toBeGreaterThanOrEqual(230);
   });
 
-  it('uses a dedicated header and separates public/private content zones', () => {
+  it('uses a dedicated header and separates public and face-down content zones', () => {
     const header = widgetById('player-header-1');
     const publicZone = widgetById('public-zone-1');
     const privateBackdrop = widgetById('private-backdrop-1');
-    const privateZone = widgetById('private-zone-1');
+    const faceDownLabel = widgetById('private-label-1');
+    const faceDownZone = widgetById('private-zone-1');
 
     expect(header.height).toBe(36);
     expect(publicZone.y).toBe(50);
     expect(publicZone.width).toBe(288);
     expect(String(publicZone.text)).toContain('\n');
     expect(privateBackdrop.x).toBe(306);
-    expect(privateZone.x).toBe(310);
-    expect(Number(privateZone.height)).toBeLessThan(Number(privateBackdrop.height));
+    expect(faceDownLabel.text).toBe('暗置牌区');
+    expect(faceDownZone.x).toBe(310);
+    expect(String(faceDownZone.text)).toContain('始终盖面');
+    expect(Number(faceDownZone.height)).toBeLessThan(Number(privateBackdrop.height));
   });
 
   it('never overwrites the numeric badge with a nickname or 玩家 N label', () => {
