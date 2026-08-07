@@ -28,7 +28,7 @@ export const RECYCLE_COLLECT_GROUP_DEFAULT_POSITION = {
 } as const;
 
 export interface RecycleAreaSize {
-  percent: 100 | 125 | 150 | 200;
+  percent: 100 | 125 | 150 | 200 | 250 | 300 | 400;
   zoneWidth: number;
   zoneHeight: number;
   panelWidth: number;
@@ -41,6 +41,9 @@ export const RECYCLE_AREA_SIZES: readonly RecycleAreaSize[] = [
   { percent: 125, zoneWidth: 338, zoneHeight: 228, panelWidth: 354, panelHeight: 296, actionButtonY: 262 },
   { percent: 150, zoneWidth: 405, zoneHeight: 273, panelWidth: 421, panelHeight: 341, actionButtonY: 307 },
   { percent: 200, zoneWidth: 540, zoneHeight: 364, panelWidth: 556, panelHeight: 432, actionButtonY: 398 },
+  { percent: 250, zoneWidth: 675, zoneHeight: 455, panelWidth: 691, panelHeight: 523, actionButtonY: 489 },
+  { percent: 300, zoneWidth: 810, zoneHeight: 546, panelWidth: 826, panelHeight: 614, actionButtonY: 580 },
+  { percent: 400, zoneWidth: 1080, zoneHeight: 728, panelWidth: 1096, panelHeight: 796, actionButtonY: 762 },
 ] as const;
 
 export const DEFAULT_RECYCLE_AREA_SIZE = RECYCLE_AREA_SIZES[0];
