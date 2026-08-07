@@ -84,18 +84,20 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(healthCards.length).toBeGreaterThanOrEqual(16);
   });
 
-  it('provides toggle-perspective buttons with seat & host permission checks', () => {
+  it('uses permanent face-down zones and does not generate eye controls', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
     for (let i = 1; i <= 4; i++) {
-      const btn = widgets.find(w => w.id === `toggle-perspective-${i}`);
-      expect(btn).toBeDefined();
-      expect(btn?.parent).toBe(`player-module-${i}`);
-      expect(btn?.text).toBe('👁️');
+      expect(widgets.find(w => w.id === `toggle-perspective-${i}`)).toBeUndefined();
 
-      const serialized = JSON.stringify(btn?.clickRoutine);
-      expect(serialized).toContain(`\${PROPERTY player OF seat-${i}}`);
+      const zone = widgets.find(w => w.id === `private-zone-${i}`);
+      const label = widgets.find(w => w.id === `private-label-${i}`);
+      expect(zone).toBeDefined();
+      expect(label?.text).toBe('暗置牌区');
+      expect(zone?.showInactiveFaceToSeat).toBeNull();
+      expect(zone?.onEnter).toEqual(expect.objectContaining({ activeFace: 0, clickable: false }));
+      expect(zone?.onLeave).toEqual(expect.objectContaining({ activeFace: 0, clickable: true }));
     }
   });
 });
