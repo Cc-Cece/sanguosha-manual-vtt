@@ -1,3 +1,4 @@
+import { ADMIN_PANELS } from '../config/adminPanels.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.js';
@@ -14,6 +15,8 @@ import { applyMovableDrawPilePanel } from '../widgets/drawPilePanel.js';
 import { createShuffleAnimationWidgets } from '../widgets/shuffleAnimation.js';
 import { createUniversalPrototype as createBaseUniversalPrototype } from './createUniversalPrototype.js';
 
+const ADMIN_CONSOLE_CONFIG_ID = 'admin-console-config';
+
 function applyExpandedBoardBackground(game: GameFile): void {
   const background = game['table-background'] as Widget | undefined;
   if (!background) return;
@@ -25,6 +28,21 @@ function applyExpandedBoardBackground(game: GameFile): void {
   background.y = 0;
   background.width = BOARD.width;
   background.height = BOARD.height;
+}
+
+function applyAdminConsoleConfig(game: GameFile): void {
+  game[ADMIN_CONSOLE_CONFIG_ID] = {
+    id: ADMIN_CONSOLE_CONFIG_ID,
+    type: 'basic',
+    x: 0,
+    y: 0,
+    width: 1,
+    height: 1,
+    display: false,
+    movable: false,
+    clickable: false,
+    adminPanels: ADMIN_PANELS.map(panel => ({ ...panel })),
+  };
 }
 
 function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
@@ -67,6 +85,10 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Treat layout locking as leaving edit mode: layout-only controls disappear while gameplay and
   // player-private controls remain available.
   applyLayoutEditModeRuntime(game);
+
+  // Expose declarative inspection intent through normal room state. The generic VTT admin page
+  // renders it; the game package does not inject executable admin code or alter the tabletop UI.
+  applyAdminConsoleConfig(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);

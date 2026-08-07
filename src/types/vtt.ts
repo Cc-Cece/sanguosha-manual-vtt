@@ -14,6 +14,15 @@ export interface Widget {
   [property: string]: unknown;
 }
 
+export interface HolderInspectorAdminPanel {
+  id: string;
+  type: 'holderInspector';
+  title: string;
+  holder: string;
+}
+
+export type AdminPanel = HolderInspectorAdminPanel;
+
 export interface GameInfo {
   name: string;
   description: string;
