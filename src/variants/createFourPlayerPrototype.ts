@@ -45,6 +45,18 @@ function applyAdminConsoleConfig(game: GameFile): void {
   };
 }
 
+function applyVoiceConfig(game: GameFile): void {
+  game._meta.gameSettings = {
+    ...(game._meta.gameSettings ?? {}),
+    voice: {
+      enabled: true,
+      defaultMode: 'auto',
+      p2pMaxParticipants: 4,
+      hostSeat: 'seat-1',
+    },
+  };
+}
+
 function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   applyExpandedBoardBackground(game);
 
@@ -89,6 +101,11 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Expose declarative inspection intent through normal room state. The generic VTT admin page
   // renders it; the game package does not inject executable admin code or alter the tabletop UI.
   applyAdminConsoleConfig(game);
+
+  // Voice is declarative at the package boundary. The upstream VTT owns microphone access,
+  // signaling, P2P/SFU switching and LiveKit credentials; this game only opts in and identifies
+  // seat 1 as the preferred voice host to match its existing host permissions.
+  applyVoiceConfig(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
