@@ -1,3 +1,4 @@
+import { ADMIN_PANELS } from '../config/adminPanels.js';
 import { BOARD } from '../layouts/continuousBoard.js';
 import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.js';
@@ -25,6 +26,10 @@ function applyExpandedBoardBackground(game: GameFile): void {
   background.y = 0;
   background.width = BOARD.width;
   background.height = BOARD.height;
+}
+
+function applyAdminPanelMetadata(game: GameFile): void {
+  game._meta.info.adminPanels = ADMIN_PANELS.map(panel => ({ ...panel }));
 }
 
 function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
@@ -67,6 +72,10 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Treat layout locking as leaving edit mode: layout-only controls disappear while gameplay and
   // player-private controls remain available.
   applyLayoutEditModeRuntime(game);
+
+  // The game package declares what the generic VTT admin console may inspect. It does not inject
+  // executable admin code or alter the tabletop UI.
+  applyAdminPanelMetadata(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
