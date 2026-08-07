@@ -1,11 +1,18 @@
 import { describe, expect, it } from 'vitest';
 import { MODULE_SCALES } from '../src/layouts/continuousBoard.js';
 import { getScaledBounds, isOverlappingScaled } from '../src/layouts/scaledBounds.js';
-import { createScaleRoutine, createSecureModuleScaleRoutine } from '../src/routines/componentScaling.js';
+import {
+  COMPONENT_SCALE_PERCENTS,
+  GLOBAL_CARD_SCALE_PERCENTS,
+  createScaleRoutine,
+  createSecureModuleScaleRoutine,
+} from '../src/routines/componentScaling.js';
 
 describe('component scaling calculations and routines', () => {
-  it('supports discrete scale presets 75%, 90%, 100%, 115%', () => {
-    expect(MODULE_SCALES).toEqual([0.75, 0.9, 1.0, 1.15]);
+  it('supports host component scaling through 400 percent and global cards through 250 percent', () => {
+    expect(MODULE_SCALES).toEqual([0.5, 0.75, 1.0, 1.25, 1.5, 2.0, 2.5, 3.0, 4.0]);
+    expect(COMPONENT_SCALE_PERCENTS).toEqual([50, 75, 100, 125, 150, 200, 250, 300, 400]);
+    expect(GLOBAL_CARD_SCALE_PERCENTS).toEqual([75, 100, 125, 150, 175, 200, 250]);
   });
 
   it('correctly calculates visual bounds based on scale factor with top-left origin', () => {
