@@ -19,7 +19,6 @@ export function healthCardFace(hpText: string, color: string) {
 export function createHealthDeck(): Widget[] {
   const holder = 'marker-reserve';
   const deckId = 'health-deck';
-
   const cardTypes: Record<string, unknown> = {
     'health-8': { label: '8 点血量牌' },
     'health-7': { label: '7 点血量牌' },
@@ -33,7 +32,7 @@ export function createHealthDeck(): Widget[] {
 
   const deck = widget(deckId, 'deck', {
     parent: holder,
-    cardDefaults: { width: 90, height: 126, enlarge: 4.6 },
+    cardDefaults: { width: 90, height: 126, enlarge: 9.2 },
     faceTemplates: [
       cardBack('血量牌'),
       healthCardFace('8 体力', '#b03a2e'),

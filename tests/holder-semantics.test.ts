@@ -9,7 +9,7 @@ import { RECYCLE_COLLECT_STACK_ID, RECYCLE_SHUFFLE_BUFFER_ID } from '../src/rout
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
-it('uses movable panel groups while keeping draw pile and hand fixed', () => {
+it('uses movable panel groups and seat-scoped private hands', () => {
   const game = createFourPlayerPrototype(loadTestCatalog());
   for (const id of ['draw-pile', 'general-reserve', 'identity-reserve', 'extra-reserve', 'marker-reserve'])
     expect(game[id]).toMatchObject({ alignChildren: true, preventPiles: false, stackOffsetX: 0, stackOffsetY: 0 });
@@ -48,7 +48,22 @@ it('uses movable panel groups while keeping draw pile and hand fixed', () => {
     preventPiles: true,
   });
   expect(game['draw-pile']).toMatchObject({ movable: false });
-  expect(game['personal-hand']).toMatchObject({ movable: false, alignChildren: true, preventPiles: true, childrenPerOwner: true, stackOffsetY: 0 });
+  expect(game['personal-hand']).toBeUndefined();
+  expect(game['personal-hand-seat-1']).toMatchObject({
+    movable: true,
+    alignChildren: true,
+    preventPiles: true,
+    childrenPerOwner: true,
+    stackOffsetY: 0,
+    onlyVisibleForSeat: ['seat-1'],
+  });
+  expect(game['public-hand-back-seat-1']).toMatchObject({
+    display: false,
+    alignChildren: true,
+    preventPiles: true,
+    childrenPerOwner: false,
+    stackOffsetY: 0,
+  });
   expect(game['public-zone-1']).toMatchObject({ alignChildren: false, preventPiles: false });
   expect(game['private-zone-1']).toMatchObject({ alignChildren: false, preventPiles: true });
 });

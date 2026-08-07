@@ -21,7 +21,7 @@ export {
 } from './layoutControls.js';
 
 export const resetTableRoutine = [
-  { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat。取消可中止。' }], block: true },
+  { func: 'INPUT', header: '完整恢复初始桌面？', fields: [{ type: 'text', text: '将收回所有牌；不会清空 Seat；保留当前组件位置、组件大小和全局牌大小。取消可中止。' }], block: true },
   ...clearPlayPhaseRoutine,
   {
     func: 'RECALL',
@@ -48,7 +48,6 @@ export const resetTableRoutine = [
     face: 0,
   },
   { func: 'SHUFFLE', holder: ['draw-pile', 'identity-reserve'], mode: 'true random' },
-  ...arrangeLayoutRoutine,
 ] as const;
 
 export const quickShuffleRoutine = [
@@ -102,7 +101,7 @@ export const toggleLibraryTrayRoutine = [
 
 export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 1).flatMap(number => [
   { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
-  { func: 'SELECT', source: 'all', type: 'card', property: 'blindSourceSeat', relation: '==', value: `seat-${number}`, collection: `seat${number}HandCards`, mode: 'add' },
+  { func: 'SELECT', source: 'all', type: 'card', property: 'publicHandSourceSeat', relation: '==', value: `seat-${number}`, collection: `seat${number}HandCards`, mode: 'add' },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);

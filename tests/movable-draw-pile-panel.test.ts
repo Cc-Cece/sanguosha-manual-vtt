@@ -50,27 +50,25 @@ describe('movable draw pile panel', () => {
 
     expect(lock).toContain(`"collection":["${DRAW_PILE_PANEL_ID}"],"property":"movable","value":false`);
     expect(unlock).toContain(`"collection":["${DRAW_PILE_PANEL_ID}"],"property":"movable","value":true`);
-    expect(unlock).toContain('"collection":["draw-pile","personal-hand"],"property":"movable","value":false');
     expect(unlock).not.toContain('"collection":["draw-pile"],"property":"movable","value":true');
   });
 
-  it('restores the draw pile panel in both automatic layout and full table reset', () => {
+  it('restores the draw pile panel only in automatic layout, not full table reset', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const arrange = serialized((game['arrange-layout'] as Record<string, unknown>).clickRoutine);
     const reset = serialized((game['reset-table'] as Record<string, unknown>).clickRoutine);
     const expectedMove = `"func":"MOVEXY","from":["${DRAW_PILE_PANEL_ID}"],"x":${DRAW_PILE_PANEL.x},"y":${DRAW_PILE_PANEL.y}`;
 
     expect(arrange).toContain(expectedMove);
-    expect(reset).toContain(expectedMove);
+    expect(reset).not.toContain(expectedMove);
   });
 
-  it('documents that only the personal hand remains a permanently fixed gameplay area', () => {
+  it('documents movable player-owned hands instead of a permanently fixed shared hand', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const info = (game._meta as Record<string, unknown>).info as Record<string, unknown>;
     const helpText = String(info.helpText);
 
     expect(helpText).toContain('摸牌堆面板也可在解锁布局后拖动');
-    expect(helpText).toContain('只有个人手牌区始终固定');
-    expect(helpText).not.toContain('只有摸牌堆和个人手牌区始终固定');
+    expect(helpText).toContain('独立可移动手牌区');
   });
 });

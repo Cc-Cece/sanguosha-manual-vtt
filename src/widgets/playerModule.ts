@@ -40,7 +40,6 @@ export function createPlayerModule(index: number): Widget[] {
   const seatId = `seat-${n}`;
   const playerLabelId = `player-label-${n}`;
   const faceDownId = `private-zone-${n}`;
-  const blindId = `blind-zone-${n}`;
   const bounds = PLAYER_MODULE_STAGING_POSITIONS[n] || { x: 685, y: 90, width: 430, height: 260 };
   const initialDisplay = n <= 4;
 
@@ -274,42 +273,6 @@ export function createPlayerModule(index: number): Widget[] {
         boxShadow: 'inset 0 0 8px #0005',
       },
     }),
-    widget(`show-blind-${n}`, 'button', {
-      parent: moduleId,
-      x: 310,
-      y: 211,
-      width: 50,
-      height: 20,
-      text: '盲选',
-      color: '#263a34',
-      css: {
-        fontSize: '10px',
-        color: '#d5e2db',
-        borderRadius: '5px',
-        border: '1px solid #617d72',
-      },
-      onlyVisibleForSeat: [seatId],
-      linkedToSeat: [seatId],
-      clickRoutine: [{ func: 'SET', collection: [blindId], property: 'display', value: true }],
-    }),
-    widget(`hide-blind-${n}`, 'button', {
-      parent: moduleId,
-      x: 364,
-      y: 211,
-      width: 52,
-      height: 20,
-      text: '收起',
-      color: '#322d27',
-      css: {
-        fontSize: '10px',
-        color: '#ddcfae',
-        borderRadius: '5px',
-        border: '1px solid #736750',
-      },
-      onlyVisibleForSeat: [seatId],
-      linkedToSeat: [seatId],
-      clickRoutine: [{ func: 'SET', collection: [blindId], property: 'display', value: false }],
-    }),
     label(playerLabelId, `${n}`, 394, 236, 24, moduleId, {
       height: 18,
       css: {
@@ -324,35 +287,5 @@ export function createPlayerModule(index: number): Widget[] {
         textShadow: 'none',
       },
     }),
-    widget(blindId, 'holder', {
-      x: 630 + (index % 4) * 25,
-      y: 335 + (index % 4) * 18,
-      width: 540,
-      height: 150,
-      display: false,
-      text: `玩家 ${n} 手牌背面盲选（由本人摆放等量代理）`,
-      alignChildren: true,
-      preventPiles: true,
-      stackOffsetX: 45,
-      stackOffsetY: 0,
-      color: '#28333be8',
-      textColor: '#e0e8ed',
-      css: { border: '2px dashed #9bb0bd', borderRadius: '9px' },
-    }),
-    ...Array.from({ length: 10 }, (_, proxy) =>
-      widget(`blind-proxy-${n}-${proxy + 1}`, 'basic', {
-        parent: blindId,
-        width: 72,
-        height: 101,
-        movable: true,
-        enlarge: 4,
-        faces: [
-          {
-            objects: [{ type: 'text', x: 4, y: 40, width: 64, height: 20, value: '牌背', color: '#e6c980', fontSize: 14, textAlign: 'center' }],
-            css: { background: 'radial-gradient(circle,#713027,#301010)', border: '3px double #c39b54', borderRadius: '6px' },
-          },
-        ],
-      }),
-    ),
   ];
 }

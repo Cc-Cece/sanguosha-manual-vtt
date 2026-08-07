@@ -98,7 +98,7 @@ export function createConversionStateDecks(): Widget[] {
   const cardType = 'conversion-state';
   const deck = widget(deckId, 'deck', {
     parent: holderId,
-    cardDefaults: { width: 90, height: 126, enlarge: 4.6 },
+    cardDefaults: { width: 90, height: 126, enlarge: 9.2 },
     faceTemplates: [
       cardBack('转换技'),
       conversionStateFace('阳'),

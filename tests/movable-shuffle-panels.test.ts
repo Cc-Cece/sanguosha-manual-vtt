@@ -39,11 +39,11 @@ describe('movable shuffle panels and recycle sizing', () => {
     expect(game['request-shuffle-recycle-btn']).toMatchObject({ parent: RECYCLE_PANEL_ID, movable: false });
   });
 
-  it('changes real dimensions at 100, 125, 150 and 200 percent without using scale', () => {
+  it('changes real dimensions from 100 through 400 percent without using scale', () => {
     const increase = serialized(increaseRecycleAreaRoutine);
     const decrease = serialized(decreaseRecycleAreaRoutine);
 
-    for (const percent of [100, 125, 150, 200])
+    for (const percent of [100, 125, 150, 200, 250, 300, 400])
       expect(increase + decrease).toContain(`"value":${percent}`);
     expect(increase).toContain('"property":"width"');
     expect(increase).toContain('"property":"height"');
@@ -52,7 +52,7 @@ describe('movable shuffle panels and recycle sizing', () => {
     expect(decrease).not.toContain('"property":"scale"');
   });
 
-  it('locks and unlocks movable layout groups without ever unlocking draw pile or hand', () => {
+  it('locks and unlocks public layout groups without referencing the retired shared hand', () => {
     const lock = serialized(lockLayoutRoutine);
     const unlock = serialized(unlockLayoutRoutine);
 
@@ -62,18 +62,16 @@ describe('movable shuffle panels and recycle sizing', () => {
     }
     expect(lock).toContain(RECYCLE_SIZE_DOWN_BUTTON_ID);
     expect(lock).toContain(RECYCLE_SIZE_UP_BUTTON_ID);
-    expect(unlock).toContain('"collection":["draw-pile","personal-hand"],"property":"movable","value":false');
-    expect(unlock).not.toContain('"collection":["draw-pile","personal-hand"],"property":"movable","value":true');
+    expect(unlock).not.toContain('personal-hand');
   });
 
-  it('automatic layout restores panel positions, collect-stack position and 100 percent size', () => {
+  it('automatic layout restores public panel positions but preserves recycle sizing', () => {
     const arrange = serialized(arrangeLayoutRoutine);
 
     expect(arrange).toContain(`"from":["${QUICK_SHUFFLE_PANEL_ID}"]`);
     expect(arrange).toContain(`"from":["${RECYCLE_PANEL_ID}"]`);
     expect(arrange).toContain(`"from":["${RECYCLE_COLLECT_GROUP_ID}"]`);
-    expect(arrange).toContain('"property":"recycleSizePercent","value":100');
-    expect(arrange).toContain(`"property":"width","value":${DEFAULT_RECYCLE_AREA_SIZE.zoneWidth}`);
-    expect(arrange).toContain(`"property":"height","value":${DEFAULT_RECYCLE_AREA_SIZE.zoneHeight}`);
+    expect(arrange).not.toContain('"property":"recycleSizePercent"');
+    expect(arrange).not.toContain(`"property":"width","value":${DEFAULT_RECYCLE_AREA_SIZE.zoneWidth}`);
   });
 });
