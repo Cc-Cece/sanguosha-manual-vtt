@@ -1,6 +1,7 @@
 import type { ReserveLibraryType } from '../types/reserveLibrary.js';
 import type { RoutineStep } from '../types/vtt.js';
 import { hostOnlyRoutine, selectedCss, unselectedCss } from './reserveCardRoutines.js';
+import { generalDisplayCycleRoutine } from './generalDisplayState.js';
 
 const routineSteps = (...steps: RoutineStep[]): RoutineStep[] => steps;
 
@@ -8,7 +9,8 @@ const routineSteps = (...steps: RoutineStep[]): RoutineStep[] => steps;
  * Reserve cards use one durable click routine across their whole lifecycle:
  * - draft: player 1 toggles Allow/Ban (or selected/unselected)
  * - reserved: the tray keeps the card non-clickable
- * - in-use: any player can use the card's normal face cycle
+ * - in-use general: cycles upright face-up, sideways face-up, sideways face-down and upright face-down
+ * - in-use extra card: keeps the normal two-face FLIP behavior
  */
 export function createReserveCardClickRoutine(libraryType: ReserveLibraryType): RoutineStep[] {
   const toggleDraftSelection = hostOnlyRoutine(routineSteps(
@@ -31,6 +33,10 @@ export function createReserveCardClickRoutine(libraryType: ReserveLibraryType): 
     { func: 'CALL', widget: 'reserve-panel-controller', routine: 'updateSummaryRoutine' },
   ));
 
+  const inUseRoutine = libraryType === 'general'
+    ? generalDisplayCycleRoutine
+    : routineSteps({ func: 'FLIP', collection: 'thisButton' });
+
   return routineSteps({
     func: 'IF',
     operand1: '${PROPERTY reserveState}',
@@ -42,7 +48,7 @@ export function createReserveCardClickRoutine(libraryType: ReserveLibraryType): 
       operand1: '${PROPERTY reserveState}',
       relation: '==',
       operand2: 'in-use',
-      thenRoutine: routineSteps({ func: 'FLIP', collection: 'thisButton' }),
+      thenRoutine: inUseRoutine,
     }),
   });
 }
