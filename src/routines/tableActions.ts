@@ -99,9 +99,15 @@ export const toggleLibraryTrayRoutine = [
   },
 ] as const;
 
+/**
+ * Count physical hand locations rather than ownership metadata. `owner` is used by VTT for
+ * visibility/interaction and may temporarily outlive a card's hand membership during scripted
+ * moves. A card is part of Seat N's hand iff it is currently inside either that seat's private
+ * hand holder or its temporary public hand-back holder.
+ */
 export const updateHandCountsRoutine = Array.from({ length: 12 }, (_, i) => i + 1).flatMap(number => [
-  { func: 'SELECT', source: 'all', type: 'card', property: 'owner', relation: '==', value: `\${PROPERTY player OF seat-${number}}`, collection: `seat${number}HandCards` },
-  { func: 'SELECT', source: 'all', type: 'card', property: 'publicHandSourceSeat', relation: '==', value: `seat-${number}`, collection: `seat${number}HandCards`, mode: 'add' },
+  { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: `personal-hand-seat-${number}`, collection: `seat${number}HandCards` },
+  { func: 'SELECT', source: 'all', type: 'card', property: 'parent', relation: '==', value: `public-hand-back-seat-${number}`, collection: `seat${number}HandCards`, mode: 'add' },
   { func: 'COUNT', collection: `seat${number}HandCards`, variable: `seat${number}HandCount` },
   { func: 'LABEL', label: [`hand-count-${number}`], value: `\${seat${number}HandCount}` },
 ]);
