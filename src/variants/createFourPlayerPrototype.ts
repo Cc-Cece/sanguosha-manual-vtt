@@ -3,6 +3,7 @@ import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.js';
 import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState.js';
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
+import { applyPlayPhaseMarkerRuntime } from '../routines/playPhaseMarker.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
@@ -43,6 +44,9 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Apply privacy after every card, holder and player module has been assembled. This removes
   // legacy peek widgets and installs the identity-card hand exit guard on the final hand holder.
   applyFaceDownPrivacyRuntime(game);
+
+  // Keep the manual play-phase marker initialized after privacy metadata has been finalized.
+  applyPlayPhaseMarkerRuntime(game);
 
   // Reapply after the animation widgets exist. This installs the free-area recycle behavior and
   // the animated recycle-to-draw-pile routines for both host and approved-player operations.
