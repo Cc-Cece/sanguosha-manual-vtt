@@ -3,6 +3,7 @@ import { animatedQuickShuffleRoutine } from '../routines/animatedShuffle.js';
 import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.js';
 import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState.js';
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
+import { applyLayoutEditModeRuntime } from '../routines/layoutEditModeRuntime.js';
 import { applyPlayPhaseMarkerRuntime } from '../routines/playPhaseMarker.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import { applyTabletopPersonalizationRuntime } from '../routines/tabletopPersonalizationRuntime.js';
@@ -57,6 +58,10 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Convert the legacy shared hand/blind proxies into seat-scoped private hands with temporary
   // real-card public backs, then install host component/global-card sizing controls.
   applyTabletopPersonalizationRuntime(game);
+
+  // Treat layout locking as leaving edit mode: layout-only controls disappear while gameplay and
+  // player-private controls remain available.
+  applyLayoutEditModeRuntime(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
