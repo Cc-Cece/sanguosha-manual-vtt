@@ -4,6 +4,7 @@ import { applyFaceDownPrivacyRuntime } from '../routines/faceDownPrivacyRuntime.
 import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState.js';
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
 import { applyLayoutEditModeRuntime } from '../routines/layoutEditModeRuntime.js';
+import { applyMainViewRegionRuntime } from '../routines/mainViewRegionRuntime.js';
 import { applyPlayPhaseMarkerRuntime } from '../routines/playPhaseMarker.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
 import { applyTabletopPersonalizationRuntime } from '../routines/tabletopPersonalizationRuntime.js';
@@ -58,6 +59,10 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Convert the legacy shared hand/blind proxies into seat-scoped private hands with temporary
   // real-card public backs, then install host component/global-card sizing controls.
   applyTabletopPersonalizationRuntime(game);
+
+  // Install the host-defined 3:2 camera region before edit-mode visibility is finalized so the
+  // region outline and its size controls follow the same layout lock lifecycle as other B controls.
+  applyMainViewRegionRuntime(game);
 
   // Treat layout locking as leaving edit mode: layout-only controls disappear while gameplay and
   // player-private controls remain available.
