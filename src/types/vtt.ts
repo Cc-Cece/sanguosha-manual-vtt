@@ -37,8 +37,15 @@ export interface GameInfo {
   image: string;
 }
 
+export interface VoiceGameSettings {
+  enabled: boolean;
+  hostSeat?: string;
+  p2pMaxParticipants?: number;
+}
+
 export interface GameSettings {
   boardSize?: { width: number; height: number };
+  voice?: VoiceGameSettings;
   [key: string]: unknown;
 }
 
