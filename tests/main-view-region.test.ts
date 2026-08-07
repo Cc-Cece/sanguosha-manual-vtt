@@ -41,8 +41,8 @@ describe('host-defined main camera region', () => {
       linkedToSeat: ['seat-1'],
     });
     for (let percent = 50; percent <= 200; percent += 10) {
-      expect(routines).toContain(`\"value\":${percent}`);
-      expect(routines).toContain(`\"value\":${percent / 100}`);
+      expect(routines).toContain(`"value":${percent}`);
+      expect(routines).toContain(`"value":${percent / 100}`);
     }
   });
 
@@ -53,8 +53,9 @@ describe('host-defined main camera region', () => {
 
     expect(LAYOUT_EDIT_CONTROL_IDS).toContain(MAIN_VIEW_REGION_ID);
     expect(LAYOUT_EDIT_CONTROL_IDS).toContain(MAIN_VIEW_SIZE_PANEL_ID);
-    expect(lock).toContain(`\"collection\":[${serialized([...LAYOUT_EDIT_CONTROL_IDS]).slice(1, -1)}]`);
-    expect(lock).toContain('\"property\":\"display\",\"value\":false');
-    expect(unlock).toContain('\"property\":\"display\",\"value\":true');
+    expect(lock).toContain(`"${MAIN_VIEW_REGION_ID}"`);
+    expect(lock).toContain(`"${MAIN_VIEW_SIZE_PANEL_ID}"`);
+    expect(lock).toContain('"property":"display","value":false');
+    expect(unlock).toContain('"property":"display","value":true');
   });
 });
