@@ -35,7 +35,6 @@ export interface GameInfo {
   variant: string;
   bgg?: string;
   image: string;
-  adminPanels?: AdminPanel[];
 }
 
 export interface GameSettings {
