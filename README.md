@@ -16,3 +16,9 @@ pnpm check
 包内包含一个 `0.json` 和经过网页压缩的牌面资产。设计与来源见 [架构](docs/architecture.md)、[牌面来源](docs/asset-sources.md)、[参考映射](docs/reference-structure-map.md) 和 [阶段计划](docs/development-plan.md)。
 
 当前只生成 4 人版本。导入本地 VirtualTabletop 后，应使用两个玩家会话和一个观察者会话完成计划书中保留的人工隐私／同步验收。
+
+## 实时语音
+
+游戏包通过 `_meta.gameSettings.voice` 声明启用 VTT 的独立实时语音模块：默认最多 4 名语音参与者优先使用浏览器 WebRTC P2P，质量不足或人数更多时由兼容的 VTT 服务端切换到 LiveKit SFU。`seat-1` 是语音线路模式的房主控制位。
+
+语音媒体不写入游戏状态，也不打包进 `.vtt`。实际语音能力需要部署包含 Voice MVP 的 `Cc-Cece/virtualtabletop` 服务端，并按其 `docs/voice.md` 配置 HTTPS、STUN 和 LiveKit。
