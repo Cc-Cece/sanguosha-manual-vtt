@@ -3,9 +3,18 @@ import { LAYOUT_EDIT_CONTROL_IDS } from '../src/routines/layoutEditModeRuntime.j
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
 
-function serializedRoutine(game: Record<string, unknown>, id: string): string {
+function collectObjects(value: unknown): Record<string, unknown>[] {
+  if (Array.isArray(value)) return value.flatMap(collectObjects);
+  if (value && typeof value === 'object') {
+    const record = value as Record<string, unknown>;
+    return [record, ...Object.values(record).flatMap(collectObjects)];
+  }
+  return [];
+}
+
+function routineObjects(game: Record<string, unknown>, id: string): Record<string, unknown>[] {
   const widget = game[id] as Record<string, unknown>;
-  return JSON.stringify(widget.clickRoutine);
+  return collectObjects(widget.clickRoutine);
 }
 
 describe('host layout edit mode', () => {
@@ -22,25 +31,43 @@ describe('host layout edit mode', () => {
 
   it('hides every B-class edit control after completing the layout', () => {
     const game = createFourPlayerPrototype(loadTestCatalog()) as Record<string, unknown>;
-    const lock = serializedRoutine(game, 'lock-layout');
+    const objects = routineObjects(game, 'lock-layout');
 
-    expect(lock).toContain(`\"collection\":${JSON.stringify(LAYOUT_EDIT_CONTROL_IDS)}`);
-    expect(lock).toContain('\"property\":\"display\",\"value\":false');
-    expect(lock).toContain('\"collection\":[\"lock-layout\"],\"property\":\"display\",\"value\":false');
-    expect(lock).toContain('\"collection\":[\"unlock-layout\"],\"property\":\"display\",\"value\":true');
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET',
+      collection: [...LAYOUT_EDIT_CONTROL_IDS],
+      property: 'display',
+      value: false,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET', collection: ['lock-layout'], property: 'display', value: false,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET', collection: ['unlock-layout'], property: 'display', value: true,
+    }));
   });
 
   it('restores B-class edit controls when the host re-enters edit mode', () => {
     const game = createFourPlayerPrototype(loadTestCatalog()) as Record<string, unknown>;
-    const unlock = serializedRoutine(game, 'unlock-layout');
+    const objects = routineObjects(game, 'unlock-layout');
 
-    expect(unlock).toContain(`\"collection\":${JSON.stringify(LAYOUT_EDIT_CONTROL_IDS)}`);
-    expect(unlock).toContain('\"property\":\"display\",\"value\":true');
-    expect(unlock).toContain('\"collection\":[\"lock-layout\"],\"property\":\"display\",\"value\":true');
-    expect(unlock).toContain('\"collection\":[\"unlock-layout\"],\"property\":\"display\",\"value\":false');
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET',
+      collection: [...LAYOUT_EDIT_CONTROL_IDS],
+      property: 'display',
+      value: true,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET', collection: ['lock-layout'], property: 'display', value: true,
+    }));
+    expect(objects).toContainEqual(expect.objectContaining({
+      func: 'SET', collection: ['unlock-layout'], property: 'display', value: false,
+    }));
   });
 
   it('classifies sizing and drag cues as B-class without hiding gameplay or private controls', () => {
+    const editIds: readonly string[] = LAYOUT_EDIT_CONTROL_IDS;
+
     for (const id of [
       'component-scale-bar-player-module-1',
       'component-scale-bar-draw-pile-panel',
@@ -52,7 +79,7 @@ describe('host layout edit mode', () => {
       'quick-shuffle-panel-title',
       'recycle-panel-title',
       'recycle-collect-group-title',
-    ]) expect(LAYOUT_EDIT_CONTROL_IDS).toContain(id as never);
+    ]) expect(editIds).toContain(id);
 
     for (const id of [
       'arrange-layout',
@@ -61,7 +88,7 @@ describe('host layout edit mode', () => {
       'quick-shuffle-btn',
       'show-hand-back-seat-1',
       'hide-hand-back-seat-1',
-    ]) expect(LAYOUT_EDIT_CONTROL_IDS).not.toContain(id as never);
+    ]) expect(editIds).not.toContain(id);
   });
 
   it('documents the edit-mode boundary for the host', () => {
