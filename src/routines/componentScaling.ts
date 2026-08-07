@@ -1,5 +1,8 @@
 import type { RoutineStep } from '../types/vtt.js';
 
+export const COMPONENT_SCALE_PERCENTS = [50, 75, 100, 125, 150, 200, 250, 300, 400] as const;
+export const GLOBAL_CARD_SCALE_PERCENTS = [75, 100, 125, 150, 175, 200, 250] as const;
+
 export function createScaleRoutine(widgetId: string, scaleValue: number): RoutineStep[] {
   return [
     {
