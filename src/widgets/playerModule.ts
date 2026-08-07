@@ -74,7 +74,7 @@ export function createPlayerModule(index: number): Widget[] {
         border: '3px solid #e8b84a',
         borderRadius: '11px',
         boxShadow: '0 0 14px #e8b84a66',
-        pointerEvents: 'none',
+        'pointer-events': 'none',
       },
     }),
     widget(`player-header-${n}`, 'basic', {
@@ -90,7 +90,7 @@ export function createPlayerModule(index: number): Widget[] {
         border: '1px solid #526b5d',
         borderRadius: '8px',
         boxShadow: 'inset 0 1px 0 #ffffff0c',
-        pointerEvents: 'none',
+        'pointer-events': 'none',
       },
     }),
     widget(seatId, 'seat', {
@@ -204,7 +204,7 @@ export function createPlayerModule(index: number): Widget[] {
         border: '1px solid #e8b84a',
         borderRadius: '6px',
         boxShadow: '0 1px 6px #0008',
-        pointerEvents: 'none',
+        'pointer-events': 'none',
       },
     }),
     freeZone(
