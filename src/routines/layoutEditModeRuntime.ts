@@ -5,6 +5,10 @@ import {
 } from '../layouts/shufflePanels.js';
 import type { GameFile, RoutineStep } from '../types/vtt.js';
 import { DRAW_PILE_PANEL_TITLE_ID } from '../widgets/drawPilePanel.js';
+import {
+  MAIN_VIEW_REGION_ID,
+  MAIN_VIEW_SIZE_PANEL_ID,
+} from './mainViewRegionRuntime.js';
 
 const MAX_PLAYER_COUNT = 12;
 
@@ -26,6 +30,8 @@ export const LAYOUT_EDIT_CONTROL_IDS = [
   'quick-shuffle-panel-title',
   'recycle-panel-title',
   'recycle-collect-group-title',
+  MAIN_VIEW_REGION_ID,
+  MAIN_VIEW_SIZE_PANEL_ID,
 ] as const;
 
 const LOCK_LAYOUT_BUTTON_ID = 'lock-layout';
@@ -75,7 +81,7 @@ function updateHelpText(root: PlainRecord): void {
   const info = meta ? asRecord(meta.info) : null;
   if (!info || typeof info.helpText !== 'string') return;
 
-  const line = '布局模式：房主点击“完成布局”后会隐藏组件缩放、全局牌大小、回收区尺寸和拖动提示等 B 类编辑控件；点击“编辑布局”可恢复。游戏操作与玩家私人手牌控件不会被隐藏。';
+  const line = '布局模式：房主点击“完成布局”后会隐藏组件缩放、全局牌大小、回收区尺寸、主区域边框和拖动提示等 B 类编辑控件；点击“编辑布局”可恢复。游戏操作与玩家私人手牌控件不会被隐藏。';
   if (!info.helpText.includes(line)) info.helpText += `\n${line}`;
 }
 
