@@ -2,48 +2,9 @@ import { dialogText, dialogTitle } from './inputDialog.js';
 
 const MAX_PLAYER_COUNT = 12;
 
-const privateZoneIdFor = (number: number) => `private-zone-${number}`;
-const privatePeekButtonIdFor = (number: number) => `toggle-perspective-${number}`;
-const seatIdFor = (number: number) => `seat-${number}`;
+const faceDownZoneIdFor = (number: number) => `private-zone-${number}`;
 
-const confirmPrivateRevealRoutine = (number: number) => [
-  {
-    func: 'INPUT',
-    header: '查看身份牌？',
-    fields: [
-      dialogTitle(`当前区域：玩家 ${number} 的私密展示区`),
-      dialogText(`确认后只有玩家 ${number} 能看到身份牌正面；其他玩家仍然只能看到牌背。`),
-    ],
-    block: true,
-    confirmButtonText: '确认查看',
-    cancelButtonText: '取消',
-  },
-  {
-    func: 'SET',
-    collection: [privateZoneIdFor(number)],
-    property: 'showInactiveFaceToSeat',
-    value: [seatIdFor(number)],
-  },
-  {
-    func: 'SET',
-    collection: [privatePeekButtonIdFor(number)],
-    property: 'mobilePeekOpen',
-    value: true,
-  },
-] as const;
-
-const confirmHandRevealRoutine = (cardId: string) => [
-  {
-    func: 'INPUT',
-    header: '查看身份牌？',
-    fields: [
-      dialogTitle('当前区域：个人手牌区'),
-      dialogText('确认后仅当前手牌所有者可见身份牌正面。将身份牌移出手牌前，请先将其盖回。'),
-    ],
-    block: true,
-    confirmButtonText: '确认查看',
-    cancelButtonText: '取消',
-  },
+const revealInHandRoutine = (cardId: string) => [
   { func: 'FLIP', collection: [cardId], face: 1 },
 ] as const;
 
@@ -55,39 +16,52 @@ const confirmPublicRevealRoutine = (cardId: string) => [
       dialogTitle(`当前区域：公开或未标记区域（区域标识：\${PROPERTY parent OF ${cardId}}）`),
       dialogText('确认后身份牌将以共享状态翻到正面，所有能够看到当前区域的玩家都能看到身份。'),
     ],
-    block: true,
+    block: false,
     confirmButtonText: '确认公开',
     cancelButtonText: '取消',
   },
   { func: 'FLIP', collection: [cardId], face: 1 },
 ] as const;
 
-const createPrivateZoneBranch = (cardId: string, number: number): Record<string, unknown> => ({
+const createFaceDownZoneBranch = (cardId: string, number: number): Record<string, unknown> => ({
   func: 'IF',
   operand1: `\${PROPERTY parent OF ${cardId}}`,
   relation: '==',
-  operand2: privateZoneIdFor(number),
-  thenRoutine: confirmPrivateRevealRoutine(number),
+  operand2: faceDownZoneIdFor(number),
+  // Cards in a face-down zone are intentionally inert. The holder also sets clickable=false,
+  // while this empty branch protects against stale click events during a drag or network update.
+  thenRoutine: [],
   elseRoutine: number < MAX_PLAYER_COUNT
-    ? [createPrivateZoneBranch(cardId, number + 1)]
+    ? [createFaceDownZoneBranch(cardId, number + 1)]
     : [
         {
           func: 'IF',
           operand1: `\${PROPERTY parent OF ${cardId}}`,
           relation: '==',
           operand2: 'personal-hand',
-          thenRoutine: confirmHandRevealRoutine(cardId),
+          thenRoutine: revealInHandRoutine(cardId),
           elseRoutine: confirmPublicRevealRoutine(cardId),
         },
       ],
 });
 
+const createCoveredContextBranch = (cardId: string): Record<string, unknown> => ({
+  func: 'IF',
+  operand1: `\${PROPERTY parent OF ${cardId}}`,
+  relation: '==',
+  operand2: 'identity-reserve',
+  // The reserve is a covered source pile, not a viewing area.
+  thenRoutine: [],
+  elseRoutine: [createFaceDownZoneBranch(cardId, 1)],
+});
+
 /**
- * Identity cards are the only cards whose back-to-front transition is always guarded.
- * Front-to-back is intentionally immediate because covering information is a safe action.
+ * Identity cards have four explicit contexts:
+ * - the identity reserve and face-down zones never reveal them;
+ * - the owning personal hand toggles them privately without a dialog;
+ * - every public or unmarked area requires a local, non-blocking confirmation before reveal.
  *
- * Private-zone confirmation never changes the shared activeFace. Instead it enables the
- * existing Seat-local inactive-face view, so every other client continues to see the back.
+ * Front-to-back is always immediate because covering information is safe.
  */
 export const createIdentityCardClickRoutine = (cardId: string) => [
   {
@@ -95,7 +69,7 @@ export const createIdentityCardClickRoutine = (cardId: string) => [
     operand1: `\${PROPERTY activeFace OF ${cardId}}`,
     relation: '==',
     operand2: 0,
-    thenRoutine: [createPrivateZoneBranch(cardId, 1)],
+    thenRoutine: [createCoveredContextBranch(cardId)],
     elseRoutine: [{ func: 'FLIP', collection: [cardId], face: 0 }],
   },
 ] as const;
