@@ -25,6 +25,8 @@ describe('play-phase marker', () => {
       const n = index + 1;
       const widgets = createPlayerModule(index);
       const byId = Object.fromEntries(widgets.map(widget => [widget.id, widget]));
+      const badgeCss = byId[`play-phase-badge-${n}`]?.css as Record<string, unknown>;
+      const frameCss = byId[`play-phase-frame-${n}`]?.css as Record<string, unknown>;
 
       expect(byId[`play-phase-badge-${n}`]).toMatchObject({
         text: '出牌中',
@@ -41,6 +43,10 @@ describe('play-phase marker', () => {
         movableInEdit: false,
         clickable: false,
       });
+      expect(badgeCss['pointer-events']).toBe('none');
+      expect(frameCss['pointer-events']).toBe('none');
+      expect(badgeCss.pointerEvents).toBeUndefined();
+      expect(frameCss.pointerEvents).toBeUndefined();
       expect(byId[`set-play-phase-${n}`]).toMatchObject({
         text: '出牌',
         parent: `player-module-${n}`,
