@@ -27,7 +27,7 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(serialized).toContain('无法释放座位');
   });
 
-  it('verifies icon enhancement on toolbar and seat chinese text', () => {
+  it('verifies icon enhancement, private hand controls and seat chinese text', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
@@ -40,8 +40,12 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     const drawPile = widgets.find(w => w.id === 'draw-pile');
     expect(drawPile?.text).toContain('🎴');
 
-    const handZone = widgets.find(w => w.id === 'personal-hand');
+    const handZone = widgets.find(w => w.id === 'personal-hand-seat-1');
     expect(handZone?.text).toContain('🖐️');
+    expect(handZone?.movable).toBe(true);
+    expect(widgets.find(w => w.id === 'show-hand-back-seat-1')?.text).toContain('展示牌背');
+    expect(widgets.find(w => w.id === 'hide-hand-back-seat-1')?.text).toContain('收起牌背');
+    expect(widgets.find(w => w.id === 'personal-hand')).toBeUndefined();
 
     expect(widgets.find(w => w.id === 'table-title')).toBeUndefined();
     expect(widgets.find(w => w.id === 'public-table-hint')).toBeUndefined();
@@ -84,12 +88,15 @@ describe('table aesthetics and player module leave-seat buttons', () => {
     expect(healthCards.length).toBeGreaterThanOrEqual(16);
   });
 
-  it('uses permanent face-down zones and does not generate eye controls', () => {
+  it('uses permanent face-down zones and does not generate eye controls or blind proxies in the final game', () => {
     const game = createFourPlayerPrototype(loadTestCatalog());
     const widgets = widgetsOf(game);
 
     for (let i = 1; i <= 4; i++) {
       expect(widgets.find(w => w.id === `toggle-perspective-${i}`)).toBeUndefined();
+      expect(widgets.find(w => w.id === `blind-zone-${i}`)).toBeUndefined();
+      expect(widgets.find(w => w.id === `show-blind-${i}`)).toBeUndefined();
+      expect(widgets.find(w => w.id === `hide-blind-${i}`)).toBeUndefined();
 
       const zone = widgets.find(w => w.id === `private-zone-${i}`);
       const label = widgets.find(w => w.id === `private-label-${i}`);
@@ -99,5 +106,6 @@ describe('table aesthetics and player module leave-seat buttons', () => {
       expect(zone?.onEnter).toEqual(expect.objectContaining({ activeFace: 0, clickable: false }));
       expect(zone?.onLeave).toEqual(expect.objectContaining({ activeFace: 0, clickable: true }));
     }
+    expect(widgets.some(w => w.id.startsWith('blind-proxy-'))).toBe(false);
   });
 });
