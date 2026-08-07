@@ -108,9 +108,9 @@ export function applyMainViewRegionRuntime<T extends GameFile>(game: T): T {
   });
 
   root[MAIN_VIEW_SIZE_PANEL_ID] = widget(MAIN_VIEW_SIZE_PANEL_ID, 'basic', {
-    x: 1190,
+    x: 20,
     y: 14,
-    width: 260,
+    width: 220,
     height: 56,
     movable: false,
     layer: 30,
@@ -122,21 +122,21 @@ export function applyMainViewRegionRuntime<T extends GameFile>(game: T): T {
 
   root['main-view-size-title'] = widget('main-view-size-title', 'label', {
     parent: MAIN_VIEW_SIZE_PANEL_ID,
-    x: 8,
+    x: 6,
     y: 5,
-    width: 112,
+    width: 82,
     height: 46,
     text: '主区域大小\n保持 3:2',
     movable: false,
     fixedParent: true,
-    css: { color: '#e9dcc0', fontSize: '11px', lineHeight: '19px', textAlign: 'center', fontWeight: '700' },
+    css: { color: '#e9dcc0', fontSize: '10px', lineHeight: '19px', textAlign: 'center', fontWeight: '700' },
   });
 
   root[MAIN_VIEW_SIZE_DOWN_ID] = widget(MAIN_VIEW_SIZE_DOWN_ID, 'button', {
     parent: MAIN_VIEW_SIZE_PANEL_ID,
-    x: 128,
+    x: 94,
     y: 13,
-    width: 30,
+    width: 28,
     height: 30,
     text: '−',
     movable: false,
@@ -146,9 +146,9 @@ export function applyMainViewRegionRuntime<T extends GameFile>(game: T): T {
 
   root[MAIN_VIEW_SIZE_LABEL_ID] = widget(MAIN_VIEW_SIZE_LABEL_ID, 'label', {
     parent: MAIN_VIEW_SIZE_PANEL_ID,
-    x: 162,
+    x: 126,
     y: 13,
-    width: 56,
+    width: 52,
     height: 30,
     text: '100%',
     movable: false,
@@ -158,9 +158,9 @@ export function applyMainViewRegionRuntime<T extends GameFile>(game: T): T {
 
   root[MAIN_VIEW_SIZE_UP_ID] = widget(MAIN_VIEW_SIZE_UP_ID, 'button', {
     parent: MAIN_VIEW_SIZE_PANEL_ID,
-    x: 222,
+    x: 182,
     y: 13,
-    width: 30,
+    width: 28,
     height: 30,
     text: '+',
     movable: false,
