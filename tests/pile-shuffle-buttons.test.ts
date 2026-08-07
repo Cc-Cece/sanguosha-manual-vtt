@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { DRAW_PILE_PANEL_ID } from '../src/widgets/drawPilePanel.js';
 import { widgetsOf } from '../src/validation/validate.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { loadTestCatalog } from './helpers.js';
@@ -27,7 +28,7 @@ describe('dedicated pile shuffle buttons placement and permissions', () => {
     }
 
     const drawBtn = widgets.find(w => w.id === 'shuffle-draw-pile-btn');
-    expect(drawBtn?.parent).toBeUndefined();
+    expect(drawBtn?.parent).toBe(DRAW_PILE_PANEL_ID);
 
     const trayButtons = [
       'shuffle-general-reserve-btn',
