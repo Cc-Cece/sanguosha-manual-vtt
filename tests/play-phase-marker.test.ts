@@ -30,10 +30,16 @@ describe('play-phase marker', () => {
         text: '出牌中',
         display: false,
         parent: `player-module-${n}`,
+        movable: false,
+        movableInEdit: false,
+        clickable: false,
       });
       expect(byId[`play-phase-frame-${n}`]).toMatchObject({
         display: false,
         parent: `player-module-${n}`,
+        movable: false,
+        movableInEdit: false,
+        clickable: false,
       });
       expect(byId[`set-play-phase-${n}`]).toMatchObject({
         text: '出牌',

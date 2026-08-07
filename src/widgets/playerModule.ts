@@ -66,6 +66,8 @@ export function createPlayerModule(index: number): Widget[] {
       height: 260,
       display: false,
       movable: false,
+      movableInEdit: false,
+      clickable: false,
       layer: 1,
       color: '#0000',
       css: {
@@ -189,6 +191,8 @@ export function createPlayerModule(index: number): Widget[] {
       text: '出牌中',
       display: false,
       movable: false,
+      movableInEdit: false,
+      clickable: false,
       layer: 4,
       css: {
         background: '#5c4010ee',
