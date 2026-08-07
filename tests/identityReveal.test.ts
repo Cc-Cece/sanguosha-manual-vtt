@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { createAssetDecks } from '../src/data/assetDecks.js';
 import { createIdentityCardClickRoutine } from '../src/routines/identityReveal.js';
 import {
+  createHandZoneFlipFaceUpRoutine,
   handZoneCoverLeavingIdentityRoutine,
-  handZoneFlipFaceUpRoutine,
 } from '../src/routines/playerHand.js';
 import type { AssetCatalog } from '../src/types/assets.js';
 import type { ReserveModel } from '../src/types/reserveLibrary.js';
@@ -85,26 +85,21 @@ describe('identity reveal contexts', () => {
     }));
   });
 
-  it('keeps the identity reserve and every permanent face-down zone inert', () => {
-    const routine = createIdentityCardClickRoutine('card-private');
-    const objects = collectObjects(routine);
-    const reserveBranch = objects.find(object =>
-      object.func === 'IF' && object.operand2 === 'identity-reserve');
-    const privateBranch = objects.find(object =>
-      object.func === 'IF' && object.operand2 === 'private-zone-3');
+  it('keeps identity reserve, face-down zones and temporary public hand backs inert', () => {
+    const objects = collectObjects(createIdentityCardClickRoutine('card-private'));
+    const reserveBranch = objects.find(object => object.func === 'IF' && object.operand2 === 'identity-reserve');
+    const privateBranch = objects.find(object => object.func === 'IF' && object.operand2 === 'private-zone-3');
+    const publicHandBranch = objects.find(object => object.func === 'IF' && object.operand2 === 'public-hand-back-seat-3');
 
     expect(reserveBranch?.thenRoutine).toEqual([]);
     expect(privateBranch?.thenRoutine).toEqual([]);
-    expect(collectObjects(reserveBranch?.thenRoutine).some(object =>
-      object.func === 'INPUT' || object.func === 'FLIP')).toBe(false);
-    expect(collectObjects(privateBranch?.thenRoutine).some(object =>
-      object.func === 'INPUT' || object.func === 'FLIP')).toBe(false);
+    expect(publicHandBranch?.thenRoutine).toEqual([]);
   });
 
-  it('reveals directly and without a dialog inside the personal hand', () => {
+  it('reveals directly and without a dialog inside any seat-scoped personal hand', () => {
     const routine = createIdentityCardClickRoutine('card-hand');
     const handBranch = collectObjects(routine).find(object =>
-      object.func === 'IF' && object.operand2 === 'personal-hand');
+      object.func === 'IF' && object.operand2 === 'personal-hand-seat-7');
     const handObjects = collectObjects(handBranch?.thenRoutine);
 
     expect(handObjects).toContainEqual(expect.objectContaining({
@@ -116,12 +111,12 @@ describe('identity reveal contexts', () => {
   });
 
   it('keeps identities covered on hand entry and covers only identities on hand exit', () => {
-    const enterObjects = collectObjects(handZoneFlipFaceUpRoutine);
+    const enterObjects = collectObjects(createHandZoneFlipFaceUpRoutine('personal-hand-seat-1', 'ordinaryHandCardsSeat1'));
     const leaveObjects = collectObjects(handZoneCoverLeavingIdentityRoutine);
 
     expect(enterObjects).toContainEqual(expect.objectContaining({
       func: 'SELECT',
-      source: 'ordinaryHandCards',
+      source: 'ordinaryHandCardsSeat1',
       property: 'deck',
       relation: '!=',
       value: 'identity-deck',
