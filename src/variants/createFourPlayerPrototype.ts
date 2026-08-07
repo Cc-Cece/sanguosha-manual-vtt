@@ -5,6 +5,7 @@ import { applyGeneralDisplayStateRuntime } from '../routines/generalDisplayState
 import { normalizeGeneratedRoutines } from '../routines/inputDialog.js';
 import { applyPlayPhaseMarkerRuntime } from '../routines/playPhaseMarker.js';
 import { applyRecycleZoneRuntimeFixes } from '../routines/recycleZoneRuntime.js';
+import { applyTabletopPersonalizationRuntime } from '../routines/tabletopPersonalizationRuntime.js';
 import type { AssetCatalog } from '../types/assets.js';
 import type { GameFile, Widget } from '../types/vtt.js';
 import { applyMovableDrawPilePanel } from '../widgets/drawPilePanel.js';
@@ -42,7 +43,8 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   applyGeneralDisplayStateRuntime(game);
 
   // Apply privacy after every card, holder and player module has been assembled. This removes
-  // legacy peek widgets and installs the identity-card hand exit guard on the final hand holder.
+  // legacy peek widgets and installs the identity-card hand exit guard on the legacy hand before
+  // the final personalization pass replaces it with seat-scoped private hands.
   applyFaceDownPrivacyRuntime(game);
 
   // Keep the manual play-phase marker initialized after privacy metadata has been finalized.
@@ -51,6 +53,10 @@ function installFinalRuntime(game: GameFile, catalog: AssetCatalog): GameFile {
   // Reapply after the animation widgets exist. This installs the free-area recycle behavior and
   // the animated recycle-to-draw-pile routines for both host and approved-player operations.
   applyRecycleZoneRuntimeFixes(game);
+
+  // Convert the legacy shared hand/blind proxies into seat-scoped private hands with temporary
+  // real-card public backs, then install host component/global-card sizing controls.
+  applyTabletopPersonalizationRuntime(game);
 
   // Runtime routines are attached after the base prototype's normalizer has run.
   return normalizeGeneratedRoutines(game);
