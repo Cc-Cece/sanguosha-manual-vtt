@@ -3,11 +3,13 @@ import {
   createPrivatePeekClickRoutine,
   createPrivatePeekEnterRoutine,
   createPrivatePeekLeaveRoutine,
+  privatePeekButtonIds,
   resetAllPrivatePeeksRoutine,
 } from '../src/routines/privateZone.js';
-import { createLeaveSeatRoutine, createSafeSeatClickRoutine } from '../src/routines/seatSafety.js';
-import { resetTableRoutine } from '../src/routines/tableActions.js';
+import { createSafeSeatClickRoutine } from '../src/routines/seatSafety.js';
+import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { createPlayerModule } from '../src/widgets/playerModule.js';
+import { loadTestCatalog } from './helpers.js';
 
 function collectObjects(value: unknown): Record<string, unknown>[] {
   if (Array.isArray(value)) return value.flatMap(collectObjects);
@@ -18,110 +20,69 @@ function collectObjects(value: unknown): Record<string, unknown>[] {
   return [];
 }
 
-describe('private display zone privacy', () => {
-  it('keeps the private zone visible but backed by default', () => {
+describe('permanent face-down zone privacy', () => {
+  it('keeps the face-down zone public, visible and permanently backed', () => {
     const widgets = createPlayerModule(0);
-    const privateZone = widgets.find(widget => widget.id === 'private-zone-1');
+    const zone = widgets.find(widget => widget.id === 'private-zone-1');
+    const label = widgets.find(widget => widget.id === 'private-label-1');
 
-    expect(privateZone).toBeDefined();
-    expect(privateZone?.display).not.toBe(false);
-    expect(privateZone?.onlyVisibleForSeat).toBeUndefined();
-    expect(privateZone?.linkedToSeat).toBeUndefined();
-    expect(privateZone?.showInactiveFaceToSeat).toBeNull();
-    expect(privateZone?.preventPiles).toBe(true);
+    expect(zone).toBeDefined();
+    expect(label?.text).toBe('暗置牌区');
+    expect(zone?.text).toContain('始终盖面');
+    expect(zone?.display).not.toBe(false);
+    expect(zone?.onlyVisibleForSeat).toBeUndefined();
+    expect(zone?.linkedToSeat).toBeUndefined();
+    expect(zone?.showInactiveFaceToSeat).toBeNull();
+    expect(zone?.preventPiles).toBe(true);
   });
 
-  it('forces cards to enter and leave the private zone face down', () => {
-    const privateZone = createPlayerModule(0).find(widget => widget.id === 'private-zone-1');
+  it('forces cards to enter and leave face down and disables clicking while inside', () => {
+    const zone = createPlayerModule(0).find(widget => widget.id === 'private-zone-1');
 
-    expect(privateZone?.onEnter).toEqual(expect.objectContaining({
+    expect(zone?.onEnter).toEqual(expect.objectContaining({
       activeFace: 0,
       clickable: false,
     }));
-    expect(privateZone?.onLeave).toEqual(expect.objectContaining({
+    expect(zone?.onLeave).toEqual(expect.objectContaining({
       activeFace: 0,
       clickable: true,
+      owner: null,
     }));
   });
 
-  it('uses a single Seat-only eye icon for hover and touch peeking', () => {
-    const eye = createPlayerModule(0).find(widget => widget.id === 'toggle-perspective-1');
+  it('removes every eye widget and retires all legacy peek routines', () => {
+    const widgets = createPlayerModule(0);
 
-    expect(eye).toBeDefined();
-    expect(eye?.text).toBe('👁️');
-    expect(eye?.onlyVisibleForSeat).toEqual(['seat-1']);
-    expect(eye?.linkedToSeat).toEqual(['seat-1']);
-    expect(eye?.mobilePeekOpen).toBe(false);
-    expect(eye?.enterRoutine).toEqual(createPrivatePeekEnterRoutine(1));
-    expect(eye?.leaveRoutine).toEqual(createPrivatePeekLeaveRoutine(1));
-    expect(eye?.clickRoutine).toEqual(createPrivatePeekClickRoutine(1));
+    expect(widgets.some(widget => widget.id === 'toggle-perspective-1')).toBe(false);
+    expect(privatePeekButtonIds).toEqual([]);
+    expect(createPrivatePeekEnterRoutine(1)).toEqual([]);
+    expect(createPrivatePeekLeaveRoutine(1)).toEqual([]);
+    expect(createPrivatePeekClickRoutine(1)).toEqual([]);
+    expect(resetAllPrivatePeeksRoutine).toEqual([]);
   });
 
-  it('reveals the inactive face only to the owning Seat', () => {
-    const objects = collectObjects(createPrivatePeekEnterRoutine(3));
-
-    expect(objects).toContainEqual(expect.objectContaining({
-      func: 'IF',
-      operand1: '${PROPERTY player OF seat-3}',
-      relation: '==',
-      operand2: '${playerName}',
-    }));
-    expect(objects).toContainEqual(expect.objectContaining({
-      func: 'SET',
-      collection: ['private-zone-3'],
-      property: 'showInactiveFaceToSeat',
-      value: ['seat-3'],
-    }));
-  });
-
-  it('covers immediately on mouseleave and toggles safely for touch', () => {
-    const leaveObjects = collectObjects(createPrivatePeekLeaveRoutine(2));
-    const clickObjects = collectObjects(createPrivatePeekClickRoutine(2));
+  it('installs the identity hand-exit guard and updated instructions in the final game', () => {
+    const game = createFourPlayerPrototype(loadTestCatalog());
+    const hand = game['personal-hand'] as Record<string, unknown>;
+    const leaveObjects = collectObjects(hand.leaveRoutine);
+    const info = (game._meta as Record<string, unknown>).info as Record<string, unknown>;
 
     expect(leaveObjects).toContainEqual(expect.objectContaining({
-      func: 'SET',
-      collection: ['private-zone-2'],
-      property: 'showInactiveFaceToSeat',
-      value: null,
+      func: 'SELECT',
+      source: 'child',
+      property: 'deck',
+      value: 'identity-deck',
     }));
     expect(leaveObjects).toContainEqual(expect.objectContaining({
-      func: 'SET',
-      collection: ['toggle-perspective-2'],
-      property: 'mobilePeekOpen',
-      value: false,
+      func: 'FLIP',
+      collection: 'leavingIdentityCards',
+      face: 0,
     }));
-    expect(clickObjects).toContainEqual(expect.objectContaining({
-      func: 'IF',
-      operand1: '${PROPERTY mobilePeekOpen OF toggle-perspective-2}',
-      relation: '==',
-      operand2: true,
-    }));
-  });
-
-  it('never changes the shared display property or grants host override access', () => {
-    const objects = collectObjects(createPrivatePeekClickRoutine(4));
-
-    expect(objects.some(object => object.property === 'display')).toBe(false);
-    expect(JSON.stringify(objects)).not.toContain('private-backdrop-4');
-    expect(JSON.stringify(objects)).not.toContain('PROPERTY player OF seat-1');
-  });
-
-  it('closes peeking when the Seat is released or the table is reset', () => {
-    const leaveObjects = collectObjects(createLeaveSeatRoutine('seat-5'));
-    const resetObjects = collectObjects(resetTableRoutine);
-
-    expect(leaveObjects).toContainEqual(expect.objectContaining({
-      func: 'SET',
-      collection: ['private-zone-5'],
-      property: 'showInactiveFaceToSeat',
-      value: null,
-    }));
-    expect(resetObjects).toContainEqual(expect.objectContaining({
-      func: 'SET',
-      property: 'showInactiveFaceToSeat',
-      value: null,
-    }));
-    expect(resetAllPrivatePeeksRoutine).toHaveLength(2);
+    expect(String(info.description)).toContain('始终盖面的暗置牌区');
+    expect(String(info.ruleText)).toContain('暗置牌区中的牌始终盖面');
+    expect(String(info.helpText)).toContain('身份牌进入手牌后保持盖面');
+    expect(String(info.helpText)).toContain('暗置牌区始终只显示牌背');
+    expect(String(info.description)).not.toContain('独立私密展示区');
   });
 });
 
