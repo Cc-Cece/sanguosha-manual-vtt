@@ -12,10 +12,10 @@ import {
 } from '../widgets/reserveSpreadRow.js';
 
 const definitions: Record<Exclude<AssetCategory, 'markers-and-reference'>, { deck: string; holder: string; backKey: 'generals' | 'identities' | 'main'; fallback: string; enlarge: number }> = {
-  'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', backKey: 'main', fallback: '三国杀', enlarge: 4.7 },
-  'gameplay-extra': { deck: 'extra-deck', holder: 'reserve-panel-controller', backKey: 'main', fallback: '扩展牌', enlarge: 4.7 },
-  generals: { deck: 'general-deck', holder: 'reserve-panel-controller', backKey: 'generals', fallback: '武将牌', enlarge: 5.0 },
-  identities: { deck: 'identity-deck', holder: 'identity-reserve', backKey: 'identities', fallback: '身份牌', enlarge: 5.0 },
+  'gameplay-standard-junzheng-160': { deck: 'main-deck', holder: 'draw-pile', backKey: 'main', fallback: '三国杀', enlarge: 9.4 },
+  'gameplay-extra': { deck: 'extra-deck', holder: 'reserve-panel-controller', backKey: 'main', fallback: '扩展牌', enlarge: 9.4 },
+  generals: { deck: 'general-deck', holder: 'reserve-panel-controller', backKey: 'generals', fallback: '武将牌', enlarge: 10.0 },
+  identities: { deck: 'identity-deck', holder: 'identity-reserve', backKey: 'identities', fallback: '身份牌', enlarge: 10.0 },
 };
 
 type DeckCategory = keyof typeof definitions;
