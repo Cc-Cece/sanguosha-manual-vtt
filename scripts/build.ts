@@ -31,10 +31,11 @@ if (catalog.backAssets) {
 try {
   let coverBuf: Buffer;
   try {
-    coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'cover.webp'));
+    coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'Cover.webp'));
   } catch (e) {
-    coverBuf = await readFile(resolve('assets', 'cards-webp', 'other', 'cover.webp'));
+    coverBuf = await readFile(resolve('assets', 'cards-webp', 'other', 'Cover.webp'));
   }
+  // Keep the VTT-internal cover path stable while the repository uses the semantic filename.
   zip.file('assets/other/cover.webp', coverBuf);
 } catch (e) {
   console.warn('Warning: Could not add assets/other/cover.webp to zip:', e);
