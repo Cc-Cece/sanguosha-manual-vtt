@@ -22,3 +22,5 @@ pnpm check
 游戏包通过 `_meta.gameSettings.voice` 声明启用 VTT 的独立实时语音模块：默认最多 4 名语音参与者优先使用浏览器 WebRTC P2P，质量不足或人数更多时由兼容的 VTT 服务端切换到 LiveKit SFU。`seat-1` 是语音线路模式的房主控制位。
 
 语音媒体不写入游戏状态，也不打包进 `.vtt`。实际语音能力需要部署包含 Voice MVP 的 `Cc-Cece/virtualtabletop` 服务端，并按其 `docs/voice.md` 配置 HTTPS、STUN 和 LiveKit。
+
+在支持 `clientActivityIndicator` 的 VTT 版本中，每个玩家模块还声明了一个独立的 `voice.speaking` 视觉层：VTT 只提供“哪个玩家正在说话”的通用客户端活动，游戏包再把该玩家映射到对应 `seat-N`，显示青绿色模块光圈。该效果不进入房间状态、不影响“出牌中”的金色高亮，也不会拦截模块内卡牌交互；旧版 VTT 不识别该能力时，这些视觉层保持默认隐藏。
