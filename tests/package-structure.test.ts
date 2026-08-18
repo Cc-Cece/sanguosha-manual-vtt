@@ -26,6 +26,9 @@ it('build output contains one variant and all optimized card faces and backs', a
 
     expect(Object.keys(zip.files).filter(name => name.startsWith('assets/') && !name.endsWith('/'))).toHaveLength(allPackagedAssets.size + 1);
     const game = JSON.parse(await zip.file('0.json')!.async('string')) as Record<string, any>;
+    const coverAsset = String(game._meta?.info?.image ?? '');
+    expect(coverAsset).toMatch(/^\/assets\/-?\d+_\d+$/);
+    expect(zip.file(coverAsset.slice(1))).not.toBeNull();
     const assetReferences = new Set<string>();
     for (const value of Object.values(game)) {
       if (value?.type === 'deck') {
@@ -38,7 +41,7 @@ it('build output contains one variant and all optimized card faces and backs', a
       }
     }
     expect(assetReferences).toEqual(allPackagedAssets);
-    for (const file of Object.values(zip.files).filter(file => file.name.startsWith('assets/') && !file.name.endsWith('/') && !file.name.includes('cover'))) {
+    for (const file of Object.values(zip.files).filter(file => file.name.startsWith('assets/') && !file.name.endsWith('/') && `/${file.name}` !== coverAsset)) {
       const internal = (file as any)._data;
       expect(assetReferences.has(`/assets/${internal.crc32}_${internal.uncompressedSize}`)).toBe(true);
     }

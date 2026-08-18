@@ -58,6 +58,27 @@ it('keeps every semantic index and rename target backed by an exact-case reposit
   }
 });
 
+it('resolves a general from a legacy numeric path via the index', () => {
+  resetCardAssetIndexCache();
+  const resolved = resolveCardAssetFromIndex({
+    id: 'asset-dianwei',
+    sequence: 1,
+    cardId: 11500,
+    category: 'generals',
+    source: 'cleaned-and-classified-cards/generals/fire_11500.webp',
+    optimizedFile: 'generals/fire/fire_11500.webp',
+    asset: '/assets/0_0',
+    bytes: 1,
+    width: 1,
+    height: 1,
+    label: 'unnamed',
+  }, root);
+
+  expect(resolved.optimizedFile).toBe('generals/fire/General_Fire_Dianwei.webp');
+  expect(resolved.label).toContain('典韦');
+  expect(resolved.subCategory).toBe('fire');
+});
+
 it('resolves other_* markers whose index source_id is a legacy filename string', () => {
   resetCardAssetIndexCache();
   const resolved = resolveCardAssetFromIndex({

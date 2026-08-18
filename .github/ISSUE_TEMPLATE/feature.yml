@@ -1,0 +1,19 @@
+name: 建议
+description: 桌面操作或构建方面的改进（不含自动规则）
+title: "[建议] "
+labels: ["建议"]
+body:
+  - type: textarea
+    id: request
+    attributes:
+      label: 想做什么
+    validations:
+      required: true
+  - type: textarea
+    id: why
+    attributes:
+      label: 为什么需要
+  - type: markdown
+    attributes:
+      value: |
+        本项目是人工裁定桌面，不接受技能触发、合法性、距离、伤害、回合或胜负自动化。
