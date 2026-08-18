@@ -76,6 +76,8 @@ pnpm build
 | [ArnoldSmith86/virtualtabletop](https://github.com/ArnoldSmith86/virtualtabletop) | https://virtualtabletop.io/ |
 | [Cc-Cece/virtualtabletop](https://github.com/Cc-Cece/virtualtabletop) | https://vtt.insar.top/      |
 
+打 `v*` 标签发版后，会把游戏包同步进 fork 货架 `library/games/Sanguosha-Manual/`（直接推 `main`）。
+
 | 能力 | 原版 VTT | [Cc-Cece/virtualtabletop](https://github.com/Cc-Cece/virtualtabletop) |
 | --- | --- | --- |
 | 游戏时主体功能 | 有 | 有 |
