@@ -85,8 +85,8 @@ pnpm build
 
 ## 6 截图
 
-| ![sanguosha00](docs\img\README.assets\sanguosha00.png) | ![sanguosha01](docs\img\README.assets\sanguosha01.png) |
-| ------------------------------------------------------ | ------------------------------------------------------ |
+| ![sanguosha00](docs/img/README.assets/sanguosha00.webp) | ![sanguosha01](docs/img/README.assets/sanguosha01.webp) |
+| ------------------------------------------------------- | ------------------------------------------------------- |
 
 ---
 
