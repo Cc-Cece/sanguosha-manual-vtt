@@ -1,0 +1,41 @@
+name: 缺陷
+description: 桌面、构建或导入异常
+title: "[缺陷] "
+labels: ["缺陷"]
+body:
+  - type: textarea
+    id: what
+    attributes:
+      label: 现象
+      placeholder: 实际发生了什么
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 期望
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: 复现
+      placeholder: 尽量逐步写出
+    validations:
+      required: true
+  - type: dropdown
+    id: vtt
+    attributes:
+      label: VirtualTabletop
+      options:
+        - 原版 ArnoldSmith86/virtualtabletop
+        - fork Cc-Cece/virtualtabletop
+        - virtualtabletop.io
+        - 不确定
+    validations:
+      required: true
+  - type: input
+    id: package
+    attributes:
+      label: 游戏包
+      placeholder: 例如 Sanguosha-Manual-4-12P.vtt 或提交号

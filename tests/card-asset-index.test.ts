@@ -28,15 +28,15 @@ it('loads index.json and rename_map as the asset naming source of truth', () => 
   expect(resolveBackOptimizedFile('other\\back-main.webp', root)).toBe('other/Back_Main.webp');
 });
 
-it('resolves other_* markers whose index source_id is a legacy filename string', () => {
+it('resolves a general from a legacy numeric path via the index', () => {
   resetCardAssetIndexCache();
   const resolved = resolveCardAssetFromIndex({
-    id: 'asset-314',
-    sequence: 314,
-    cardId: 15800,
-    category: 'markers-and-reference',
-    source: 'cleaned-and-classified-cards/markers-and-reference/0314-201def-15800-unnamed.png',
-    optimizedFile: 'other/other_15800.webp',
+    id: 'asset-dianwei',
+    sequence: 1,
+    cardId: 11500,
+    category: 'generals',
+    source: 'cleaned-and-classified-cards/generals/fire_11500.webp',
+    optimizedFile: 'generals/fire/fire_11500.webp',
     asset: '/assets/0_0',
     bytes: 1,
     width: 1,
@@ -44,7 +44,7 @@ it('resolves other_* markers whose index source_id is a legacy filename string',
     label: 'unnamed',
   }, root);
 
-  expect(resolved.optimizedFile).toBe('other/Treasure_Muniuliuma.webp');
-  expect(resolved.label).toContain('木牛流马');
-  expect(resolved.subCategory).toBe('other');
+  expect(resolved.optimizedFile).toBe('generals/fire/General_Fire_Dianwei.webp');
+  expect(resolved.label).toContain('典韦');
+  expect(resolved.subCategory).toBe('fire');
 });

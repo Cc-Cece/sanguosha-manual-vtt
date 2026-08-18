@@ -1,6 +1,8 @@
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 import JSZip from 'jszip';
+import { getCoverOptimizedFile } from '../src/data/cardAssetIndex.js';
+import { vttAssetId, vttAssetUrl } from '../src/data/vttAssetUrl.js';
 import type { AssetCatalog } from '../src/types/assets.js';
 import { createFourPlayerPrototype } from '../src/variants/createFourPlayerPrototype.js';
 import { validatePrototype } from '../src/validation/validate.js';
@@ -28,16 +30,19 @@ if (catalog.backAssets) {
   }
 }
 
+const coverRel = getCoverOptimizedFile();
 try {
   let coverBuf: Buffer;
   try {
-    coverBuf = await readFile(resolve('temp', 'optimized-assets', 'other', 'cover.webp'));
-  } catch (e) {
-    coverBuf = await readFile(resolve('assets', 'cards-webp', 'other', 'cover.webp'));
+    coverBuf = await readFile(resolve('temp', 'optimized-assets', coverRel));
+  } catch {
+    coverBuf = await readFile(resolve('assets', 'cards-webp', coverRel));
   }
-  zip.file('assets/other/cover.webp', coverBuf);
+  const coverId = vttAssetId(coverBuf);
+  if (game._meta?.info) game._meta.info.image = vttAssetUrl(coverBuf);
+  zip.file(`assets/${coverId}`, coverBuf);
 } catch (e) {
-  console.warn('Warning: Could not add assets/other/cover.webp to zip:', e);
+  console.warn(`Warning: Could not add cover ${coverRel} to zip:`, e);
 }
 
 zip.file('0.json', JSON.stringify(game, null, 2));

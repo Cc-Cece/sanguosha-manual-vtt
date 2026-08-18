@@ -2,9 +2,9 @@ node_modules/
 coverage/
 assets/imported-cards/
 *.log
-assets/imported-cards/
 dist/*
 !dist/.gitkeep
 temp/*
 !temp/.gitkeep
+archive/
 
