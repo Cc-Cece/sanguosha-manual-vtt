@@ -56,10 +56,14 @@ jobs:
           generate_release_notes: true
 
       - name: Update VTT library shelf
-        if: startsWith(github.ref, 'refs/tags/v') && secrets.VTT_DISPATCH_TOKEN != ''
+        if: startsWith(github.ref, 'refs/tags/v')
         env:
           GH_TOKEN: ${{ secrets.VTT_DISPATCH_TOKEN }}
         run: |
+          if [ -z "$GH_TOKEN" ]; then
+            echo "VTT_DISPATCH_TOKEN is not set; skip shelf dispatch"
+            exit 0
+          fi
           gh workflow run import-sanguosha-library.yml \
             --repo Cc-Cece/virtualtabletop \
             -f tag="${GITHUB_REF_NAME}"
