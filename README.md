@@ -27,8 +27,10 @@
 
 ## 3 快速开始
 
+> 快速在线体验：https://vtt.insar.top/abcd
+
 1.  获取最新 `.vtt` 游戏包
-2.  导入 VirtualTabletop
+2.  导入到 VirtualTabletop 平台
 3.  玩家加入对应席位
 4.  开始游戏
 
